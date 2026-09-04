@@ -52,6 +52,10 @@
       overflow-x: hidden;
     }
 
+    body.keyboard-open {
+      overflow: hidden;
+    }
+
     button,
     input {
       font: inherit;
@@ -564,9 +568,40 @@
        CHAT
     ============================== */
 
+    /*
+      FIX:
+      The old min-height: 540px forced the entire chat section
+      to become taller than smaller phone screens.
+
+      The new layout uses the dynamic viewport height so the
+      composer stays visible immediately.
+    */
+
+    #chatScreen {
+      padding-bottom: 12px;
+    }
+
+    #chatScreen.active {
+      height: calc(100dvh - 92px);
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #chatScreen .container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    #chatScreen .topbar {
+      flex: 0 0 auto;
+    }
+
     .chat-card {
-      height: calc(100vh - 155px);
-      min-height: 540px;
+      flex: 1 1 auto;
+      min-height: 0;
+      height: auto;
       border-radius: 28px;
       overflow: hidden;
       display: flex;
@@ -574,6 +609,7 @@
     }
 
     .chat-header {
+      flex: 0 0 auto;
       padding: 14px 16px;
       border-bottom: 1px solid rgba(225, 205, 214, 0.7);
       background: rgba(255,255,255,0.7);
@@ -605,8 +641,10 @@
     }
 
     .messages {
-      flex: 1;
+      flex: 1 1 auto;
+      min-height: 0;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
       padding: 16px 13px 12px;
       display: flex;
       flex-direction: column;
@@ -672,9 +710,13 @@
     }
 
     .chat-composer-wrap {
+      flex: 0 0 auto;
       padding: 10px;
       border-top: 1px solid rgba(225, 205, 214, 0.75);
       background: rgba(255,255,255,0.68);
+      padding-bottom: calc(
+        10px + env(safe-area-inset-bottom)
+      );
     }
 
     .recording-bar {
@@ -737,6 +779,7 @@
     .chat-input {
       flex: 1;
       min-width: 0;
+      min-height: 42px;
       border: 1px solid rgba(219, 195, 208, 0.8);
       outline: none;
       border-radius: 16px;
@@ -792,6 +835,23 @@
     .send-action {
       background: linear-gradient(135deg, #ee7ead, #ca5489);
       color: white;
+    }
+
+    /* ==============================
+       KEYBOARD MODE
+    ============================== */
+
+    body.keyboard-open .bottom-nav {
+      display: none;
+    }
+
+    body.keyboard-open #chatScreen.active {
+      height: 100dvh;
+      padding-bottom: 8px;
+    }
+
+    body.keyboard-open #chatScreen .chat-card {
+      border-radius: 24px;
     }
 
     /* ==============================
@@ -933,6 +993,10 @@
       transform: translate(-50%, 0);
     }
 
+    body.keyboard-open .toast {
+      bottom: 14px;
+    }
+
     /* ==============================
        DESKTOP
     ============================== */
@@ -953,8 +1017,8 @@
         padding-right: 28px;
       }
 
-      .chat-card {
-        height: calc(100vh - 175px);
+      #chatScreen.active {
+        height: calc(100dvh - 92px);
       }
 
       .message {
@@ -1554,11 +1618,8 @@
 
     const CLOUDINARY_CLOUD_NAME = "aihvxgxm";
 
-    // Existing preset used for images
     const CLOUDINARY_IMAGE_PRESET = "ml_default";
 
-    // Create this unsigned preset in Cloudinary
-    // specifically for voice notes.
     const CLOUDINARY_AUDIO_PRESET = "chat_audio";
 
 
@@ -1794,6 +1855,10 @@
 
           loginScreen.classList.add("active");
 
+          document.body.classList.remove(
+            "keyboard-open"
+          );
+
           if (unsubscribeMessages) {
             unsubscribeMessages();
             unsubscribeMessages = null;
@@ -1833,6 +1898,21 @@
           const target =
             button.dataset.screen;
 
+          document.body.classList.remove(
+            "keyboard-open"
+          );
+
+          if (
+            document.activeElement &&
+            document.activeElement.matches(
+              "input, textarea"
+            )
+          ) {
+
+            document.activeElement.blur();
+
+          }
+
           screens.forEach(screen => {
 
             if (
@@ -1861,6 +1941,17 @@
             top: 0,
             behavior: "smooth"
           });
+
+          if (target === "chatScreen") {
+
+            requestAnimationFrame(() => {
+
+              messagesElement.scrollTop =
+                messagesElement.scrollHeight;
+
+            });
+
+          }
 
         }
       );
@@ -2472,23 +2563,27 @@
                 empty
               );
 
-              return;
+            } else {
+
+              snapshot.forEach(
+                messageDoc => {
+
+                  renderChatMessage(
+                    messageDoc.id,
+                    messageDoc.data()
+                  );
+
+                }
+              );
 
             }
 
-            snapshot.forEach(
-              messageDoc => {
+            requestAnimationFrame(() => {
 
-                renderChatMessage(
-                  messageDoc.id,
-                  messageDoc.data()
-                );
+              messagesElement.scrollTop =
+                messagesElement.scrollHeight;
 
-              }
-            );
-
-            messagesElement.scrollTop =
-              messagesElement.scrollHeight;
+            });
 
           },
           error => {
@@ -3487,13 +3582,6 @@
 
           try {
 
-            /*
-              IMPORTANT:
-              Only the sender can delete
-              because Firestore rules also
-              protect the collection.
-            */
-
             await deleteDoc(
               doc(
                 db,
@@ -3632,6 +3720,102 @@
         menu.remove();
 
       }
+
+    }
+
+
+    /* ==================================
+       KEYBOARD / MOBILE VIEWPORT
+    ================================== */
+
+    function updateKeyboardState() {
+
+      if (!window.visualViewport) {
+        return;
+      }
+
+      const viewport =
+        window.visualViewport;
+
+      const keyboardLikelyOpen =
+        window.innerHeight -
+        viewport.height >
+        160;
+
+      document.body.classList.toggle(
+        "keyboard-open",
+        keyboardLikelyOpen &&
+        document.getElementById(
+          "chatScreen"
+        ).classList.contains("active")
+      );
+
+      if (
+        document.body.classList.contains(
+          "keyboard-open"
+        )
+      ) {
+
+        requestAnimationFrame(() => {
+
+          messageInput.scrollIntoView({
+            block: "nearest",
+            inline: "nearest"
+          });
+
+          messagesElement.scrollTop =
+            messagesElement.scrollHeight;
+
+        });
+
+      }
+
+    }
+
+
+    messageInput.addEventListener(
+      "focus",
+      () => {
+
+        setTimeout(
+          updateKeyboardState,
+          250
+        );
+
+      }
+    );
+
+
+    messageInput.addEventListener(
+      "blur",
+      () => {
+
+        setTimeout(
+          () => {
+
+            document.body.classList.remove(
+              "keyboard-open"
+            );
+
+          },
+          150
+        );
+
+      }
+    );
+
+
+    if (window.visualViewport) {
+
+      window.visualViewport.addEventListener(
+        "resize",
+        updateKeyboardState
+      );
+
+      window.visualViewport.addEventListener(
+        "scroll",
+        updateKeyboardState
+      );
 
     }
 
