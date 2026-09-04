@@ -2076,31 +2076,63 @@ input,textarea{caret-color:var(--pink-dark);}
 
     async function generatePublicUid() {
       await authReady;
-      if (!auth.currentUser) throw Object.assign(new Error("Authentication is not ready."), { code: "auth/not-ready" });
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw Object.assign(new Error("Authentication is not ready."), { code: "auth/not-ready" });
+
+      const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       for (let attempt = 0; attempt < 120; attempt++) {
         let candidate = "";
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         for (let i = 0; i < 6; i++) candidate += letters[Math.floor(Math.random() * letters.length)];
-        const snapshot = await getDocs(query(collection(db, "users"), where("publicUid", "==", candidate), limit(1)));
-        if (snapshot.empty) return candidate;
+
+        // IMPORTANT: do not query the users collection. Search is implemented
+        // through the publicUsers/{sixLetterUid} document so Firestore only
+        // needs to authorize a single-document read.
+        const existing = await getDoc(doc(db, "publicUsers", candidate));
+        if (existing.exists()) continue;
+
+        try {
+          await setDoc(doc(db, "publicUsers", candidate), {
+            uid: currentUser.uid,
+            publicUid: candidate,
+            displayName: currentUser.displayName || "User",
+            photoUrl: currentUser.photoURL || "",
+            updatedAt: serverTimestamp()
+          });
+          return candidate;
+        } catch (error) {
+          // A simultaneous account may have taken this UID. Try another one.
+          if (error?.code === "permission-denied") continue;
+          throw error;
+        }
       }
       throw new Error("Could not allocate a public UID.");
     }
 
     async function ensurePublicUid(profile) {
       await authReady;
-      if (!auth.currentUser) throw Object.assign(new Error("Authentication is not ready."), { code: "auth/not-ready" });
+      const currentUser = auth.currentUser;
+      if (!currentUser) throw Object.assign(new Error("Authentication is not ready."), { code: "auth/not-ready" });
+
       if (profile?.publicUid && /^[A-Za-z]{6}$/.test(String(profile.publicUid))) {
-        return { ...profile, publicUid: String(profile.publicUid).toUpperCase() };
+        const publicUid = String(profile.publicUid).toUpperCase();
+        await setDoc(doc(db, "publicUsers", publicUid), {
+          uid: currentUser.uid,
+          publicUid,
+          displayName: profile.displayName || currentUser.displayName || "User",
+          photoUrl: profile.photoUrl || currentUser.photoURL || "",
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        return { ...profile, publicUid };
       }
+
       const publicUid = await generatePublicUid();
-      await setDoc(doc(db, "users", auth.currentUser.uid), {
-        uid: auth.currentUser.uid,
+      await setDoc(doc(db, "users", currentUser.uid), {
+        uid: currentUser.uid,
         publicUid,
         updatedAt: serverTimestamp()
       }, { merge: true });
-      const updated = { ...(profile || {}), uid: auth.currentUser.uid, publicUid };
-      state.cache.profiles.set(auth.currentUser.uid, updated);
+      const updated = { ...(profile || {}), uid: currentUser.uid, publicUid };
+      state.cache.profiles.set(currentUser.uid, updated);
       return updated;
     }
 
@@ -2312,325 +2344,61 @@ input,textarea{caret-color:var(--pink-dark);}
     });
 
     async function searchUserByUid() {
-  const uid = $("userSearchInput").value.trim().toUpperCase();
-  const box = $("searchResult");
-  box.innerHTML = "";
-
-  if (!/^[A-Za-z]{6}$/.test(uid)) return toast("Enter a 6-letter UID.");
-
-  await authReady;
-  const currentUser = auth.currentUser;
-
-  if (!currentUser) {
-    box.innerHTML = '<div class="empty glass">Please sign in first, then search again.</div>';
-    return;
-  }
-
-  const searchButton = $("userSearchBtn");
-  if (searchButton) {
-    searchButton.disabled = true;
-    searchButton.textContent = "Searching…";
-  }
-
-  try {
-    // Step 1: test a single authenticated document read.
-    // This separates a Firestore rules problem from a UID-query/data problem.
-    try {
-      await getDoc(doc(db, "users", currentUser.uid));
-    } catch (readError) {
-      console.error("Authenticated Firestore document read failed:", readError);
-      const readCode = readError?.code || "unknown-error";
-
-      if (readCode === "permission-denied") {
-        box.innerHTML = `<div class="empty glass">Firestore is denying authenticated reads.<br><small>Signed in: yes · Project: ${escapeText(firebaseConfig.projectId)}<br><br>Your website reached Firestore, but the published rules are not allowing this signed-in account to read <b>users/${escapeText(currentUser.uid)}</b>.<br><br>Check Firebase Console → Firestore Database → Rules → Published rules.</small></div>`;
-        return;
-      }
-
-      throw readError;
-    }
-
-    // Search only by the new six-letter public UID.
-    const snapshot = await getDocs(
-      query(collection(db, "users"), where("publicUid", "==", uid), limit(10))
-    );
-    const docs = snapshot.docs;
-
-    if (!docs.length) {
-      box.innerHTML = '<div class="empty glass">Firestore access is working, but no user was found with that UID.<br><small>Check that the other account has opened the app and that its Firestore <b>users</b> document contains the same 6-letter <b>publicUid</b>.</small></div>';
-      return;
-    }
-
-    const result = { uid: docs[0].id, ...docs[0].data() };
-
-    if (result.uid === currentUser.uid) {
-      box.innerHTML = '<div class="empty glass">That is your own UID.</div>';
-      return;
-    }
-
-    box.appendChild(await buildUserCard(result));
-  } catch (error) {
-    console.error("UID search failed:", error);
-
-    const code = error?.code || "unknown-error";
-
-    if (code === "permission-denied") {
-      box.innerHTML = `<div class="empty glass">Firestore denied access to user search.<br><small>Signed in: yes · Project: ${escapeText(firebaseConfig.projectId)}<br>The published rules are still denying the collection query. No insecure public read/write rule is required.</small></div>`;
-    } else if (code === "failed-precondition") {
-      box.innerHTML = '<div class="empty glass">Firestore needs its current database/rules setup. Please check that the rules were published to the <b>(default)</b> database.</div>';
-    } else if (code === "unavailable") {
-      box.innerHTML = '<div class="empty glass">Firestore is temporarily unavailable. Check your internet connection and try again.</div>';
-    } else {
-      box.innerHTML = `<div class="empty glass">Search failed (${escapeText(code)}). Please try again.</div>`;
-    }
-  } finally {
-    if (searchButton) {
-      searchButton.disabled = false;
-      searchButton.textContent = "Search";
-    }
-  }
-}
-
-    async function connectionState(otherUid) {
-      const cid = pairId(auth.currentUser.uid, otherUid);
-      const connection = await getDoc(doc(db, "connections", cid));
-      if (connection.exists()) return { type: "connected", id: cid };
-
-      const mine = await getDoc(doc(db, "followRequests", `${auth.currentUser.uid}__${otherUid}`));
-      if (mine.exists() && mine.data().status === "pending") return { type: "outgoing", id: mine.id };
-
-      const theirs = await getDoc(doc(db, "followRequests", `${otherUid}__${auth.currentUser.uid}`));
-      if (theirs.exists() && theirs.data().status === "pending") return { type: "incoming", id: theirs.id };
-
-      return { type: "none" };
-    }
-
-    async function buildUserCard(user) {
-      const card = document.createElement("div");
-      card.className = "user-card glass";
-      card.appendChild(avatarElement(user));
-
-      const meta = document.createElement("div");
-      meta.className = "user-meta";
-      const name = document.createElement("div");
-      name.className = "user-name";
-      name.textContent = user.displayName || initials(user.uid);
-      const uidLine = document.createElement("div");
-      uidLine.className = "uid";
-      uidLine.textContent = `UID: ${user.publicUid || "----"}`;
-      meta.append(name, uidLine);
-      card.appendChild(meta);
-
-      const actions = document.createElement("div");
-      actions.className = "actions";
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "mini-btn primary";
-      actions.appendChild(button);
-      card.appendChild(actions);
-
-      const relation = await connectionState(user.uid);
-      if (relation.type === "connected") {
-        button.textContent = "Connected";
-        button.onclick = () => openChat("connection", relation.id);
-      } else if (relation.type === "outgoing") {
-        button.textContent = "Requested";
-        button.disabled = true;
-      } else if (relation.type === "incoming") {
-        button.textContent = "Review request";
-        button.onclick = () => showScreen("requestsScreen");
-      } else {
-        button.textContent = "Connect";
-        button.onclick = () => sendConnectionRequest(user.uid, button);
-      }
-
-      return card;
-    }
-
-    async function sendConnectionRequest(toUid, button) {
-      if (!auth.currentUser || !toUid || toUid === auth.currentUser.uid) return;
-      button.disabled = true;
-      try {
-        const cid = pairId(auth.currentUser.uid, toUid);
-        const connection = await getDoc(doc(db, "connections", cid));
-        if (connection.exists()) {
-          toast("Already connected.");
-          return;
-        }
-
-        const forwardRef = doc(db, "followRequests", `${auth.currentUser.uid}__${toUid}`);
-        const reverseRef = doc(db, "followRequests", `${toUid}__${auth.currentUser.uid}`);
-        const [forward, reverse] = await Promise.all([getDoc(forwardRef), getDoc(reverseRef)]);
-
-        if (forward.exists() && forward.data().status === "pending") {
-          toast("Request already sent.");
-          return;
-        }
-        if (reverse.exists() && reverse.data().status === "pending") {
-          toast("They already sent you a request. Open Requests.");
-          return;
-        }
-
-        await setDoc(forwardRef, {
-          fromUid: auth.currentUser.uid,
-          toUid,
-          status: "pending",
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        });
-        toast("Connection request sent.");
-        loadRequests();
-        button.textContent = "Requested";
-      } catch (error) {
-        console.error(error);
-        toast(`Could not send request: ${error.code || "unknown error"}`);
-      } finally {
-        button.disabled = false;
-      }
-    }
-
-    async function loadRequests() {
-      if (!auth.currentUser) return;
-      const uid = auth.currentUser.uid;
-      try {
-        cleanupListener("requests");
-        const incomingQuery = query(collection(db, "followRequests"), where("toUid", "==", uid), limit(100));
-        const outgoingQuery = query(collection(db, "followRequests"), where("fromUid", "==", uid), limit(100));
-        const [incomingAll, outgoingAll] = await Promise.all([getDocs(incomingQuery), getDocs(outgoingQuery)]);
-        const incoming = { docs: incomingAll.docs.filter(item => item.data().status === "pending") };
-        const outgoing = { docs: outgoingAll.docs.filter(item => item.data().status === "pending") };
-        $("requestCount").textContent = incoming.docs.length;
-        await renderRequestList(incoming, $("incomingRequests"), true);
-        await renderRequestList(outgoing, $("outgoingRequests"), false);
-      } catch (error) {
-        console.error(error);
-        $("requestCount").textContent = "0";
-        $("incomingRequests").innerHTML = '<div class="empty glass">Requests could not be loaded.</div>';
-        $("outgoingRequests").innerHTML = '<div class="empty glass">No outgoing requests.</div>';
-      }
-    }
-
-    async function renderRequestList(snapshot, box, incoming) {
+      const uid = $("userSearchInput").value.trim().toUpperCase();
+      const box = $("searchResult");
       box.innerHTML = "";
-      if (snapshot.empty) {
-        box.innerHTML = '<div class="empty glass">Nothing here.</div>';
+
+      if (!/^[A-Za-z]{6}$/.test(uid)) return toast("Enter a 6-letter UID.");
+
+      await authReady;
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        box.innerHTML = '<div class="empty glass">Please sign in first, then search again.</div>';
         return;
       }
 
-      const fragment = document.createDocumentFragment();
-      for (const requestDoc of snapshot.docs) {
-        const request = requestDoc.data();
-        const otherUid = incoming ? request.fromUid : request.toUid;
-        const user = await getProfile(otherUid) || { uid: otherUid, displayName: "User", publicUid: "----" };
-
-        const card = document.createElement("div");
-        card.className = "request-card glass";
-        card.appendChild(avatarElement(user, "avatar sm"));
-
-        const meta = document.createElement("div");
-        meta.className = "user-meta";
-        const n = document.createElement("div");
-        n.className = "user-name";
-        n.textContent = user.displayName || "User";
-        const id = document.createElement("div");
-        id.className = "uid";
-        id.textContent = `UID: ${user.publicUid || "----"}`;
-        meta.append(n, id);
-        card.appendChild(meta);
-
-        const actions = document.createElement("div");
-        actions.className = "actions";
-        if (incoming) {
-          const accept = document.createElement("button");
-          accept.className = "mini-btn accept";
-          accept.type = "button";
-          accept.textContent = "Accept";
-          accept.onclick = () => acceptConnectionRequest(requestDoc.id, request);
-
-          const decline = document.createElement("button");
-          decline.className = "mini-btn decline";
-          decline.type = "button";
-          decline.textContent = "Decline";
-          decline.onclick = () => updateRequestStatus(requestDoc.id, "declined");
-          actions.append(accept, decline);
-        } else {
-          const cancel = document.createElement("button");
-          cancel.className = "mini-btn decline";
-          cancel.type = "button";
-          cancel.textContent = "Cancel";
-          cancel.onclick = () => updateRequestStatus(requestDoc.id, "cancelled");
-          actions.append(cancel);
-        }
-        card.appendChild(actions);
-        fragment.appendChild(card);
+      const searchButton = $("userSearchBtn");
+      if (searchButton) {
+        searchButton.disabled = true;
+        searchButton.textContent = "Searching…";
       }
-      box.appendChild(fragment);
-    }
 
-    async function updateRequestStatus(id, status) {
       try {
-        await updateDoc(doc(db, "followRequests", id), { status, updatedAt: serverTimestamp() });
-        await loadRequests();
-      } catch (error) {
-        console.error(error);
-        toast("Could not update the request.");
-      }
-    }
+        // Search by document ID instead of querying users.publicUid.
+        // This avoids a Firestore collection-list query entirely.
+        const snapshot = await getDoc(doc(db, "publicUsers", uid));
 
-    async function acceptConnectionRequest(id, request) {
-      try {
-        const connectionId = pairId(request.fromUid, request.toUid);
-        await setDoc(doc(db, "connections", connectionId), {
-          members: [request.fromUid, request.toUid].sort(),
-          createdAt: serverTimestamp(),
-          createdBy: auth.currentUser.uid
-        }, { merge: true });
-        await updateDoc(doc(db, "followRequests", id), {
-          status: "accepted",
-          updatedAt: serverTimestamp()
-        });
-        toast("Connected.");
-        await loadRequests();
-        await loadConnections();
-      } catch (error) {
-        console.error(error);
-        toast("Could not accept that request.");
-      }
-    }
-
-    /* ============================================================
-       CONNECTIONS
-       ============================================================ */
-    async function loadConnections() {
-      if (!auth.currentUser) return;
-      const uid = auth.currentUser.uid;
-      try {
-        const snapshot = await getDocs(query(collection(db, "connections"), where("members", "array-contains", uid), limit(50)));
-        $("connectionCount").textContent = snapshot.size;
-        $("connectionsList").innerHTML = "";
-        $("inviteConnectionList").innerHTML = "";
-
-        if (snapshot.empty) {
-          $("connectionsList").innerHTML = '<div class="empty glass">No accepted connections yet.</div>';
-          $("inviteConnectionList").innerHTML = '<div class="empty glass">Connect with someone first.</div>';
+        if (!snapshot.exists()) {
+          box.innerHTML = '<div class="empty glass">No user found with that UID.</div>';
           return;
         }
 
-        const chatFragment = document.createDocumentFragment();
-        const inviteFragment = document.createDocumentFragment();
-        for (const connectionDoc of snapshot.docs) {
-          const data = connectionDoc.data();
-          const otherUid = (data.members || []).find(member => member !== uid);
-          const user = await getProfile(otherUid) || { uid: otherUid, displayName: "User", publicUid: "----" };
+        const result = { uid: snapshot.data().uid || "", ...snapshot.data() };
 
-          chatFragment.appendChild(buildConnectionCard(user, connectionDoc.id));
-          inviteFragment.appendChild(buildInviteConnectionCard(user, connectionDoc.id));
+        if (!result.uid) {
+          box.innerHTML = '<div class="empty glass">This public profile is incomplete.</div>';
+          return;
         }
-        $("connectionsList").appendChild(chatFragment);
-        $("inviteConnectionList").appendChild(inviteFragment);
+
+        if (result.uid === currentUser.uid) {
+          box.innerHTML = '<div class="empty glass">That is your own UID.</div>';
+          return;
+        }
+
+        box.appendChild(await buildUserCard(result));
       } catch (error) {
-        console.error(error);
-        $("connectionsList").innerHTML = '<div class="empty glass">Connections unavailable.</div>';
-        $("inviteConnectionList").innerHTML = '<div class="empty glass">Connections unavailable.</div>';
+        console.error("UID search failed:", error);
+        const code = error?.code || "unknown-error";
+        if (code === "permission-denied") {
+          box.innerHTML = `<div class="empty glass">Firestore denied access to the public user profile.<br><small>Signed in: yes · Project: ${escapeText(firebaseConfig.projectId)}<br><br>Make sure the <b>publicUsers</b> rules below are published.</small></div>`;
+        } else {
+          box.innerHTML = `<div class="empty glass">Search failed (${escapeText(code)}). Please try again.</div>`;
+        }
+      } finally {
+        if (searchButton) {
+          searchButton.disabled = false;
+          searchButton.textContent = "Search";
+        }
       }
     }
 
