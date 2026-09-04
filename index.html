@@ -2164,63 +2164,82 @@ input,textarea{caret-color:var(--pink-dark);}
     });
 
     async function searchUserByUid() {
-      const uid = $("userSearchInput").value.trim();
-      const box = $("searchResult");
-      box.innerHTML = "";
-      if (!/^\d{4}$/.test(uid)) return toast("Enter a 4-digit UID.");
-      await authReady;
-      const currentUser = auth.currentUser;
-      if (!currentUser) {
-        box.innerHTML = '<div class="empty glass">Please sign in first, then search again.</div>';
-        return;
-      }
-      const searchButton = $("userSearchBtn");
-      if (searchButton) { searchButton.disabled = true; searchButton.textContent = "Searching…"; }
+  const uid = $("userSearchInput").value.trim();
+  const box = $("searchResult");
+  box.innerHTML = "";
 
-      try {
-        // Public UID is normally stored as a 4-digit string.
-        // The numeric retry keeps search compatible with older user documents
-        // that may have been created with a number instead of a string.
-        let snapshot = await getDocs(
-          query(collection(db, "users"), where("publicUid", "==", uid), limit(1))
-        );
+  if (!/^\d{4}$/.test(uid)) return toast("Enter a 4-digit UID.");
 
-        if (snapshot.empty) {
-          const numericUid = Number(uid);
-          if (Number.isInteger(numericUid)) {
-            snapshot = await getDocs(
-              query(collection(db, "users"), where("publicUid", "==", numericUid), limit(1))
-            );
-          }
-        }
+  await authReady;
+  const currentUser = auth.currentUser;
+  if (!currentUser) {
+    box.innerHTML = '<div class="empty glass">Please sign in first, then search again.</div>';
+    return;
+  }
 
-        if (snapshot.empty) {
-          box.innerHTML = '<div class="empty glass">No user found with that UID.</div>';
-          return;
-        }
+  const searchButton = $("userSearchBtn");
+  if (searchButton) {
+    searchButton.disabled = true;
+    searchButton.textContent = "Searching…";
+  }
 
-        const result = { uid: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-        if (result.uid === currentUser.uid) {
-          box.innerHTML = '<div class="empty glass">That is your own UID.</div>';
-          return;
-        }
-        box.appendChild(await buildUserCard(result));
-      } catch (error) {
-        console.error("UID search failed:", error);
-        const code = error?.code || "unknown-error";
-        if (code === "permission-denied") {
-          box.innerHTML = `<div class="empty glass">Firestore denied access to user search.<br><small>Signed in: yes · Project: ${escapeText(firebaseConfig.projectId)}<br>Publish the secure Firestore rules for this project, then try again.</small></div>`;
-        } else if (code === "failed-precondition") {
-          box.innerHTML = '<div class="empty glass">Firestore needs its current database/rules setup. Please publish the supplied rules.</div>';
-        } else if (code === "unavailable") {
-          box.innerHTML = '<div class="empty glass">Firestore is temporarily unavailable. Check your internet connection and try again.</div>';
-        } else {
-          box.innerHTML = `<div class="empty glass">Search failed (${escapeText(code)}). Please try again.</div>`;
-        }
-      } finally {
-        if (searchButton) { searchButton.disabled = false; searchButton.textContent = "Search"; }
+  try {
+    let docs = [];
+
+    // First try the normal indexed lookups, supporting both string and number UIDs.
+    for (const candidate of [uid, Number(uid)]) {
+      const snapshot = await getDocs(
+        query(collection(db, "users"), where("publicUid", "==", candidate), limit(10))
+      );
+      if (!snapshot.empty) {
+        docs = snapshot.docs;
+        break;
       }
     }
+
+    // Compatibility fallback for older/mixed Firestore records.
+    if (!docs.length) {
+      const allUsers = await getDocs(collection(db, "users"));
+      docs = allUsers.docs.filter((docSnap) => {
+        const value = docSnap.data()?.publicUid;
+        if (value === null || value === undefined) return false;
+        return String(value).trim().padStart(4, "0") === uid;
+      });
+    }
+
+    if (!docs.length) {
+      box.innerHTML = '<div class="empty glass">No user found with that UID.<br><small>Make sure the other account has opened the app at least once so its 4-digit public UID is saved to Firestore.</small></div>';
+      return;
+    }
+
+    const result = { uid: docs[0].id, ...docs[0].data() };
+
+    if (result.uid === currentUser.uid) {
+      box.innerHTML = '<div class="empty glass">That is your own UID.</div>';
+      return;
+    }
+
+    box.appendChild(await buildUserCard(result));
+  } catch (error) {
+    console.error("UID search failed:", error);
+    const code = error?.code || "unknown-error";
+
+    if (code === "permission-denied") {
+      box.innerHTML = `<div class="empty glass">Firestore denied access to user search.<br><small>Signed in: yes · Project: ${escapeText(firebaseConfig.projectId)}<br>Make sure the published Firestore rules for this project allow authenticated users to list the <b>users</b> collection.</small></div>`;
+    } else if (code === "failed-precondition") {
+      box.innerHTML = '<div class="empty glass">Firestore needs its current database/rules setup. Please check that the rules were published to the <b>(default)</b> database.</div>';
+    } else if (code === "unavailable") {
+      box.innerHTML = '<div class="empty glass">Firestore is temporarily unavailable. Check your internet connection and try again.</div>';
+    } else {
+      box.innerHTML = `<div class="empty glass">Search failed (${escapeText(code)}). Please try again.</div>`;
+    }
+  } finally {
+    if (searchButton) {
+      searchButton.disabled = false;
+      searchButton.textContent = "Search";
+    }
+  }
+}
 
     async function connectionState(otherUid) {
       const cid = pairId(auth.currentUser.uid, otherUid);
