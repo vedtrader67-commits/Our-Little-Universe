@@ -1676,12 +1676,12 @@ input,textarea{caret-color:var(--pink-dark);}
       inputmode="numeric"
       maxlength="4"
       autocomplete="off"
-      placeholder="Search by 4-digit UID"
-      aria-label="4-digit UID"
+      placeholder="Search by 6-letter UID"
+      aria-label="6-letter UID"
     />
     <button id="userSearchBtn" type="button" onclick="searchUserByUid()">Search</button>
   </div>
-  <div class="uid-search-hint">Enter a user's 4-digit UID to find their profile.</div>
+  <div class="uid-search-hint">Enter a user's 6-letter UID to find their profile.</div>
   <div id="searchResult" class="uid-search-result"></div>
 </section>
           <div id="searchResult"></div>
@@ -2066,8 +2066,10 @@ input,textarea{caret-color:var(--pink-dark);}
     async function generatePublicUid() {
       await authReady;
       if (!auth.currentUser) throw Object.assign(new Error("Authentication is not ready."), { code: "auth/not-ready" });
-      for (let attempt = 0; attempt < 60; attempt++) {
-        const candidate = String(Math.floor(1000 + Math.random() * 9000));
+      for (let attempt = 0; attempt < 120; attempt++) {
+        let candidate = "";
+        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (let i = 0; i < 6; i++) candidate += letters[Math.floor(Math.random() * letters.length)];
         const snapshot = await getDocs(query(collection(db, "users"), where("publicUid", "==", candidate), limit(1)));
         if (snapshot.empty) return candidate;
       }
@@ -2077,8 +2079,8 @@ input,textarea{caret-color:var(--pink-dark);}
     async function ensurePublicUid(profile) {
       await authReady;
       if (!auth.currentUser) throw Object.assign(new Error("Authentication is not ready."), { code: "auth/not-ready" });
-      if (profile?.publicUid && /^\d{4}$/.test(String(profile.publicUid))) {
-        return { ...profile, publicUid: String(profile.publicUid) };
+      if (profile?.publicUid && /^[A-Za-z]{6}$/.test(String(profile.publicUid))) {
+        return { ...profile, publicUid: String(profile.publicUid).toUpperCase() };
       }
       const publicUid = await generatePublicUid();
       await setDoc(doc(db, "users", auth.currentUser.uid), {
@@ -2106,7 +2108,7 @@ input,textarea{caret-color:var(--pink-dark);}
       $("authTitle").textContent = mode === "login" ? "Welcome back." : "Create your account.";
       $("authSubtitle").textContent = mode === "login"
         ? "A little corner for public conversations, connections, private rooms, memories and the moments you choose to keep."
-        : "Create an account to receive a unique four-digit public UID.";
+        : "Create an account to receive a unique six-letter public UID.";
       $("nameField").classList.toggle("hidden", mode !== "register");
       $("forgotRow").classList.toggle("hidden", mode !== "login");
       $("authButton").textContent = mode === "login" ? "Enter our universe" : "Create account";
@@ -2290,15 +2292,15 @@ input,textarea{caret-color:var(--pink-dark);}
       if (event.key === "Enter") searchUserByUid();
     });
     $("userSearchInput").addEventListener("input", event => {
-      event.target.value = event.target.value.replace(/\D/g, "").slice(0, 4);
+      event.target.value = event.target.value.replace(/[^A-Za-z]/g, "").slice(0, 6).toUpperCase();
     });
 
     async function searchUserByUid() {
-  const uid = $("userSearchInput").value.trim();
+  const uid = $("userSearchInput").value.trim().toUpperCase();
   const box = $("searchResult");
   box.innerHTML = "";
 
-  if (!/^\d{4}$/.test(uid)) return toast("Enter a 4-digit UID.");
+  if (!/^[A-Za-z]{6}$/.test(uid)) return toast("Enter a 6-letter UID.");
 
   await authReady;
   const currentUser = auth.currentUser;
@@ -2331,32 +2333,14 @@ input,textarea{caret-color:var(--pink-dark);}
       throw readError;
     }
 
-    // Step 2: search by publicUid as both string and number.
-    let docs = [];
-
-    for (const candidate of [uid, Number(uid)]) {
-      const snapshot = await getDocs(
-        query(collection(db, "users"), where("publicUid", "==", candidate), limit(10))
-      );
-
-      if (!snapshot.empty) {
-        docs = snapshot.docs;
-        break;
-      }
-    }
-
-    // Step 3: compatibility fallback for older/mixed UID types.
-    if (!docs.length) {
-      const allUsers = await getDocs(collection(db, "users"));
-      docs = allUsers.docs.filter((docSnap) => {
-        const value = docSnap.data()?.publicUid;
-        if (value === null || value === undefined) return false;
-        return String(value).trim().padStart(4, "0") === uid;
-      });
-    }
+    // Search only by the new six-letter public UID.
+    const snapshot = await getDocs(
+      query(collection(db, "users"), where("publicUid", "==", uid), limit(10))
+    );
+    const docs = snapshot.docs;
 
     if (!docs.length) {
-      box.innerHTML = '<div class="empty glass">Firestore access is working, but no user was found with that UID.<br><small>Check that the other account has opened the app and that its Firestore <b>users</b> document contains the same 4-digit <b>publicUid</b>.</small></div>';
+      box.innerHTML = '<div class="empty glass">Firestore access is working, but no user was found with that UID.<br><small>Check that the other account has opened the app and that its Firestore <b>users</b> document contains the same 6-letter <b>publicUid</b>.</small></div>';
       return;
     }
 
