@@ -1,178 +1,906 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Our Little Universe 🎀</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#fff7fb" />
+  <title>Our Little Universe</title>
 
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap');
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
+    :root {
+      --pink: #e96b9b;
+      --pink-dark: #c94f80;
+      --pink-soft: #fff0f6;
+      --text: #27232a;
+      --muted: #8d858c;
+      --white: rgba(255,255,255,.82);
+      --border: rgba(80,40,60,.08);
+      --shadow: 0 12px 40px rgba(160,70,110,.10);
+    }
+
     body {
-      font-family: "Trebuchet MS", sans-serif;
       min-height: 100vh;
-      background: linear-gradient(135deg, #fff0f6, #ffd9e8, #fff5fa);
-      color: #6d3d55;
-      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 10% 5%, rgba(255,185,214,.38), transparent 28%),
+        radial-gradient(circle at 90% 15%, rgba(255,216,231,.45), transparent 25%),
+        linear-gradient(135deg, #fff9fc, #fff2f7);
+      color: var(--text);
+      font-family: "DM Sans", sans-serif;
     }
 
-    .decor {
-      position: fixed;
-      pointer-events: none;
-      z-index: 0;
-      font-size: 28px;
-      opacity: 0.75;
-      animation: float 4s ease-in-out infinite;
+    button {
+      font-family: inherit;
+      border: 0;
+      cursor: pointer;
     }
 
-    .d1 { top: 8%; left: 5%; }
-    .d2 { top: 18%; right: 7%; animation-delay: 1s; }
-    .d3 { top: 55%; left: 6%; animation-delay: 2s; }
-    .d4 { top: 70%; right: 6%; animation-delay: 1.5s; }
-    .d5 { top: 38%; right: 18%; animation-delay: .5s; }
+    /* ---------- TOP BAR ---------- */
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0) rotate(-4deg); }
-      50% { transform: translateY(-12px) rotate(4deg); }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      background: rgba(255,250,252,.78);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
     }
 
-    .page {
-      position: relative;
-      z-index: 1;
-      width: min(92%, 700px);
-      margin: auto;
-      padding: 45px 0;
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
     }
 
-    .hero {
-      text-align: center;
-      background: rgba(255,255,255,.7);
-      border: 2px solid #ffc1d9;
-      border-radius: 30px;
-      padding: 38px 20px;
-      box-shadow: 0 15px 40px rgba(214, 105, 145, .15);
-      backdrop-filter: blur(8px);
-    }
-
-    .cat {
-      font-size: 70px;
-      margin-bottom: 10px;
-    }
-
-    h1 {
-      color: #d94f82;
-      font-size: 36px;
-      margin-bottom: 10px;
-    }
-
-    .subtitle {
-      font-size: 16px;
-      color: #9b627b;
-      margin-bottom: 28px;
-    }
-
-    .buttons {
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      border-radius: 13px;
       display: grid;
-      gap: 16px;
+      place-items: center;
+      color: white;
+      font-size: 15px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #f39abb, #d95c8c);
+      box-shadow: 0 7px 18px rgba(217,92,140,.25);
     }
 
-    .card {
+    .brand-name {
+      font-family: "Playfair Display", serif;
+      font-size: 19px;
+    }
+
+    .top-action {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.8);
+      border: 1px solid var(--border);
+      color: var(--pink-dark);
+      font-size: 17px;
+    }
+
+    /* ---------- MAIN ---------- */
+
+    main {
+      width: min(760px, 100%);
+      margin: auto;
+      padding: 24px 16px 100px;
+    }
+
+    .section {
+      display: none;
+      animation: fade .3s ease;
+    }
+
+    .section.active {
       display: block;
-      text-decoration: none;
-      color: #7b405d;
-      background: #fff;
-      border: 2px solid #ffc7dc;
-      border-radius: 22px;
-      padding: 20px;
-      font-size: 18px;
-      font-weight: bold;
-      box-shadow: 0 8px 20px rgba(214,105,145,.12);
-      transition: .25s;
     }
 
-    .card:hover {
-      transform: translateY(-4px) scale(1.01);
-      background: #fff7fa;
+    @keyframes fade {
+      from {
+        opacity: 0;
+        transform: translateY(7px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    .emoji {
-      font-size: 30px;
-      display: block;
-      margin-bottom: 5px;
+    /* ---------- PROFILE ---------- */
+
+    .profile-card {
+      padding: 22px;
+      border-radius: 25px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
     }
 
-    .note {
-      margin-top: 25px;
-      padding: 18px;
-      border-radius: 20px;
-      background: #ffe6f0;
-      text-align: center;
-      font-size: 14px;
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 17px;
     }
 
-    footer {
-      text-align: center;
-      padding: 25px 0 5px;
+    .profile-photo {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, #f2a4c1, #c95283);
+    }
+
+    .profile-photo-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ffe4ef, #fff);
+      display: grid;
+      place-items: center;
+      color: var(--pink-dark);
+      font-size: 24px;
+    }
+
+    .profile-info h1 {
+      font-size: 21px;
+      margin-bottom: 4px;
+    }
+
+    .profile-info p {
+      color: var(--muted);
       font-size: 13px;
-      color: #ad718b;
+    }
+
+    .stats {
+      display: flex;
+      gap: 30px;
+      margin-top: 20px;
+      padding-top: 17px;
+      border-top: 1px solid var(--border);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 17px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    /* ---------- STORIES ---------- */
+
+    .stories-title {
+      margin: 27px 3px 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .stories {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding: 4px 2px 10px;
+      scrollbar-width: none;
+    }
+
+    .stories::-webkit-scrollbar {
+      display: none;
+    }
+
+    .story {
+      flex: 0 0 auto;
+      text-align: center;
+      width: 66px;
+    }
+
+    .story-ring {
+      width: 62px;
+      height: 62px;
+      padding: 2px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#ef9dbc,#d55b8b);
+      margin: auto auto 7px;
+    }
+
+    .story-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      color: var(--pink-dark);
+      font-size: 17px;
+    }
+
+    .story span {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ---------- POSTS ---------- */
+
+    .post {
+      margin-top: 18px;
+      overflow: hidden;
+      border-radius: 24px;
+      background: rgba(255,255,255,.86);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .post-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+    }
+
+    .mini-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg,#ffd8e7,#f1a3c0);
+      display: grid;
+      place-items: center;
+      color: var(--pink-dark);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .post-head strong {
+      font-size: 13px;
+    }
+
+    .post-head small {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 2px;
+    }
+
+    .photo-placeholder {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      background:
+        linear-gradient(135deg, rgba(244,160,194,.28), rgba(255,225,238,.7)),
+        radial-gradient(circle at 30% 25%, #fff, transparent 30%);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .photo-placeholder::before,
+    .photo-placeholder::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,.35);
+    }
+
+    .photo-placeholder::before {
+      width: 180px;
+      height: 180px;
+      top: -50px;
+      right: -30px;
+    }
+
+    .photo-placeholder::after {
+      width: 130px;
+      height: 130px;
+      bottom: -40px;
+      left: -20px;
+    }
+
+    .placeholder-text {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      color: var(--pink-dark);
+    }
+
+    .placeholder-text .icon {
+      font-size: 27px;
+      margin-bottom: 8px;
+    }
+
+    .placeholder-text p {
+      font-size: 12px;
+      opacity: .75;
+    }
+
+    .post-actions {
+      display: flex;
+      gap: 17px;
+      padding: 14px 16px 7px;
+    }
+
+    .post-actions button {
+      background: none;
+      color: #5f565d;
+      font-size: 19px;
+    }
+
+    .post-caption {
+      padding: 0 16px 17px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    /* ---------- MEMORIES ---------- */
+
+    .page-heading {
+      margin-bottom: 20px;
+    }
+
+    .page-heading h2 {
+      font-family: "Playfair Display", serif;
+      font-size: 28px;
+    }
+
+    .page-heading p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 5px;
+    }
+
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(2,1fr);
+      gap: 12px;
+    }
+
+    .memory {
+      aspect-ratio: 1;
+      border-radius: 19px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(145deg,#f8c2d8,#fff1f6);
+      border: 1px solid var(--border);
+    }
+
+    .memory:nth-child(2) {
+      background: linear-gradient(145deg,#fbdbe8,#f5b4cc);
+    }
+
+    .memory:nth-child(3) {
+      background: linear-gradient(145deg,#f9e4ed,#f2bfd4);
+    }
+
+    .memory:nth-child(4) {
+      background: linear-gradient(145deg,#ffd7e6,#ffeef5);
+    }
+
+    .memory-content {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: flex-end;
+      padding: 13px;
+      background: linear-gradient(transparent 45%,rgba(45,20,35,.48));
+      color: white;
+    }
+
+    .memory-content span {
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* ---------- CHAT ---------- */
+
+    .chat-card {
+      border-radius: 25px;
+      overflow: hidden;
+      background: rgba(255,255,255,.78);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+    }
+
+    .chat-head {
+      padding: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .online {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #65c58b;
+      box-shadow: 0 0 0 4px rgba(101,197,139,.12);
+      margin-left: auto;
+    }
+
+    .messages {
+      min-height: 430px;
+      max-height: 58vh;
+      overflow-y: auto;
+      padding: 20px 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .message {
+      max-width: 75%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .received {
+      align-self: flex-start;
+      background: #f5edf1;
+      border-bottom-left-radius: 5px;
+    }
+
+    .sent {
+      align-self: flex-end;
+      color: white;
+      background: linear-gradient(135deg,#ec8fb2,#d75d8d);
+      border-bottom-right-radius: 5px;
+    }
+
+    .chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .chat-input input {
+      flex: 1;
+      border: 0;
+      outline: 0;
+      background: #f7f1f4;
+      border-radius: 22px;
+      padding: 12px 15px;
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .send {
+      width: 43px;
+      height: 43px;
+      border-radius: 50%;
+      background: var(--pink);
+      color: white;
+    }
+
+    /* ---------- MORE ---------- */
+
+    .setting-card {
+      padding: 17px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.8);
+      border: 1px solid var(--border);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
+    }
+
+    .setting-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      background: var(--pink-soft);
+      color: var(--pink-dark);
+    }
+
+    .setting-card div:last-child {
+      font-size: 13px;
+    }
+
+    .setting-card small {
+      display: block;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    /* ---------- NAV ---------- */
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 100;
+      width: min(760px,100%);
+      height: 72px;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      background: rgba(255,250,252,.84);
+      backdrop-filter: blur(22px);
+      border-top: 1px solid var(--border);
+    }
+
+    .nav-btn {
+      background: none;
+      color: #9b9298;
+      font-size: 21px;
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      transition: .2s;
+    }
+
+    .nav-btn span {
+      display: block;
+      font-size: 9px;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .nav-btn.active {
+      color: var(--pink-dark);
+      background: #fff0f6;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+
+    @media (min-width: 650px) {
+      main {
+        padding-top: 35px;
+      }
+
+      .memory-grid {
+        grid-template-columns: repeat(3,1fr);
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div class="decor d1">🎀</div>
-  <div class="decor d2">🐱</div>
-  <div class="decor d3">💗</div>
-  <div class="decor d4">🌸</div>
-  <div class="decor d5">✨</div>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">OU</div>
+      <div class="brand-name">Our Little Universe</div>
+    </div>
 
-  <main class="page">
+    <button class="top-action" onclick="showSection('more', this)">⋯</button>
+  </header>
 
-    <section class="hero">
+  <main>
 
-      <div class="cat">🐱🎀</div>
+    <!-- HOME -->
+    <section id="home" class="section active">
 
-      <h1>Our Little Universe</h1>
+      <div class="profile-card">
+        <div class="profile">
+          <div class="profile-photo">
+            <div class="profile-photo-inner">♡</div>
+          </div>
 
-      <p class="subtitle">
-        A tiny corner made for our memories, moments & conversations 💗
-      </p>
+          <div class="profile-info">
+            <h1>Our Little Universe</h1>
+            <p>A private space for two.</p>
+          </div>
+        </div>
 
-      <div class="buttons">
+        <div class="stats">
+          <div class="stat">
+            <strong>∞</strong>
+            <span>Memories</span>
+          </div>
 
-        <a class="card" href="#">
-          <span class="emoji">📸</span>
-          Our Memories
-        </a>
+          <div class="stat">
+            <strong>2</strong>
+            <span>People</span>
+          </div>
 
-        <a class="card" href="#">
-          <span class="emoji">💌</span>
-          Our Chat
-        </a>
-
-        <a class="card" href="#">
-          <span class="emoji">🌷</span>
-          Little Things
-        </a>
-
+          <div class="stat">
+            <strong>♡</strong>
+            <span>Universe</span>
+          </div>
+        </div>
       </div>
 
-      <div class="note">
-        🐾 Welcome to our little pink universe ✨
+      <div class="stories-title">Our moments</div>
+
+      <div class="stories">
+        <div class="story">
+          <div class="story-ring">
+            <div class="story-inner">+</div>
+          </div>
+          <span>Add</span>
+        </div>
+
+        <div class="story">
+          <div class="story-ring">
+            <div class="story-inner">01</div>
+          </div>
+          <span>Firsts</span>
+        </div>
+
+        <div class="story">
+          <div class="story-ring">
+            <div class="story-inner">02</div>
+          </div>
+          <span>Us</span>
+        </div>
+
+        <div class="story">
+          <div class="story-ring">
+            <div class="story-inner">03</div>
+          </div>
+          <span>Days</span>
+        </div>
+
+        <div class="story">
+          <div class="story-ring">
+            <div class="story-inner">04</div>
+          </div>
+          <span>Favs</span>
+        </div>
+      </div>
+
+      <article class="post">
+        <div class="post-head">
+          <div class="mini-avatar">OU</div>
+          <div>
+            <strong>Our Little Universe</strong>
+            <small>Shared memory</small>
+          </div>
+        </div>
+
+        <div class="photo-placeholder">
+          <div class="placeholder-text">
+            <div class="icon">＋</div>
+            <p>Your first memory will live here</p>
+          </div>
+        </div>
+
+        <div class="post-actions">
+          <button>♡</button>
+          <button onclick="showSection('chat')">○</button>
+          <button>⌁</button>
+        </div>
+
+        <div class="post-caption">
+          <strong>Our space.</strong>
+          A private little corner for everything worth remembering.
+        </div>
+      </article>
+
+    </section>
+
+
+    <!-- MEMORIES -->
+    <section id="memories" class="section">
+
+      <div class="page-heading">
+        <h2>Memories</h2>
+        <p>Every picture has a place here.</p>
+      </div>
+
+      <div class="memory-grid">
+
+        <div class="memory">
+          <div class="memory-content">
+            <span>Our first memory</span>
+          </div>
+        </div>
+
+        <div class="memory">
+          <div class="memory-content">
+            <span>A day worth keeping</span>
+          </div>
+        </div>
+
+        <div class="memory">
+          <div class="memory-content">
+            <span>Just us</span>
+          </div>
+        </div>
+
+        <div class="memory">
+          <div class="memory-content">
+            <span>Another chapter</span>
+          </div>
+        </div>
+
       </div>
 
     </section>
 
-    <footer>
-      Made with ♡ 🎀 🐱
-    </footer>
+
+    <!-- CHAT -->
+    <section id="chat" class="section">
+
+      <div class="page-heading">
+        <h2>Our Chat</h2>
+        <p>A private conversation between two people.</p>
+      </div>
+
+      <div class="chat-card">
+
+        <div class="chat-head">
+          <div class="mini-avatar">♡</div>
+
+          <div>
+            <strong>Our conversation</strong>
+            <small style="display:block;color:#8d858c;margin-top:3px;">
+              Private
+            </small>
+          </div>
+
+          <div class="online"></div>
+        </div>
+
+        <div class="messages" id="messages">
+
+          <div class="message received">
+            Your messages will appear here.
+          </div>
+
+          <div class="message sent">
+            And they'll update in real time.
+          </div>
+
+        </div>
+
+        <div class="chat-input">
+          <input
+            id="messageInput"
+            type="text"
+            placeholder="Write something..."
+            onkeydown="handleEnter(event)"
+          />
+
+          <button class="send" onclick="sendDemoMessage()">↑</button>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- MORE -->
+    <section id="more" class="section">
+
+      <div class="page-heading">
+        <h2>Little things</h2>
+        <p>Small details that make this place ours.</p>
+      </div>
+
+      <div class="setting-card">
+        <div class="setting-icon">♡</div>
+        <div>
+          <strong>Our Universe</strong>
+          <small>Private space for two</small>
+        </div>
+      </div>
+
+      <div class="setting-card">
+        <div class="setting-icon">▣</div>
+        <div>
+          <strong>Shared Memories</strong>
+          <small>Photos and moments we keep</small>
+        </div>
+      </div>
+
+      <div class="setting-card">
+        <div class="setting-icon">⌁</div>
+        <div>
+          <strong>Real-time Chat</strong>
+          <small>Messages without refreshing</small>
+        </div>
+      </div>
+
+    </section>
 
   </main>
 
+
+  <!-- BOTTOM NAV -->
+
+  <nav class="bottom-nav">
+
+    <button class="nav-btn active" onclick="showSection('home', this)">
+      ⌂
+      <span>Home</span>
+    </button>
+
+    <button class="nav-btn" onclick="showSection('memories', this)">
+      ▣
+      <span>Memories</span>
+    </button>
+
+    <button class="nav-btn" onclick="showSection('chat', this)">
+      ○
+      <span>Chat</span>
+    </button>
+
+    <button class="nav-btn" onclick="showSection('more', this)">
+      ☰
+      <span>More</span>
+    </button>
+
+  </nav>
+
+
+  <script>
+
+    function showSection(sectionName, button) {
+
+      document.querySelectorAll(".section").forEach(section => {
+        section.classList.remove("active");
+      });
+
+      const selected = document.getElementById(sectionName);
+
+      if (selected) {
+        selected.classList.add("active");
+      }
+
+      document.querySelectorAll(".nav-btn").forEach(btn => {
+        btn.classList.remove("active");
+      });
+
+      if (button) {
+        button.classList.add("active");
+      }
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth"
+      });
+    }
+
+
+    function sendDemoMessage() {
+
+      const input = document.getElementById("messageInput");
+      const text = input.value.trim();
+
+      if (!text) return;
+
+      const messages = document.getElementById("messages");
+
+      const message = document.createElement("div");
+      message.className = "message sent";
+      message.textContent = text;
+
+      messages.appendChild(message);
+
+      input.value = "";
+
+      messages.scrollTop = messages.scrollHeight;
+    }
+
+
+    function handleEnter(event) {
+      if (event.key === "Enter") {
+        sendDemoMessage();
+      }
+    }
+
+  </script>
+
 </body>
-  </html>
+</html>
