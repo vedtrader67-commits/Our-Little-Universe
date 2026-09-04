@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Little Universe 🎀</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Trebuchet MS", sans-serif;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #fff0f6, #ffd9e8, #fff5fa);
+      color: #6d3d55;
+      overflow-x: hidden;
+    }
+
+    .decor {
+      position: fixed;
+      pointer-events: none;
+      z-index: 0;
+      font-size: 28px;
+      opacity: 0.75;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .d1 { top: 8%; left: 5%; }
+    .d2 { top: 18%; right: 7%; animation-delay: 1s; }
+    .d3 { top: 55%; left: 6%; animation-delay: 2s; }
+    .d4 { top: 70%; right: 6%; animation-delay: 1.5s; }
+    .d5 { top: 38%; right: 18%; animation-delay: .5s; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50% { transform: translateY(-12px) rotate(4deg); }
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      width: min(92%, 700px);
+      margin: auto;
+      padding: 45px 0;
+    }
+
+    .hero {
+      text-align: center;
+      background: rgba(255,255,255,.7);
+      border: 2px solid #ffc1d9;
+      border-radius: 30px;
+      padding: 38px 20px;
+      box-shadow: 0 15px 40px rgba(214, 105, 145, .15);
+      backdrop-filter: blur(8px);
+    }
+
+    .cat {
+      font-size: 70px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      color: #d94f82;
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: #9b627b;
+      margin-bottom: 28px;
+    }
+
+    .buttons {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card {
+      display: block;
+      text-decoration: none;
+      color: #7b405d;
+      background: #fff;
+      border: 2px solid #ffc7dc;
+      border-radius: 22px;
+      padding: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 0 8px 20px rgba(214,105,145,.12);
+      transition: .25s;
+    }
+
+    .card:hover {
+      transform: translateY(-4px) scale(1.01);
+      background: #fff7fa;
+    }
+
+    .emoji {
+      font-size: 30px;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .note {
+      margin-top: 25px;
+      padding: 18px;
+      border-radius: 20px;
+      background: #ffe6f0;
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px 0 5px;
+      font-size: 13px;
+      color: #ad718b;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="decor d1">🎀</div>
+  <div class="decor d2">🐱</div>
+  <div class="decor d3">💗</div>
+  <div class="decor d4">🌸</div>
+  <div class="decor d5">✨</div>
+
+  <main class="page">
+
+    <section class="hero">
+
+      <div class="cat">🐱🎀</div>
+
+      <h1>Our Little Universe</h1>
+
+      <p class="subtitle">
+        A tiny corner made for our memories, moments & conversations 💗
+      </p>
+
+      <div class="buttons">
+
+        <a class="card" href="#">
+          <span class="emoji">📸</span>
+          Our Memories
+        </a>
+
+        <a class="card" href="#">
+          <span class="emoji">💌</span>
+          Our Chat
+        </a>
+
+        <a class="card" href="#">
+          <span class="emoji">🌷</span>
+          Little Things
+        </a>
+
+      </div>
+
+      <div class="note">
+        🐾 Welcome to our little pink universe ✨
+      </div>
+
+    </section>
+
+    <footer>
+      Made with ♡ 🎀 🐱
+    </footer>
+
+  </main>
+
+</body>
+  </html>
