@@ -934,7 +934,7 @@
       width: min(100%, 600px);
       margin: 0 auto;
       display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 6px;
     }
 
@@ -1535,15 +1535,6 @@
 
         <button
           class="nav-btn"
-          data-screen="socialScreen"
-          type="button"
-        >
-          <span class="nav-icon">♡</span>
-          <span class="nav-label">People</span>
-        </button>
-
-        <button
-          class="nav-btn"
           data-screen="moreScreen"
           type="button"
         >
@@ -1557,173 +1548,6 @@
 
   </main>
 
-
-
-<style>
-  /* Integrated corrected-build styling */
-  .social-card{margin-top:12px}
-  #socialScreen .more-card h3{margin-bottom:5px}
-  #socialScreen .actions{justify-content:flex-end}
-  #socialScreen .memory-empty{padding:20px}
-  .avatar.sm{flex:0 0 34px}
-</style>
-
-
-  <!-- ==========================
-       INTEGRATED SOCIAL / PRIVATE SYSTEM
-       Added from the corrected build without removing the original site.
-  =========================== -->
-  <section id="socialScreen" class="screen">
-    <div class="container">
-      <div class="topbar">
-        <div><div class="eyebrow">social universe</div><h2 class="page-title">People & Private Room.</h2></div>
-        <div id="socialUserPill" class="pill">UID loading…</div>
-      </div>
-
-      <div class="more-card glass">
-        <div class="eyebrow">discover</div>
-        <h3>Find someone by UID.</h3>
-        <p>Search by the public UID generated for each account, then send a connection request.</p>
-        <div class="date-row" style="margin-top:12px">
-          <input id="socialSearchInput" type="text" inputmode="numeric" maxlength="4" placeholder="Enter 4-digit UID">
-          <button id="socialSearchBtn" class="primary-btn" type="button">Search</button>
-        </div>
-        <div id="socialSearchResult" style="margin-top:12px"></div>
-      </div>
-
-      <div class="more-card glass">
-        <div class="eyebrow">requests</div>
-        <h3>Connection requests.</h3>
-        <div id="socialIncoming" class="stack" style="margin-top:10px"></div>
-        <div class="section-title">Outgoing</div>
-        <div id="socialOutgoing" class="stack"></div>
-      </div>
-
-      <div class="more-card glass">
-        <div class="eyebrow">connections</div>
-        <h3>Your connections.</h3>
-        <div id="socialConnections" class="stack" style="margin-top:10px"></div>
-      </div>
-
-      <div class="more-card glass">
-        <div class="eyebrow">private room</div>
-        <h3>Shared private space.</h3>
-        <p>Invite an accepted connection. The room unlocks only after the other person accepts.</p>
-        <div id="socialPrivate" class="stack" style="margin-top:10px"></div>
-      </div>
-    </div>
-  </section>
-
-  <script type="module">
-    import {getAuth} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-    import {getFirestore,collection,doc,getDoc,getDocs,setDoc,updateDoc,serverTimestamp,query,where,limit,onSnapshot} from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-
-    const socialAuth=getAuth();
-    const socialDb=getFirestore();
-    const social$=id=>document.getElementById(id);
-    let socialUnsubs=[];
-    const socialPair=(a,b)=>[a,b].sort().join("__");
-
-    function socialEscape(v){return String(v??"").replace(/[&<>\"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
-    function socialToast(msg){
-      const t=document.getElementById("toast");
-      if(t){t.textContent=msg;t.classList.add("show");clearTimeout(socialToast.t);socialToast.t=setTimeout(()=>t.classList.remove("show"),2300)}
-    }
-    async function socialProfile(uid){
-      const s=await getDoc(doc(socialDb,"users",uid));
-      return s.exists()?{uid,...s.data()}:null;
-    }
-    async function socialEnsureUid(){
-      const user=socialAuth.currentUser;if(!user)return null;
-      const ref=doc(socialDb,"users",user.uid); const snap=await getDoc(ref);
-      if(snap.exists()&&snap.data().publicUid)return snap.data().publicUid;
-      for(let i=0;i<40;i++){
-        const candidate=String(Math.floor(1000+Math.random()*9000));
-        const q=query(collection(socialDb,"users"),where("publicUid","==",candidate),limit(1));
-        const s=await getDocs(q); if(s.empty){await setDoc(ref,{publicUid:candidate,uid:user.uid,updatedAt:serverTimestamp()},{merge:true});return candidate;}
-      }
-      return null;
-    }
-    function socialCard(u,actions=""){
-      const name=socialEscape(u?.displayName||"User");
-      const uid=socialEscape(u?.publicUid||"—");
-      return `<div class="more-card glass" style="margin-top:0;padding:12px"><div class="row"><div class="avatar sm">${socialEscape((name||"U").slice(0,2).toUpperCase())}</div><div class="grow"><div class="user-name">${name}</div><div class="uid">UID: ${uid}</div></div><div class="actions">${actions}</div></div></div>`;
-    }
-    async function socialSearch(){
-      const term=social$("socialSearchInput").value.trim(); const box=social$("socialSearchResult"); box.innerHTML="";
-      if(!/^\d{4}$/.test(term))return socialToast("Enter a 4-digit UID.");
-      if(!socialAuth.currentUser)return;
-      const s=await getDocs(query(collection(socialDb,"users"),where("publicUid","==",term),limit(10)));
-      const users=s.docs.map(d=>({uid:d.id,...d.data()})).filter(u=>u.uid!==socialAuth.currentUser.uid);
-      if(!users.length){box.innerHTML='<div class="memory-empty glass">No matching user found.</div>';return;}
-      for(const u of users){
-        const b=`<button class="mini-btn primary" data-social-connect="${u.uid}">Connect</button>`;
-        box.insertAdjacentHTML("beforeend",socialCard(u,b));
-      }
-      box.querySelectorAll("[data-social-connect]").forEach(b=>b.onclick=()=>socialSendRequest(b.dataset.socialConnect,b));
-    }
-    async function socialSendRequest(toUid,b){
-      b.disabled=true;
-      try{
-        const me=socialAuth.currentUser.uid;if(me===toUid)return;
-        const cid=socialPair(me,toUid); if((await getDoc(doc(socialDb,"connections",cid))).exists()){socialToast("Already connected.");return;}
-        const rid=`${me}__${toUid}`; const rev=`${toUid}__${me}`;
-        const a=await getDoc(doc(socialDb,"followRequests",rid)); const r=await getDoc(doc(socialDb,"followRequests",rev));
-        if(a.exists()&&a.data().status==="pending")return socialToast("Request already sent.");
-        if(r.exists()&&r.data().status==="pending")return socialToast("They already sent you a request.");
-        await setDoc(doc(socialDb,"followRequests",rid),{fromUid:me,toUid,status:"pending",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
-        socialToast("Connection request sent."); await socialLoadRequests();
-      }catch(e){console.error(e);socialToast("Could not send request.")}finally{b.disabled=false}
-    }
-    async function socialLoadRequests(){
-      if(!socialAuth.currentUser)return;
-      const uid=socialAuth.currentUser.uid;
-      const incoming=await getDocs(query(collection(socialDb,"followRequests"),where("toUid","==",uid),where("status","==","pending"),limit(50)));
-      const outgoing=await getDocs(query(collection(socialDb,"followRequests"),where("fromUid","==",uid),where("status","==","pending"),limit(50)));
-      const inBox=social$("socialIncoming"),outBox=social$("socialOutgoing");inBox.innerHTML="";outBox.innerHTML="";
-      if(incoming.empty)inBox.innerHTML='<div class="memory-empty glass">No incoming requests.</div>';
-      for(const d of incoming.docs){const r=d.data(),u=await socialProfile(r.fromUid); if(!u)continue;inBox.insertAdjacentHTML("beforeend",socialCard(u,`<button class="mini-btn accept" data-social-accept="${d.id}">Accept</button><button class="mini-btn decline" data-social-decline="${d.id}">Decline</button>`));}
-      if(outgoing.empty)outBox.innerHTML='<div class="memory-empty glass">No outgoing requests.</div>';
-      for(const d of outgoing.docs){const r=d.data(),u=await socialProfile(r.toUid); if(!u)continue;outBox.insertAdjacentHTML("beforeend",socialCard(u,`<button class="mini-btn decline" data-social-cancel="${d.id}">Cancel</button>`));}
-      inBox.querySelectorAll("[data-social-accept]").forEach(b=>b.onclick=()=>socialAccept(b.dataset.socialAccept));
-      [...inBox.querySelectorAll("[data-social-decline]"),...outBox.querySelectorAll("[data-social-cancel]")].forEach(b=>b.onclick=()=>socialDecline(b.dataset.socialDecline||b.dataset.socialCancel));
-    }
-    async function socialAccept(id){
-      try{const r=(await getDoc(doc(socialDb,"followRequests",id))).data();const members=[r.fromUid,r.toUid].sort();await setDoc(doc(socialDb,"connections",socialPair(...members)),{members,createdAt:serverTimestamp(),createdBy:socialAuth.currentUser.uid},{merge:true});await updateDoc(doc(socialDb,"followRequests",id),{status:"accepted",updatedAt:serverTimestamp()});socialToast("Connected.");await socialLoadRequests();await socialLoadConnections();}catch(e){console.error(e);socialToast("Could not accept request.")}
-    }
-    async function socialDecline(id){try{await updateDoc(doc(socialDb,"followRequests",id),{status:"declined",updatedAt:serverTimestamp()});await socialLoadRequests()}catch(e){socialToast("Could not update request.")}}
-    async function socialLoadConnections(){
-      if(!socialAuth.currentUser)return; const uid=socialAuth.currentUser.uid,box=social$("socialConnections"),pbox=social$("socialPrivate"); box.innerHTML="";pbox.innerHTML="";
-      const s=await getDocs(query(collection(socialDb,"connections"),where("members","array-contains",uid),limit(50)));
-      if(s.empty){box.innerHTML='<div class="memory-empty glass">No accepted connections yet.</div>';pbox.innerHTML='<div class="memory-empty glass">Connect with someone first.</div>';return;}
-      for(const d of s.docs){const c=d.data(),other=(c.members||[]).find(x=>x!==uid),u=await socialProfile(other);if(!u)continue;
-        box.insertAdjacentHTML("beforeend",socialCard(u,'<span class="pill">Connected</span>'));
-        const sid=socialPair(uid,other),sp=await getDoc(doc(socialDb,"privateSpaces",sid));
-        if(sp.exists())pbox.insertAdjacentHTML("beforeend",socialCard(u,'<span class="pill">Private room unlocked</span>'));
-        else pbox.insertAdjacentHTML("beforeend",socialCard(u,`<button class="mini-btn primary" data-social-invite="${other}">Invite</button>`));
-      }
-      pbox.querySelectorAll("[data-social-invite]").forEach(b=>b.onclick=()=>socialInvite(b.dataset.socialInvite,b));
-    }
-    async function socialInvite(toUid,b){
-      b.disabled=true;try{const me=socialAuth.currentUser.uid,sid=socialPair(me,toUid),space=await getDoc(doc(socialDb,"privateSpaces",sid));if(space.exists()){socialToast("Private room already exists.");return}const ref=doc(socialDb,"privateInvites",`${sid}__${me}`);const old=await getDoc(ref);if(old.exists()&&old.data().status==="pending")return socialToast("Invite already sent.");await setDoc(ref,{fromUid:me,toUid,status:"pending",createdAt:serverTimestamp(),updatedAt:serverTimestamp()});socialToast("Private-room invite sent.");}catch(e){console.error(e);socialToast("Could not send invite.")}finally{b.disabled=false}}
-    async function socialLoadPrivate(){
-      if(!socialAuth.currentUser)return;const uid=socialAuth.currentUser.uid,box=social$("socialPrivate");
-      const incoming=await getDocs(query(collection(socialDb,"privateInvites"),where("toUid","==",uid),where("status","==","pending"),limit(20)));
-      for(const d of incoming.docs){const r=d.data(),u=await socialProfile(r.fromUid);if(!u)continue;box.insertAdjacentHTML("afterbegin",socialCard(u,`<button class="mini-btn accept" data-social-paccept="${d.id}">Accept</button><button class="mini-btn decline" data-social-pdecline="${d.id}">Decline</button>`));}
-      box.querySelectorAll("[data-social-paccept]").forEach(b=>b.onclick=()=>socialAcceptPrivate(b.dataset.socialPaccept));
-      box.querySelectorAll("[data-social-pdecline]").forEach(b=>b.onclick=()=>socialDeclinePrivate(b.dataset.socialPdecline));
-    }
-    async function socialAcceptPrivate(id){try{const r=(await getDoc(doc(socialDb,"privateInvites",id))).data();const members=[r.fromUid,r.toUid].sort(),sid=socialPair(...members);await setDoc(doc(socialDb,"privateSpaces",sid),{members,createdBy:r.fromUid,createdAt:serverTimestamp(),status:"active",relationshipStartAt:null,relationshipUpdatedAt:null},{merge:true});await updateDoc(doc(socialDb,"privateInvites",id),{status:"accepted",updatedAt:serverTimestamp()});socialToast("Private room unlocked.");await socialLoadConnections();await socialLoadPrivate()}catch(e){console.error(e);socialToast("Could not unlock private room.")}}
-    async function socialDeclinePrivate(id){try{await updateDoc(doc(socialDb,"privateInvites",id),{status:"declined",updatedAt:serverTimestamp()});await socialLoadPrivate()}catch(e){socialToast("Could not update invite.")}}
-    async function socialInit(){
-      if(!socialAuth.currentUser)return; const uid=await socialEnsureUid(); social$("socialUserPill").textContent=uid?`UID ${uid}`:"UID unavailable";
-      await socialLoadRequests();await socialLoadConnections();await socialLoadPrivate();
-      social$("socialSearchBtn").onclick=socialSearch;
-      social$("socialSearchInput").onkeydown=e=>{if(e.key==="Enter")socialSearch()};
-    }
-    social$("socialSearchBtn").addEventListener("click",()=>{});
-    socialAuth.onAuthStateChanged(u=>{if(u)socialInit();});
-  </script>
 
   <!-- TOAST -->
   <div
