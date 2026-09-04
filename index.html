@@ -2,114 +2,273 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#fff7fb" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover"
+  />
   <title>Our Little Universe</title>
 
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600&display=swap');
+    :root {
+      --bg: #f8f6f8;
+      --card: rgba(255, 255, 255, 0.78);
+      --card-solid: #ffffff;
+      --text: #17151a;
+      --muted: #77727c;
+      --line: rgba(25, 20, 30, 0.08);
+      --pink: #ff4f93;
+      --pink-dark: #e73579;
+      --pink-soft: #ffdceb;
+      --shadow: 0 16px 45px rgba(44, 25, 42, 0.08);
+      --radius: 24px;
+    }
 
     * {
       box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    :root {
-      --pink: #e96b9b;
-      --pink-dark: #c94f80;
-      --pink-soft: #fff0f6;
-      --text: #27232a;
-      --muted: #8d858c;
-      --white: rgba(255,255,255,.82);
-      --border: rgba(80,40,60,.08);
-      --shadow: 0 12px 40px rgba(160,70,110,.10);
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
-      min-height: 100vh;
+      margin: 0;
+      font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
       background:
-        radial-gradient(circle at 10% 5%, rgba(255,185,214,.38), transparent 28%),
-        radial-gradient(circle at 90% 15%, rgba(255,216,231,.45), transparent 25%),
-        linear-gradient(135deg, #fff9fc, #fff2f7);
+        radial-gradient(circle at 10% 0%, rgba(255, 120, 176, 0.18), transparent 28%),
+        radial-gradient(circle at 100% 10%, rgba(190, 135, 255, 0.16), transparent 24%),
+        var(--bg);
       color: var(--text);
-      font-family: "DM Sans", sans-serif;
+      min-height: 100vh;
+    }
+
+    button,
+    input {
+      font: inherit;
     }
 
     button {
-      font-family: inherit;
       border: 0;
       cursor: pointer;
     }
 
-    /* ---------- TOP BAR ---------- */
+    .hidden {
+      display: none !important;
+    }
+
+    /* =========================
+       LOGIN
+    ========================== */
+
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(60px);
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    .blob.one {
+      width: 240px;
+      height: 240px;
+      background: #ff9fc5;
+      top: -60px;
+      left: -50px;
+    }
+
+    .blob.two {
+      width: 230px;
+      height: 230px;
+      background: #c7a7ff;
+      bottom: -70px;
+      right: -40px;
+    }
+
+    .login-card {
+      width: min(430px, 100%);
+      padding: 32px 24px 26px;
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 30px;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(24px);
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 2;
+    }
+
+    .logo-mark {
+      width: 58px;
+      height: 58px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 17px;
+      background: linear-gradient(135deg, #ff4f93, #ff78aa 45%, #b783ff);
+      color: white;
+      box-shadow: 0 14px 28px rgba(255, 79, 147, 0.25);
+    }
+
+    .logo-mark svg {
+      width: 27px;
+      height: 27px;
+    }
+
+    .login-card h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 28px;
+      letter-spacing: -0.8px;
+    }
+
+    .login-subtitle {
+      margin: 9px auto 26px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 290px;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field label {
+      display: block;
+      margin: 0 0 7px 5px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #55505a;
+    }
+
+    .field input {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.88);
+      border-radius: 16px;
+      padding: 14px 15px;
+      outline: none;
+      color: var(--text);
+      transition: 0.2s;
+    }
+
+    .field input:focus {
+      border-color: rgba(255, 79, 147, 0.5);
+      box-shadow: 0 0 0 4px rgba(255,79,147,0.09);
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px 18px;
+      margin-top: 6px;
+      border-radius: 16px;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(135deg, #ff4f93, #e73579);
+      box-shadow: 0 12px 24px rgba(231, 53, 121, 0.22);
+      transition: transform .18s ease, opacity .18s ease;
+    }
+
+    .login-btn:active {
+      transform: scale(0.985);
+    }
+
+    .login-error {
+      min-height: 20px;
+      margin-top: 12px;
+      text-align: center;
+      color: #d92e60;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* =========================
+       APP
+    ========================== */
+
+    #app {
+      min-height: 100vh;
+      padding-bottom: 88px;
+    }
 
     .topbar {
       position: sticky;
       top: 0;
-      z-index: 100;
-      height: 68px;
+      z-index: 30;
+      height: 72px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
-      background: rgba(255,250,252,.78);
-      backdrop-filter: blur(20px);
-      border-bottom: 1px solid var(--border);
+      padding: 0 18px;
+      background: rgba(248,246,248,0.82);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
     }
 
     .brand {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 25px;
+      font-weight: 700;
+      letter-spacing: -0.6px;
+    }
+
+    .top-icons {
       display: flex;
       align-items: center;
-      gap: 11px;
+      gap: 8px;
     }
 
-    .brand-mark {
-      width: 38px;
-      height: 38px;
-      border-radius: 13px;
-      display: grid;
-      place-items: center;
-      color: white;
-      font-size: 15px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #f39abb, #d95c8c);
-      box-shadow: 0 7px 18px rgba(217,92,140,.25);
-    }
-
-    .brand-name {
-      font-family: "Playfair Display", serif;
-      font-size: 19px;
-    }
-
-    .top-action {
+    .icon-btn {
       width: 40px;
       height: 40px;
-      border-radius: 50%;
-      background: rgba(255,255,255,.8);
-      border: 1px solid var(--border);
-      color: var(--pink-dark);
-      font-size: 17px;
+      border-radius: 13px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid var(--line);
+      display: grid;
+      place-items: center;
+      color: var(--text);
     }
 
-    /* ---------- MAIN ---------- */
+    .icon-btn svg {
+      width: 19px;
+      height: 19px;
+    }
 
-    main {
-      width: min(760px, 100%);
-      margin: auto;
-      padding: 24px 16px 100px;
+    .content {
+      width: min(720px, 100%);
+      margin: 0 auto;
+      padding: 18px 14px;
     }
 
     .section {
       display: none;
-      animation: fade .3s ease;
     }
 
     .section.active {
       display: block;
+      animation: fadeUp .28s ease;
     }
 
-    @keyframes fade {
+    @keyframes fadeUp {
       from {
         opacity: 0;
         transform: translateY(7px);
@@ -120,455 +279,623 @@
       }
     }
 
-    /* ---------- PROFILE ---------- */
+    /* =========================
+       HOME
+    ========================== */
 
-    .profile-card {
-      padding: 22px;
-      border-radius: 25px;
-      background: var(--white);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-
-    .profile {
+    .profile-head {
       display: flex;
       align-items: center;
-      gap: 17px;
+      gap: 15px;
+      padding: 6px 2px 18px;
     }
 
-    .profile-photo {
-      width: 72px;
-      height: 72px;
-      border-radius: 50%;
-      padding: 3px;
-      background: linear-gradient(135deg, #f2a4c1, #c95283);
-    }
-
-    .profile-photo-inner {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #ffe4ef, #fff);
-      display: grid;
-      place-items: center;
-      color: var(--pink-dark);
-      font-size: 24px;
-    }
-
-    .profile-info h1 {
-      font-size: 21px;
-      margin-bottom: 4px;
-    }
-
-    .profile-info p {
-      color: var(--muted);
-      font-size: 13px;
-    }
-
-    .stats {
-      display: flex;
-      gap: 30px;
-      margin-top: 20px;
-      padding-top: 17px;
-      border-top: 1px solid var(--border);
-    }
-
-    .stat strong {
-      display: block;
-      font-size: 17px;
-    }
-
-    .stat span {
-      color: var(--muted);
-      font-size: 12px;
-    }
-
-    /* ---------- STORIES ---------- */
-
-    .stories-title {
-      margin: 27px 3px 12px;
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .stories {
-      display: flex;
-      gap: 14px;
-      overflow-x: auto;
-      padding: 4px 2px 10px;
-      scrollbar-width: none;
-    }
-
-    .stories::-webkit-scrollbar {
-      display: none;
-    }
-
-    .story {
-      flex: 0 0 auto;
-      text-align: center;
+    .avatar {
       width: 66px;
-    }
-
-    .story-ring {
-      width: 62px;
-      height: 62px;
-      padding: 2px;
+      height: 66px;
       border-radius: 50%;
-      background: linear-gradient(135deg,#ef9dbc,#d55b8b);
-      margin: auto auto 7px;
+      padding: 2px;
+      background: linear-gradient(135deg, #ff4f93, #b783ff);
+      flex: 0 0 auto;
     }
 
-    .story-inner {
+    .avatar-inner {
       width: 100%;
       height: 100%;
       border-radius: 50%;
       background: #fff;
       display: grid;
       place-items: center;
-      color: var(--pink-dark);
-      font-size: 17px;
+      overflow: hidden;
+      color: #ff4f93;
+    }
+
+    .avatar-inner svg {
+      width: 30px;
+      height: 30px;
+    }
+
+    .profile-info {
+      min-width: 0;
+    }
+
+    .profile-info h2 {
+      margin: 0 0 3px;
+      font-size: 19px;
+      letter-spacing: -0.3px;
+    }
+
+    .profile-info p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .status-chip {
+      margin-left: auto;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 11px;
+      font-weight: 800;
+      color: #4b4650;
+    }
+
+    .story-row {
+      display: flex;
+      gap: 15px;
+      overflow-x: auto;
+      padding: 3px 0 20px;
+      scrollbar-width: none;
+    }
+
+    .story-row::-webkit-scrollbar {
+      display: none;
+    }
+
+    .story {
+      min-width: 72px;
+      text-align: center;
+    }
+
+    .story-ring {
+      width: 62px;
+      height: 62px;
+      margin: 0 auto 7px;
+      padding: 2px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4f93, #ffbcdb, #9b7aff);
+    }
+
+    .story-circle {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      color: #ff4f93;
+      overflow: hidden;
+    }
+
+    .story-circle svg {
+      width: 25px;
+      height: 25px;
     }
 
     .story span {
       font-size: 11px;
-      color: var(--muted);
+      color: #5d5762;
+      font-weight: 650;
     }
 
-    /* ---------- POSTS ---------- */
-
-    .post {
-      margin-top: 18px;
+    .hero-card {
+      border-radius: 27px;
       overflow: hidden;
-      border-radius: 24px;
-      background: rgba(255,255,255,.86);
-      border: 1px solid var(--border);
+      position: relative;
+      min-height: 310px;
+      background:
+        linear-gradient(135deg, rgba(255,79,147,.9), rgba(135,96,215,.8)),
+        radial-gradient(circle at 20% 30%, #fff, transparent 30%);
       box-shadow: var(--shadow);
-    }
-
-    .post-head {
+      padding: 24px;
       display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 14px 16px;
+      align-items: flex-end;
     }
 
-    .mini-avatar {
-      width: 36px;
-      height: 36px;
+    .hero-card::before,
+    .hero-card::after {
+      content: "";
+      position: absolute;
       border-radius: 50%;
-      background: linear-gradient(135deg,#ffd8e7,#f1a3c0);
-      display: grid;
-      place-items: center;
-      color: var(--pink-dark);
+      border: 1px solid rgba(255,255,255,.24);
+    }
+
+    .hero-card::before {
+      width: 220px;
+      height: 220px;
+      right: -60px;
+      top: -55px;
+    }
+
+    .hero-card::after {
+      width: 150px;
+      height: 150px;
+      left: -45px;
+      bottom: -60px;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      color: #fff;
+    }
+
+    .hero-copy .eyebrow {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      opacity: .85;
+    }
+
+    .hero-copy h3 {
+      margin: 7px 0 8px;
+      font-size: 30px;
+      letter-spacing: -1px;
+      line-height: 1.05;
+      max-width: 380px;
+    }
+
+    .hero-copy p {
+      margin: 0;
+      max-width: 390px;
+      line-height: 1.5;
       font-size: 13px;
+      opacity: .9;
+    }
+
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .quick-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.7);
+      box-shadow: var(--shadow);
+      border-radius: 21px;
+      padding: 17px;
+    }
+
+    .quick-card small {
+      display: block;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-size: 11px;
       font-weight: 700;
     }
 
-    .post-head strong {
+    .quick-card strong {
+      font-size: 15px;
+    }
+
+    /* =========================
+       MEMORIES
+    ========================== */
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin: 10px 2px 15px;
+    }
+
+    .section-title h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: -0.6px;
+    }
+
+    .section-title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .memory-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .memory-card {
+      overflow: hidden;
+      background: var(--card-solid);
+      border: 1px solid var(--line);
+      border-radius: 23px;
+      box-shadow: var(--shadow);
+    }
+
+    .memory-top {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 14px;
+    }
+
+    .mini-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, #ff4f93, #9d7afe);
+    }
+
+    .memory-user {
+      flex: 1;
+    }
+
+    .memory-user strong {
+      display: block;
       font-size: 13px;
     }
 
-    .post-head small {
+    .memory-user span {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .memory-image-wrap {
+      background: #f3edf2;
+      aspect-ratio: 4 / 5;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .memory-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .memory-placeholder {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      color: #958c99;
+      font-size: 13px;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .memory-actions {
+      display: flex;
+      gap: 8px;
+      padding: 13px 14px 4px;
+    }
+
+    .memory-action {
+      width: 37px;
+      height: 37px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: #faf8fa;
+      border: 1px solid var(--line);
+    }
+
+    .memory-action svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .memory-caption {
+      padding: 3px 14px 16px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .memory-caption b {
+      margin-right: 5px;
+    }
+
+    /* =========================
+       CHAT
+    ========================== */
+
+    .chat-shell {
+      height: calc(100vh - 120px);
+      min-height: 520px;
+      display: flex;
+      flex-direction: column;
+      background: rgba(255,255,255,.72);
+      border: 1px solid rgba(255,255,255,.8);
+      box-shadow: var(--shadow);
+      border-radius: 27px;
+      overflow: hidden;
+    }
+
+    .chat-head {
+      padding: 14px 15px;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,.73);
+    }
+
+    .chat-head-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff4f93, #9f7dfc);
+      color: #fff;
+      display: grid;
+      place-items: center;
+    }
+
+    .chat-head-info {
+      flex: 1;
+    }
+
+    .chat-head-info strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .chat-head-info span {
+      font-size: 11px;
+      color: #35a66f;
+      font-weight: 750;
+    }
+
+    #messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px 13px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      scroll-behavior: smooth;
+    }
+
+    .date-divider {
+      text-align: center;
+      color: #aaa2ad;
+      font-size: 10px;
+      margin: 4px 0 8px;
+    }
+
+    .message {
+      max-width: min(78%, 340px);
+      padding: 10px 13px;
+      border-radius: 17px;
+      font-size: 13px;
+      line-height: 1.45;
+      word-break: break-word;
+    }
+
+    .message.sent {
+      align-self: flex-end;
+      color: #fff;
+      background: linear-gradient(135deg, #ff4f93, #e73579);
+      border-bottom-right-radius: 5px;
+      box-shadow: 0 8px 17px rgba(231,53,121,.15);
+    }
+
+    .message.received {
+      align-self: flex-start;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-bottom-left-radius: 5px;
+    }
+
+    .empty-chat {
+      margin: auto;
+      text-align: center;
+      color: #8d858f;
+      font-size: 13px;
+      max-width: 230px;
+      line-height: 1.5;
+    }
+
+    .chat-input-row {
+      padding: 11px;
+      display: flex;
+      gap: 8px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,.78);
+    }
+
+    .chat-input {
+      min-width: 0;
+      flex: 1;
+      border: 1px solid var(--line);
+      border-radius: 15px;
+      outline: none;
+      padding: 12px 13px;
+      background: #fbfafb;
+    }
+
+    .send-btn {
+      width: 46px;
+      min-width: 46px;
+      border-radius: 15px;
+      color: #fff;
+      background: linear-gradient(135deg, #ff4f93, #e73579);
+      display: grid;
+      place-items: center;
+    }
+
+    .send-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* =========================
+       MORE
+    ========================== */
+
+    .more-card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,.8);
+      box-shadow: var(--shadow);
+      border-radius: 25px;
+      overflow: hidden;
+    }
+
+    .more-header {
+      padding: 22px;
+      background:
+        linear-gradient(135deg, rgba(255,79,147,.14), rgba(163,123,255,.11));
+    }
+
+    .more-header h2 {
+      margin: 0 0 5px;
+      font-size: 22px;
+    }
+
+    .more-header p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .setting-row {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-align: left;
+      padding: 16px 18px;
+      background: transparent;
+      border-top: 1px solid var(--line);
+      color: var(--text);
+    }
+
+    .setting-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: #fff;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--line);
+    }
+
+    .setting-icon svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .setting-copy {
+      flex: 1;
+    }
+
+    .setting-copy strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .setting-copy span {
       display: block;
       color: var(--muted);
       font-size: 11px;
       margin-top: 2px;
     }
 
-    .photo-placeholder {
-      width: 100%;
-      aspect-ratio: 1 / 1;
-      background:
-        linear-gradient(135deg, rgba(244,160,194,.28), rgba(255,225,238,.7)),
-        radial-gradient(circle at 30% 25%, #fff, transparent 30%);
-      display: grid;
-      place-items: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .photo-placeholder::before,
-    .photo-placeholder::after {
-      content: "";
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,.35);
-    }
-
-    .photo-placeholder::before {
-      width: 180px;
-      height: 180px;
-      top: -50px;
-      right: -30px;
-    }
-
-    .photo-placeholder::after {
-      width: 130px;
-      height: 130px;
-      bottom: -40px;
-      left: -20px;
-    }
-
-    .placeholder-text {
-      position: relative;
-      z-index: 2;
-      text-align: center;
-      color: var(--pink-dark);
-    }
-
-    .placeholder-text .icon {
-      font-size: 27px;
-      margin-bottom: 8px;
-    }
-
-    .placeholder-text p {
-      font-size: 12px;
-      opacity: .75;
-    }
-
-    .post-actions {
-      display: flex;
-      gap: 17px;
-      padding: 14px 16px 7px;
-    }
-
-    .post-actions button {
-      background: none;
-      color: #5f565d;
-      font-size: 19px;
-    }
-
-    .post-caption {
-      padding: 0 16px 17px;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    /* ---------- MEMORIES ---------- */
-
-    .page-heading {
-      margin-bottom: 20px;
-    }
-
-    .page-heading h2 {
-      font-family: "Playfair Display", serif;
-      font-size: 28px;
-    }
-
-    .page-heading p {
-      color: var(--muted);
-      font-size: 13px;
-      margin-top: 5px;
-    }
-
-    .memory-grid {
-      display: grid;
-      grid-template-columns: repeat(2,1fr);
-      gap: 12px;
-    }
-
-    .memory {
-      aspect-ratio: 1;
-      border-radius: 19px;
-      overflow: hidden;
-      position: relative;
-      background: linear-gradient(145deg,#f8c2d8,#fff1f6);
-      border: 1px solid var(--border);
-    }
-
-    .memory:nth-child(2) {
-      background: linear-gradient(145deg,#fbdbe8,#f5b4cc);
-    }
-
-    .memory:nth-child(3) {
-      background: linear-gradient(145deg,#f9e4ed,#f2bfd4);
-    }
-
-    .memory:nth-child(4) {
-      background: linear-gradient(145deg,#ffd7e6,#ffeef5);
-    }
-
-    .memory-content {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: flex-end;
-      padding: 13px;
-      background: linear-gradient(transparent 45%,rgba(45,20,35,.48));
-      color: white;
-    }
-
-    .memory-content span {
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    /* ---------- CHAT ---------- */
-
-    .chat-card {
-      border-radius: 25px;
-      overflow: hidden;
-      background: rgba(255,255,255,.78);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow);
-    }
-
-    .chat-head {
-      padding: 18px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .online {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #65c58b;
-      box-shadow: 0 0 0 4px rgba(101,197,139,.12);
-      margin-left: auto;
-    }
-
-    .messages {
-      min-height: 430px;
-      max-height: 58vh;
-      overflow-y: auto;
-      padding: 20px 15px;
-      display: flex;
-      flex-direction: column;
-      gap: 9px;
-    }
-
-    .message {
-      max-width: 75%;
-      padding: 10px 14px;
-      border-radius: 18px;
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .received {
-      align-self: flex-start;
-      background: #f5edf1;
-      border-bottom-left-radius: 5px;
-    }
-
-    .sent {
-      align-self: flex-end;
-      color: white;
-      background: linear-gradient(135deg,#ec8fb2,#d75d8d);
-      border-bottom-right-radius: 5px;
-    }
-
-    .chat-input {
-      display: flex;
-      gap: 8px;
-      padding: 12px;
-      border-top: 1px solid var(--border);
-    }
-
-    .chat-input input {
-      flex: 1;
-      border: 0;
-      outline: 0;
-      background: #f7f1f4;
-      border-radius: 22px;
-      padding: 12px 15px;
-      font-family: inherit;
-      font-size: 13px;
-    }
-
-    .send {
-      width: 43px;
-      height: 43px;
-      border-radius: 50%;
-      background: var(--pink);
-      color: white;
-    }
-
-    /* ---------- MORE ---------- */
-
-    .setting-card {
-      padding: 17px;
-      border-radius: 20px;
-      background: rgba(255,255,255,.8);
-      border: 1px solid var(--border);
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 13px;
-    }
-
-    .setting-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 13px;
-      display: grid;
-      place-items: center;
-      background: var(--pink-soft);
-      color: var(--pink-dark);
-    }
-
-    .setting-card div:last-child {
-      font-size: 13px;
-    }
-
-    .setting-card small {
-      display: block;
-      color: var(--muted);
-      margin-top: 3px;
-    }
-
-    /* ---------- NAV ---------- */
+    /* =========================
+       BOTTOM NAV
+    ========================== */
 
     .bottom-nav {
       position: fixed;
-      bottom: 0;
       left: 50%;
+      bottom: 12px;
       transform: translateX(-50%);
-      z-index: 100;
-      width: min(760px,100%);
-      height: 72px;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background: rgba(255,250,252,.84);
-      backdrop-filter: blur(22px);
-      border-top: 1px solid var(--border);
+      width: min(460px, calc(100% - 20px));
+      height: 64px;
+      background: rgba(255,255,255,.87);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,.9);
+      border-radius: 22px;
+      box-shadow: 0 14px 40px rgba(36, 21, 33, 0.12);
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      z-index: 50;
+      padding: 6px;
     }
 
     .nav-btn {
-      background: none;
-      color: #9b9298;
-      font-size: 21px;
-      width: 58px;
-      height: 58px;
-      border-radius: 18px;
-      transition: .2s;
+      border-radius: 17px;
+      background: transparent;
+      color: #8a838d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      font-size: 10px;
+      font-weight: 700;
     }
 
-    .nav-btn span {
-      display: block;
-      font-size: 9px;
-      margin-top: 4px;
-      font-weight: 600;
+    .nav-btn svg {
+      width: 19px;
+      height: 19px;
     }
 
     .nav-btn.active {
-      color: var(--pink-dark);
-      background: #fff0f6;
+      color: #ff4f93;
+      background: #fff3f8;
     }
 
-    /* ---------- RESPONSIVE ---------- */
+    /* =========================
+       LOADING
+    ========================== */
 
-    @media (min-width: 650px) {
-      main {
-        padding-top: 35px;
+    .loading-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+    }
+
+    .loader {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #ffd5e5;
+      border-top-color: #ff4f93;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (min-width: 760px) {
+      .content {
+        padding-top: 24px;
       }
 
-      .memory-grid {
-        grid-template-columns: repeat(3,1fr);
+      .hero-card {
+        min-height: 350px;
+      }
+
+      .bottom-nav {
+        bottom: 18px;
       }
     }
   </style>
@@ -576,329 +903,697 @@
 
 <body>
 
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-mark">OU</div>
-      <div class="brand-name">Our Little Universe</div>
+  <!-- Loading -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+  </div>
+
+  <!-- Login -->
+  <section id="loginScreen" class="hidden">
+    <div class="blob one"></div>
+    <div class="blob two"></div>
+
+    <div class="login-card">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M20.8 8.8c0 5.4-8.8 10.1-8.8 10.1S3.2 14.2 3.2 8.8A4.3 4.3 0 0 1 12 6.2a4.3 4.3 0 0 1 8.8 2.6Z"/>
+        </svg>
+      </div>
+
+      <h1>Our Little Universe</h1>
+
+      <p class="login-subtitle">
+        A private little space for memories, messages and moments.
+      </p>
+
+      <div class="field">
+        <label for="email">EMAIL</label>
+        <input
+          id="email"
+          type="email"
+          autocomplete="email"
+          placeholder="Enter your email"
+        />
+      </div>
+
+      <div class="field">
+        <label for="password">PASSWORD</label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          placeholder="Enter your password"
+        />
+      </div>
+
+      <button class="login-btn" onclick="login()">
+        Sign in
+      </button>
+
+      <div id="loginError" class="login-error"></div>
     </div>
+  </section>
 
-    <button class="top-action" onclick="showSection('more', this)">⋯</button>
-  </header>
+  <!-- Main App -->
+  <main id="app" class="hidden">
 
-  <main>
+    <header class="topbar">
+      <div class="brand">Our Little Universe</div>
 
-    <!-- HOME -->
-    <section id="home" class="section active">
+      <div class="top-icons">
+        <button class="icon-btn" onclick="showSection('chat')" aria-label="Chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.6 8.6 0 0 1-4-.9L4 19l1.2-3.3A7.2 7.2 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
 
-      <div class="profile-card">
-        <div class="profile">
-          <div class="profile-photo">
-            <div class="profile-photo-inner">♡</div>
+    <div class="content">
+
+      <!-- HOME -->
+      <section id="homeSection" class="section active">
+
+        <div class="profile-head">
+          <div class="avatar">
+            <div class="avatar-inner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <circle cx="12" cy="8" r="3.2"/>
+                <path d="M5.4 19.2c.8-3.4 3-5.1 6.6-5.1s5.8 1.7 6.6 5.1"/>
+              </svg>
+            </div>
           </div>
 
           <div class="profile-info">
-            <h1>Our Little Universe</h1>
-            <p>A private space for two.</p>
+            <h2>Our Universe</h2>
+            <p id="welcomeUser">Private shared space</p>
           </div>
+
+          <div class="status-chip">PRIVATE</div>
         </div>
 
-        <div class="stats">
-          <div class="stat">
-            <strong>∞</strong>
+        <div class="story-row">
+          <div class="story">
+            <div class="story-ring">
+              <div class="story-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <circle cx="12" cy="12" r="8"/>
+                  <path d="M12 8v8M8 12h8"/>
+                </svg>
+              </div>
+            </div>
+            <span>Moments</span>
+          </div>
+
+          <div class="story">
+            <div class="story-ring">
+              <div class="story-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M4 17.5 8.5 13l3 2.8 4.5-5.3L20 14.8"/>
+                  <rect x="4" y="4" width="16" height="16" rx="3"/>
+                </svg>
+              </div>
+            </div>
             <span>Memories</span>
           </div>
 
-          <div class="stat">
-            <strong>2</strong>
-            <span>People</span>
+          <div class="story">
+            <div class="story-ring">
+              <div class="story-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <path d="M20.8 8.8c0 5.4-8.8 10.1-8.8 10.1S3.2 14.2 3.2 8.8A4.3 4.3 0 0 1 12 6.2a4.3 4.3 0 0 1 8.8 2.6Z"/>
+                </svg>
+              </div>
+            </div>
+            <span>Little things</span>
           </div>
 
-          <div class="stat">
-            <strong>♡</strong>
-            <span>Universe</span>
+          <div class="story">
+            <div class="story-ring">
+              <div class="story-circle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <circle cx="12" cy="12" r="8"/>
+                  <path d="M12 7v5l3 2"/>
+                </svg>
+              </div>
+            </div>
+            <span>Us</span>
           </div>
         </div>
-      </div>
 
-      <div class="stories-title">Our moments</div>
-
-      <div class="stories">
-        <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">+</div>
+        <div class="hero-card">
+          <div class="hero-copy">
+            <div class="eyebrow">PRIVATE • SHARED • REAL-TIME</div>
+            <h3>One little corner of the internet.</h3>
+            <p>
+              Keep the memories close, send messages instantly,
+              and make this space yours.
+            </p>
           </div>
-          <span>Add</span>
         </div>
 
-        <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">01</div>
+        <div class="quick-grid">
+          <div class="quick-card">
+            <small>MEMORIES</small>
+            <strong>Shared moments 📸</strong>
           </div>
-          <span>Firsts</span>
+
+          <div class="quick-card">
+            <small>CHAT</small>
+            <strong>Live messages 💬</strong>
+          </div>
         </div>
 
-        <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">02</div>
-          </div>
-          <span>Us</span>
-        </div>
+      </section>
 
-        <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">03</div>
-          </div>
-          <span>Days</span>
-        </div>
+      <!-- MEMORIES -->
+      <section id="memoriesSection" class="section">
 
-        <div class="story">
-          <div class="story-ring">
-            <div class="story-inner">04</div>
-          </div>
-          <span>Favs</span>
-        </div>
-      </div>
-
-      <article class="post">
-        <div class="post-head">
-          <div class="mini-avatar">OU</div>
+        <div class="section-title">
           <div>
-            <strong>Our Little Universe</strong>
-            <small>Shared memory</small>
+            <h2>Memories</h2>
+            <p>Your shared little gallery.</p>
           </div>
         </div>
 
-        <div class="photo-placeholder">
-          <div class="placeholder-text">
-            <div class="icon">＋</div>
-            <p>Your first memory will live here</p>
-          </div>
+        <div id="memoryList" class="memory-list">
+
+          <article class="memory-card">
+            <div class="memory-top">
+              <div class="mini-avatar">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                  <circle cx="12" cy="8" r="3.1"/>
+                  <path d="M5.5 19c.7-3.3 2.9-5 6.5-5s5.8 1.7 6.5 5"/>
+                </svg>
+              </div>
+
+              <div class="memory-user">
+                <strong>Our Little Universe</strong>
+                <span>Shared memory</span>
+              </div>
+            </div>
+
+            <div class="memory-image-wrap">
+              <div class="memory-placeholder">
+                Your shared photos will appear here.
+              </div>
+            </div>
+
+            <div class="memory-actions">
+              <button class="memory-action" aria-label="Like">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                  <path d="M20.8 8.8c0 5.4-8.8 10.1-8.8 10.1S3.2 14.2 3.2 8.8A4.3 4.3 0 0 1 12 6.2a4.3 4.3 0 0 1 8.8 2.6Z"/>
+                </svg>
+              </button>
+
+              <button class="memory-action" onclick="showSection('chat')" aria-label="Comment">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                  <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.6 8.6 0 0 1-4-.9L4 19l1.2-3.3A7.2 7.2 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
+                </svg>
+              </button>
+            </div>
+
+            <div class="memory-caption">
+              <b>Our memories</b>
+              The gallery is ready for your shared moments.
+            </div>
+          </article>
+
         </div>
+      </section>
 
-        <div class="post-actions">
-          <button>♡</button>
-          <button onclick="showSection('chat')">○</button>
-          <button>⌁</button>
-        </div>
+      <!-- CHAT -->
+      <section id="chatSection" class="section">
 
-        <div class="post-caption">
-          <strong>Our space.</strong>
-          A private little corner for everything worth remembering.
-        </div>
-      </article>
+        <div class="chat-shell">
 
-    </section>
+          <div class="chat-head">
+            <div class="chat-head-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.6 8.6 0 0 1-4-.9L4 19l1.2-3.3A7.2 7.2 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
+              </svg>
+            </div>
 
-
-    <!-- MEMORIES -->
-    <section id="memories" class="section">
-
-      <div class="page-heading">
-        <h2>Memories</h2>
-        <p>Every picture has a place here.</p>
-      </div>
-
-      <div class="memory-grid">
-
-        <div class="memory">
-          <div class="memory-content">
-            <span>Our first memory</span>
-          </div>
-        </div>
-
-        <div class="memory">
-          <div class="memory-content">
-            <span>A day worth keeping</span>
-          </div>
-        </div>
-
-        <div class="memory">
-          <div class="memory-content">
-            <span>Just us</span>
-          </div>
-        </div>
-
-        <div class="memory">
-          <div class="memory-content">
-            <span>Another chapter</span>
-          </div>
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- CHAT -->
-    <section id="chat" class="section">
-
-      <div class="page-heading">
-        <h2>Our Chat</h2>
-        <p>A private conversation between two people.</p>
-      </div>
-
-      <div class="chat-card">
-
-        <div class="chat-head">
-          <div class="mini-avatar">♡</div>
-
-          <div>
-            <strong>Our conversation</strong>
-            <small style="display:block;color:#8d858c;margin-top:3px;">
-              Private
-            </small>
+            <div class="chat-head-info">
+              <strong>Our Chat</strong>
+              <span>● Live</span>
+            </div>
           </div>
 
-          <div class="online"></div>
-        </div>
-
-        <div class="messages" id="messages">
-
-          <div class="message received">
-            Your messages will appear here.
+          <div id="messages">
+            <div class="empty-chat" id="emptyChat">
+              Send the first message. It will appear here in real time.
+            </div>
           </div>
 
-          <div class="message sent">
-            And they'll update in real time.
+          <div class="chat-input-row">
+            <input
+              id="messageInput"
+              class="chat-input"
+              type="text"
+              maxlength="1000"
+              placeholder="Write something..."
+              autocomplete="off"
+            />
+
+            <button class="send-btn" onclick="sendMessage()" aria-label="Send">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="m4 4 16 8-16 8 3-8-3-8Z"/>
+                <path d="M7 12h13"/>
+              </svg>
+            </button>
           </div>
 
         </div>
+      </section>
 
-        <div class="chat-input">
-          <input
-            id="messageInput"
-            type="text"
-            placeholder="Write something..."
-            onkeydown="handleEnter(event)"
-          />
+      <!-- MORE -->
+      <section id="moreSection" class="section">
 
-          <button class="send" onclick="sendDemoMessage()">↑</button>
+        <div class="more-card">
+
+          <div class="more-header">
+            <h2>More</h2>
+            <p>
+              Your private space is connected to Firebase Authentication
+              and Firestore.
+            </p>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                <path d="M12 3v18M3 12h18"/>
+              </svg>
+            </div>
+
+            <div class="setting-copy">
+              <strong>Private access</strong>
+              <span>Only the two approved accounts can use Firestore.</span>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                <path d="M4 12a8 8 0 0 1 16 0c0 4.4-3.6 8-8 8H7l-3 1 1-3a7.9 7.9 0 0 1-1-6Z"/>
+              </svg>
+            </div>
+
+            <div class="setting-copy">
+              <strong>Real-time chat</strong>
+              <span>Messages sync through Cloud Firestore.</span>
+            </div>
+          </div>
+
+          <button class="setting-row" onclick="logout()">
+            <div class="setting-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+                <path d="M10 17l5-5-5-5"/>
+                <path d="M15 12H3"/>
+                <path d="M21 4v16"/>
+              </svg>
+            </div>
+
+            <div class="setting-copy">
+              <strong>Log out</strong>
+              <span>Sign out of this account.</span>
+            </div>
+          </button>
+
         </div>
+      </section>
 
-      </div>
+    </div>
 
-    </section>
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
 
+      <button class="nav-btn active" data-section="home" onclick="showSection('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10Z"/>
+        </svg>
+        Home
+      </button>
 
-    <!-- MORE -->
-    <section id="more" class="section">
+      <button class="nav-btn" data-section="memories" onclick="showSection('memories')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <rect x="4" y="4" width="16" height="16" rx="3"/>
+          <circle cx="9" cy="9" r="1.5"/>
+          <path d="m5 16 4-4 3 3 2-2 5 5"/>
+        </svg>
+        Memories
+      </button>
 
-      <div class="page-heading">
-        <h2>Little things</h2>
-        <p>Small details that make this place ours.</p>
-      </div>
+      <button class="nav-btn" data-section="chat" onclick="showSection('chat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <path d="M20 11.5a7.5 7.5 0 0 1-8 7.5 8.6 8.6 0 0 1-4-.9L4 19l1.2-3.3A7.2 7.2 0 0 1 4 11.5 7.5 7.5 0 0 1 12 4a7.5 7.5 0 0 1 8 7.5Z"/>
+        </svg>
+        Chat
+      </button>
 
-      <div class="setting-card">
-        <div class="setting-icon">♡</div>
-        <div>
-          <strong>Our Universe</strong>
-          <small>Private space for two</small>
-        </div>
-      </div>
+      <button class="nav-btn" data-section="more" onclick="showSection('more')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="5" cy="12" r="1.3"/>
+          <circle cx="12" cy="12" r="1.3"/>
+          <circle cx="19" cy="12" r="1.3"/>
+        </svg>
+        More
+      </button>
 
-      <div class="setting-card">
-        <div class="setting-icon">▣</div>
-        <div>
-          <strong>Shared Memories</strong>
-          <small>Photos and moments we keep</small>
-        </div>
-      </div>
-
-      <div class="setting-card">
-        <div class="setting-icon">⌁</div>
-        <div>
-          <strong>Real-time Chat</strong>
-          <small>Messages without refreshing</small>
-        </div>
-      </div>
-
-    </section>
-
+    </nav>
   </main>
 
+  <script type="module">
 
-  <!-- BOTTOM NAV -->
+    /* ==========================================
+       FIREBASE IMPORTS
+    ========================================== */
 
-  <nav class="bottom-nav">
+    import { initializeApp }
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js";
 
-    <button class="nav-btn active" onclick="showSection('home', this)">
-      ⌂
-      <span>Home</span>
-    </button>
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      onAuthStateChanged,
+      signOut
+    }
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js";
 
-    <button class="nav-btn" onclick="showSection('memories', this)">
-      ▣
-      <span>Memories</span>
-    </button>
-
-    <button class="nav-btn" onclick="showSection('chat', this)">
-      ○
-      <span>Chat</span>
-    </button>
-
-    <button class="nav-btn" onclick="showSection('more', this)">
-      ☰
-      <span>More</span>
-    </button>
-
-  </nav>
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      query,
+      orderBy,
+      onSnapshot,
+      serverTimestamp
+    }
+      from "https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js";
 
 
-  <script>
+    /* ==========================================
+       FIREBASE CONFIG
+    ========================================== */
 
-    function showSection(sectionName, button) {
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyw5c-W1BYIr8tmAqBEnLxw3zVEBUMxAw",
+      authDomain: "our-universe-8229c.firebaseapp.com",
+      projectId: "our-universe-8229c",
+      storageBucket: "our-universe-8229c.firebasestorage.app",
+      messagingSenderId: "23799640027",
+      appId: "1:23799640027:web:ca783565b32c9fbfecc1fe",
+      measurementId: "G-226GWG3N4M"
+    };
 
-      document.querySelectorAll(".section").forEach(section => {
-        section.classList.remove("active");
+
+    /* ==========================================
+       INITIALIZE FIREBASE
+    ========================================== */
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+
+    /* ==========================================
+       DOM
+    ========================================== */
+
+    const loadingScreen = document.getElementById("loadingScreen");
+    const loginScreen = document.getElementById("loginScreen");
+    const appScreen = document.getElementById("app");
+    const loginError = document.getElementById("loginError");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const messageInput = document.getElementById("messageInput");
+    const messagesElement = document.getElementById("messages");
+    const emptyChat = document.getElementById("emptyChat");
+
+    let unsubscribeMessages = null;
+
+
+    /* ==========================================
+       LOGIN
+    ========================================== */
+
+    window.login = async function () {
+
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+
+      loginError.textContent = "";
+
+      if (!email || !password) {
+        loginError.textContent = "Enter your email and password.";
+        return;
+      }
+
+      try {
+
+        await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        loginError.textContent =
+          "Login failed. Check your email and password.";
+
+      }
+    };
+
+
+    /* ==========================================
+       LOGOUT
+    ========================================== */
+
+    window.logout = async function () {
+
+      try {
+        await signOut(auth);
+      } catch (error) {
+        console.error(error);
+      }
+
+    };
+
+
+    /* ==========================================
+       AUTH STATE
+    ========================================== */
+
+    onAuthStateChanged(auth, user => {
+
+      loadingScreen.classList.add("hidden");
+
+      if (user) {
+
+        loginScreen.classList.add("hidden");
+        appScreen.classList.remove("hidden");
+
+        document.getElementById("welcomeUser").textContent =
+          "Signed in securely";
+
+        startChat();
+
+      } else {
+
+        loginScreen.classList.remove("hidden");
+        appScreen.classList.add("hidden");
+
+        if (unsubscribeMessages) {
+          unsubscribeMessages();
+          unsubscribeMessages = null;
+        }
+
+      }
+
+    });
+
+
+    /* ==========================================
+       NAVIGATION
+    ========================================== */
+
+    window.showSection = function(sectionName) {
+
+      const sections = [
+        "home",
+        "memories",
+        "chat",
+        "more"
+      ];
+
+      sections.forEach(name => {
+
+        const section =
+          document.getElementById(name + "Section");
+
+        if (section) {
+          section.classList.remove("active");
+        }
+
       });
 
-      const selected = document.getElementById(sectionName);
+      const selected =
+        document.getElementById(sectionName + "Section");
 
       if (selected) {
         selected.classList.add("active");
       }
 
       document.querySelectorAll(".nav-btn").forEach(btn => {
-        btn.classList.remove("active");
+        btn.classList.toggle(
+          "active",
+          btn.dataset.section === sectionName
+        );
       });
-
-      if (button) {
-        button.classList.add("active");
-      }
 
       window.scrollTo({
         top: 0,
         behavior: "smooth"
       });
-    }
+
+    };
 
 
-    function sendDemoMessage() {
+    /* ==========================================
+       START REAL-TIME CHAT
+    ========================================== */
 
-      const input = document.getElementById("messageInput");
-      const text = input.value.trim();
+    function startChat() {
 
-      if (!text) return;
-
-      const messages = document.getElementById("messages");
-
-      const message = document.createElement("div");
-      message.className = "message sent";
-      message.textContent = text;
-
-      messages.appendChild(message);
-
-      input.value = "";
-
-      messages.scrollTop = messages.scrollHeight;
-    }
-
-
-    function handleEnter(event) {
-      if (event.key === "Enter") {
-        sendDemoMessage();
+      if (unsubscribeMessages) {
+        unsubscribeMessages();
+        unsubscribeMessages = null;
       }
+
+      const messagesQuery = query(
+        collection(db, "messages"),
+        orderBy("createdAt", "asc")
+      );
+
+      unsubscribeMessages = onSnapshot(
+        messagesQuery,
+        snapshot => {
+
+          messagesElement.innerHTML = "";
+
+          if (snapshot.empty) {
+
+            const empty = document.createElement("div");
+            empty.className = "empty-chat";
+            empty.textContent =
+              "Send the first message. It will appear here in real time.";
+
+            messagesElement.appendChild(empty);
+
+            return;
+          }
+
+          snapshot.forEach(doc => {
+
+            const data = doc.data();
+
+            const message = document.createElement("div");
+
+            const isMine =
+              auth.currentUser &&
+              data.senderId === auth.currentUser.uid;
+
+            message.className =
+              "message " +
+              (isMine ? "sent" : "received");
+
+            message.textContent =
+              data.text || "";
+
+            messagesElement.appendChild(message);
+
+          });
+
+          messagesElement.scrollTop =
+            messagesElement.scrollHeight;
+
+        },
+        error => {
+
+          console.error(
+            "Firestore listener error:",
+            error
+          );
+
+        }
+      );
     }
+
+
+    /* ==========================================
+       SEND MESSAGE
+    ========================================== */
+
+    window.sendMessage = async function() {
+
+      const text =
+        messageInput.value.trim();
+
+      if (!text || !auth.currentUser) {
+        return;
+      }
+
+      messageInput.value = "";
+
+      try {
+
+        await addDoc(
+          collection(db, "messages"),
+          {
+            text: text,
+            senderId: auth.currentUser.uid,
+            createdAt: serverTimestamp()
+          }
+        );
+
+      } catch (error) {
+
+        console.error(error);
+
+        alert(
+          "Message could not be sent. Please try again."
+        );
+
+      }
+
+    };
+
+
+    /* ==========================================
+       ENTER TO SEND
+    ========================================== */
+
+    messageInput.addEventListener(
+      "keydown",
+      event => {
+
+        if (
+          event.key === "Enter" &&
+          !event.shiftKey
+        ) {
+
+          event.preventDefault();
+
+          sendMessage();
+
+        }
+
+      }
+    );
 
   </script>
 
