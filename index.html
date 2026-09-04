@@ -2148,11 +2148,27 @@ input,textarea{caret-color:var(--pink-dark);}
       if (!auth.currentUser) return;
 
       try {
-        const snapshot = await getDocs(query(collection(db, "users"), where("publicUid", "==", uid), limit(1)));
+        // Public UID is normally stored as a 4-digit string.
+        // The numeric retry keeps search compatible with older user documents
+        // that may have been created with a number instead of a string.
+        let snapshot = await getDocs(
+          query(collection(db, "users"), where("publicUid", "==", uid), limit(1))
+        );
+
+        if (snapshot.empty) {
+          const numericUid = Number(uid);
+          if (Number.isInteger(numericUid)) {
+            snapshot = await getDocs(
+              query(collection(db, "users"), where("publicUid", "==", numericUid), limit(1))
+            );
+          }
+        }
+
         if (snapshot.empty) {
           box.innerHTML = '<div class="empty glass">No user found with that UID.</div>';
           return;
         }
+
         const result = { uid: snapshot.docs[0].id, ...snapshot.docs[0].data() };
         if (result.uid === auth.currentUser.uid) {
           box.innerHTML = '<div class="empty glass">That is your own UID.</div>';
@@ -2160,8 +2176,17 @@ input,textarea{caret-color:var(--pink-dark);}
         }
         box.appendChild(await buildUserCard(result));
       } catch (error) {
-        console.error(error);
-        box.innerHTML = '<div class="empty glass">Search failed. Check Firestore access.</div>';
+        console.error("UID search failed:", error);
+        const code = error?.code || "unknown-error";
+        if (code === "permission-denied") {
+          box.innerHTML = '<div class="empty glass">Firestore denied access to user search. Publish the supplied Firestore rules and make sure you are signed in.</div>';
+        } else if (code === "failed-precondition") {
+          box.innerHTML = '<div class="empty glass">Firestore needs its current database/rules setup. Please publish the supplied rules.</div>';
+        } else if (code === "unavailable") {
+          box.innerHTML = '<div class="empty glass">Firestore is temporarily unavailable. Check your internet connection and try again.</div>';
+        } else {
+          box.innerHTML = `<div class="empty glass">Search failed (${escapeText(code)}). Please try again.</div>`;
+        }
       }
     }
 
