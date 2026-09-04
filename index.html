@@ -2407,13 +2407,12 @@ input,textarea{caret-color:var(--pink-dark);}
       const currentUser = auth.currentUser;
       if (!currentUser || !otherUid || otherUid === currentUser.uid) return null;
       try {
-        const snapshot = await getDocs(query(
-          collection(db, "connections"),
-          where("members", "array-contains", currentUser.uid),
-          limit(100)
-        ));
-        const match = snapshot.docs.find(item => (item.data()?.members || []).includes(otherUid));
-        return match ? { id: match.id, ...match.data() } : null;
+        // Connections use a deterministic document ID, so a single-document
+        // read is more reliable and does not require a collection query.
+        const members = [currentUser.uid, otherUid].sort();
+        const connectionId = pairId(...members);
+        const snapshot = await getDoc(doc(db, "connections", connectionId));
+        return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
       } catch (error) {
         console.error("Connection lookup failed:", error);
         throw error;
@@ -2421,24 +2420,15 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     async function getRequestPair(fromUid, toUid) {
-      const currentUser = auth.currentUser;
-      if (!currentUser || !fromUid || !toUid) return null;
+      if (!fromUid || !toUid || fromUid === toUid) return null;
+      await authReady;
+      if (!auth.currentUser) return null;
       try {
-        // Never probe a possibly-missing document with getDoc(). Instead query
-        // a field that the signed-in user is allowed to query. This also makes
-        // the request rules work correctly with Firestore's query evaluation.
-        const field = currentUser.uid === fromUid ? "fromUid" : currentUser.uid === toUid ? "toUid" : null;
-        if (!field) return null;
-        const snapshot = await getDocs(query(
-          collection(db, "followRequests"),
-          where(field, "==", currentUser.uid),
-          limit(100)
-        ));
-        const match = snapshot.docs.find(item => {
-          const data = item.data() || {};
-          return data.fromUid === fromUid && data.toUid === toUid;
-        });
-        return match ? { id: match.id, ...match.data() } : null;
+        // Request IDs are deterministic: sender__recipient. Use a direct
+        // document read instead of a collection query.
+        const requestId = `${fromUid}__${toUid}`;
+        const snapshot = await getDoc(doc(db, "followRequests", requestId));
+        return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
       } catch (error) {
         console.error("Request lookup failed:", error);
         throw error;
