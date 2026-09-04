@@ -1013,6 +1013,12 @@
     .reduced-motion *,.reduced-motion *::before,.reduced-motion *::after { animation-duration:1ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:1ms !important; }
     @media (prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration:1ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; transition-duration:1ms !important; } }
     @media (max-width:700px) { .app-shell { min-height:calc(100dvh - env(safe-area-inset-top,0px)); } }
+
+/* Real-time typing indicator */
+.typing-indicator{min-height:18px;margin-top:3px;font-size:12px;line-height:18px;opacity:0;transform:translateY(2px);transition:opacity .18s ease,transform .18s ease;color:inherit;}
+.typing-indicator.show{opacity:.8;transform:translateY(0);}
+.typing-indicator::after{content:"";display:inline-block;width:4px;height:4px;margin-left:5px;border-radius:50%;background:currentColor;box-shadow:7px 0 0 currentColor,14px 0 0 currentColor;animation:typingDots 1.1s infinite ease-in-out;}
+@keyframes typingDots{0%,60%,100%{opacity:.25;transform:translateY(0)}30%{opacity:1;transform:translateY(-2px)}}
 </style>
 
 <!-- phone-first polish styles continue below -->
@@ -1673,10 +1679,11 @@ input,textarea{caret-color:var(--pink-dark);}
     <input
       id="userSearchInput"
       type="text"
-      inputmode="numeric"
-      maxlength="4"
+      inputmode="text"
+      pattern="[A-Za-z]{6}"
+      maxlength="6"
       autocomplete="off"
-      placeholder="Search by 6-letter UID"
+      placeholder="Enter 6-letter UID"
       aria-label="6-letter UID"
     />
     <button id="userSearchBtn" type="button" onclick="searchUserByUid()">Search</button>
@@ -1684,7 +1691,6 @@ input,textarea{caret-color:var(--pink-dark);}
   <div class="uid-search-hint">Enter a user's 6-letter UID to find their profile.</div>
   <div id="searchResult" class="uid-search-result"></div>
 </section>
-          <div id="searchResult"></div>
         </div>
       </div>
     </section>
@@ -1749,6 +1755,7 @@ input,textarea{caret-color:var(--pink-dark);}
             <div class="grow">
               <div id="chatTitle" class="chat-header-title">Chat</div>
               <div id="chatSubtitle" class="chat-header-subtitle">Live</div>
+              <div id="typingIndicator" class="typing-indicator" aria-live="polite"></div>
             </div>
             <div id="chatTypePill" class="pill">public</div>
           </div>
@@ -1969,7 +1976,8 @@ input,textarea{caret-color:var(--pink-dark);}
         connections: null,
         privateSpace: null,
         privatePhotos: null,
-        chat: null
+        chat: null,
+        typing: null
       },
       cache: {
         profiles: new Map()
@@ -1980,7 +1988,10 @@ input,textarea{caret-color:var(--pink-dark);}
       audioChunks: [],
       recordingStartedAt: 0,
       recordingTimer: null,
-      ignoreRecordingUpload: false
+      ignoreRecordingUpload: false,
+      typingStopTimer: null,
+      typingWriteTimer: null,
+      typingActive: false
     };
 
     /* ============================================================
@@ -2184,6 +2195,10 @@ input,textarea{caret-color:var(--pink-dark);}
        NAVIGATION
        ============================================================ */
     function showScreen(id) {
+      if (id !== "chatScreen" && state.activeChat.kind) {
+        stopTypingNow();
+        cleanupListener("typing");
+      }
       document.querySelectorAll("main .screen").forEach(screen => {
         screen.classList.toggle("active", screen.id === id);
       });
@@ -2215,6 +2230,7 @@ input,textarea{caret-color:var(--pink-dark);}
     onAuthStateChanged(auth, async user => {
       authReadyUser = user || null;
       resolveAuthReady(authReadyUser);
+      stopTypingNow();
       cleanupAllListeners();
       stopRecordingNow(true);
       if (!user) {
@@ -2282,7 +2298,7 @@ input,textarea{caret-color:var(--pink-dark);}
       refreshHome();
     }
 
-    $("logoutBtn").addEventListener("click", () => signOut(auth));
+    $("logoutBtn").addEventListener("click", () => { stopTypingNow(); signOut(auth); });
 
     /* ============================================================
        DISCOVER / PEOPLE / CONNECTION REQUESTS
@@ -3238,6 +3254,7 @@ input,textarea{caret-color:var(--pink-dark);}
       $("photoAction").classList.remove("hidden");
       $("voiceButton").classList.remove("hidden");
       startChatListener();
+      startTypingListener();
       requestAnimationFrame(() => {
         $("messageInput").focus();
         scrollMessagesToBottom();
@@ -3410,6 +3427,147 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     /* ============================================================
+       REAL-TIME TYPING INDICATORS
+       Public chat    -> publicTyping/{uid}
+       Connection    -> connections/{connectionId}/typing/{uid}
+       Private       -> privateSpaces/{spaceId}/typing/{uid}
+       ============================================================ */
+    function typingCollection() {
+      const { kind, id } = state.activeChat;
+      if (kind === "public") return collection(db, "publicTyping");
+      if (kind === "connection") return collection(db, "connections", id, "typing");
+      if (kind === "private") return collection(db, "privateSpaces", id, "typing");
+      throw new Error("Unknown chat type.");
+    }
+
+    function typingDocRef() {
+      return doc(typingCollection(), auth.currentUser.uid);
+    }
+
+    function setTypingIndicator(text = "") {
+      const el = $("typingIndicator");
+      if (!el) return;
+      el.textContent = text;
+      el.classList.toggle("show", Boolean(text));
+    }
+
+    function cleanupTypingListener() {
+      if (state.unsub.typing) {
+        state.unsub.typing();
+        state.unsub.typing = null;
+      }
+      clearTimeout(state.typingStopTimer);
+      clearTimeout(state.typingWriteTimer);
+      state.typingStopTimer = null;
+      state.typingWriteTimer = null;
+      state.typingActive = false;
+      setTypingIndicator("");
+    }
+
+    async function writeTypingState(isTyping) {
+      if (!auth.currentUser || !state.activeChat.kind) return;
+      try {
+        await setDoc(typingDocRef(), {
+          uid: auth.currentUser.uid,
+          isTyping: Boolean(isTyping),
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+      } catch (error) {
+        // Typing indicators are non-critical; never block message sending.
+        console.warn("Typing state update failed:", error);
+      }
+    }
+
+    function scheduleTypingWrite() {
+      if (!auth.currentUser || !state.activeChat.kind) return;
+      state.typingActive = true;
+      clearTimeout(state.typingStopTimer);
+      clearTimeout(state.typingWriteTimer);
+      state.typingWriteTimer = setTimeout(() => writeTypingState(true), 120);
+      state.typingStopTimer = setTimeout(() => {
+        state.typingActive = false;
+        writeTypingState(false);
+      }, 1800);
+    }
+
+    window.addEventListener("beforeunload", () => {
+      if (auth.currentUser && state.activeChat.kind) {
+        try { writeTypingState(false); } catch (_) {}
+      }
+    });
+
+    function stopTypingNow() {
+      clearTimeout(state.typingStopTimer);
+      clearTimeout(state.typingWriteTimer);
+      state.typingStopTimer = null;
+      state.typingWriteTimer = null;
+      if (!state.typingActive) return;
+      state.typingActive = false;
+      writeTypingState(false);
+    }
+
+    async function startTypingListener() {
+      cleanupTypingListener();
+      if (!auth.currentUser || !state.activeChat.kind) return;
+      const myUid = auth.currentUser.uid;
+      const { kind } = state.activeChat;
+
+      try {
+        if (kind === "public") {
+          const q = query(typingCollection(), where("isTyping", "==", true), limit(30));
+          state.unsub.typing = onSnapshot(q, async snapshot => {
+            const active = snapshot.docs
+              .map(snap => snap.data())
+              .filter(data => data.uid && data.uid !== myUid && data.isTyping);
+            if (!active.length) return setTypingIndicator("");
+            const names = await Promise.all(active.slice(0, 3).map(async data => {
+              const profile = await getProfile(data.uid);
+              return profile?.displayName || "Someone";
+            }));
+            const uniqueNames = [...new Set(names.filter(Boolean))];
+            if (uniqueNames.length === 1) setTypingIndicator(`${uniqueNames[0]} is typing`);
+            else if (uniqueNames.length === 2) setTypingIndicator(`${uniqueNames[0]} and ${uniqueNames[1]} are typing`);
+            else setTypingIndicator(`${uniqueNames.length} people are typing`);
+          }, error => {
+            console.warn("Public typing listener failed:", error);
+            setTypingIndicator("");
+          });
+          return;
+        }
+
+        let otherUid = null;
+        if (kind === "private") {
+          otherUid = (state.privateSpace?.members || []).find(uid => uid !== myUid) || null;
+        } else if (kind === "connection") {
+          const connection = await getDoc(doc(db, "connections", state.activeChat.id));
+          otherUid = (connection.data()?.members || []).find(uid => uid !== myUid) || null;
+        }
+        if (!otherUid) return;
+
+        const otherTypingRef = doc(typingCollection(), otherUid);
+        state.unsub.typing = onSnapshot(otherTypingRef, async snap => {
+          if (!snap.exists() || !snap.data()?.isTyping) {
+            setTypingIndicator("");
+            return;
+          }
+          const profile = await getProfile(otherUid);
+          setTypingIndicator(`${profile?.displayName || "They"} is typing`);
+        }, error => {
+          console.warn("Private typing listener failed:", error);
+          setTypingIndicator("");
+        });
+      } catch (error) {
+        console.warn("Typing listener setup failed:", error);
+      }
+    }
+
+    $("messageInput").addEventListener("input", () => {
+      if ($("messageInput").value.trim()) scheduleTypingWrite();
+      else stopTypingNow();
+    });
+    $("messageInput").addEventListener("blur", stopTypingNow);
+
+    /* ============================================================
        TEXT MESSAGE SEND
        ============================================================ */
     $("chatForm").addEventListener("submit", async event => {
@@ -3418,6 +3576,7 @@ input,textarea{caret-color:var(--pink-dark);}
       if (!text || !auth.currentUser) return;
 
       $("messageInput").value = "";
+      stopTypingNow();
       const wasPublic = state.activeChat.kind === "public";
       try {
         const payload = {
@@ -4161,10 +4320,10 @@ input,textarea{caret-color:var(--pink-dark);}
     })();
     Smoothness.install();
     const DataSafety=(()=>{
-      const limits={text:4000,name:40,uid:4};
+      const limits={text:4000,name:40,uid:6};
       function cleanText(value,limit=limits.text){return String(value??'').replace(/[\u0000-\u001F\u007F]/g,'').trim().slice(0,limit);}
       function cleanName(value){return cleanText(value,limits.name).replace(/\s+/g,' ');}
-      function cleanUid(value){return String(value??'').replace(/\D/g,'').slice(0,limits.uid);}
+      function cleanUid(value){return String(value??'').replace(/[^A-Za-z]/g,'').slice(0,limits.uid).toUpperCase();}
       function safeUrl(value){try{const url=new URL(value);return ['http:','https:'].includes(url.protocol)?url.href:'';}catch(_){return '';}}
       return {cleanText,cleanName,cleanUid,safeUrl};
     })();
@@ -4189,7 +4348,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 001: Keep public chat data separate from connection chat data.
   Performance note 001: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 001: Keep connection requests separate from private-space invitations.
-  Performance note 001: Use numeric public UIDs for human-friendly discovery.
+  Performance note 001: Use six-letter public UIDs for human-friendly discovery.
   Performance note 001: Keep authentication passwords inside Firebase Authentication only.
   Performance note 001: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 001: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4219,7 +4378,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 002: Keep public chat data separate from connection chat data.
   Performance note 002: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 002: Keep connection requests separate from private-space invitations.
-  Performance note 002: Use numeric public UIDs for human-friendly discovery.
+  Performance note 002: Use six-letter public UIDs for human-friendly discovery.
   Performance note 002: Keep authentication passwords inside Firebase Authentication only.
   Performance note 002: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 002: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4249,7 +4408,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 003: Keep public chat data separate from connection chat data.
   Performance note 003: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 003: Keep connection requests separate from private-space invitations.
-  Performance note 003: Use numeric public UIDs for human-friendly discovery.
+  Performance note 003: Use six-letter public UIDs for human-friendly discovery.
   Performance note 003: Keep authentication passwords inside Firebase Authentication only.
   Performance note 003: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 003: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4279,7 +4438,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 004: Keep public chat data separate from connection chat data.
   Performance note 004: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 004: Keep connection requests separate from private-space invitations.
-  Performance note 004: Use numeric public UIDs for human-friendly discovery.
+  Performance note 004: Use six-letter public UIDs for human-friendly discovery.
   Performance note 004: Keep authentication passwords inside Firebase Authentication only.
   Performance note 004: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 004: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4309,7 +4468,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 005: Keep public chat data separate from connection chat data.
   Performance note 005: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 005: Keep connection requests separate from private-space invitations.
-  Performance note 005: Use numeric public UIDs for human-friendly discovery.
+  Performance note 005: Use six-letter public UIDs for human-friendly discovery.
   Performance note 005: Keep authentication passwords inside Firebase Authentication only.
   Performance note 005: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 005: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4339,7 +4498,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 006: Keep public chat data separate from connection chat data.
   Performance note 006: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 006: Keep connection requests separate from private-space invitations.
-  Performance note 006: Use numeric public UIDs for human-friendly discovery.
+  Performance note 006: Use six-letter public UIDs for human-friendly discovery.
   Performance note 006: Keep authentication passwords inside Firebase Authentication only.
   Performance note 006: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 006: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4369,7 +4528,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 007: Keep public chat data separate from connection chat data.
   Performance note 007: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 007: Keep connection requests separate from private-space invitations.
-  Performance note 007: Use numeric public UIDs for human-friendly discovery.
+  Performance note 007: Use six-letter public UIDs for human-friendly discovery.
   Performance note 007: Keep authentication passwords inside Firebase Authentication only.
   Performance note 007: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 007: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4399,7 +4558,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 008: Keep public chat data separate from connection chat data.
   Performance note 008: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 008: Keep connection requests separate from private-space invitations.
-  Performance note 008: Use numeric public UIDs for human-friendly discovery.
+  Performance note 008: Use six-letter public UIDs for human-friendly discovery.
   Performance note 008: Keep authentication passwords inside Firebase Authentication only.
   Performance note 008: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 008: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4429,7 +4588,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 009: Keep public chat data separate from connection chat data.
   Performance note 009: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 009: Keep connection requests separate from private-space invitations.
-  Performance note 009: Use numeric public UIDs for human-friendly discovery.
+  Performance note 009: Use six-letter public UIDs for human-friendly discovery.
   Performance note 009: Keep authentication passwords inside Firebase Authentication only.
   Performance note 009: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 009: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4459,7 +4618,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 010: Keep public chat data separate from connection chat data.
   Performance note 010: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 010: Keep connection requests separate from private-space invitations.
-  Performance note 010: Use numeric public UIDs for human-friendly discovery.
+  Performance note 010: Use six-letter public UIDs for human-friendly discovery.
   Performance note 010: Keep authentication passwords inside Firebase Authentication only.
   Performance note 010: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 010: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4489,7 +4648,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 011: Keep public chat data separate from connection chat data.
   Performance note 011: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 011: Keep connection requests separate from private-space invitations.
-  Performance note 011: Use numeric public UIDs for human-friendly discovery.
+  Performance note 011: Use six-letter public UIDs for human-friendly discovery.
   Performance note 011: Keep authentication passwords inside Firebase Authentication only.
   Performance note 011: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 011: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4519,7 +4678,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 012: Keep public chat data separate from connection chat data.
   Performance note 012: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 012: Keep connection requests separate from private-space invitations.
-  Performance note 012: Use numeric public UIDs for human-friendly discovery.
+  Performance note 012: Use six-letter public UIDs for human-friendly discovery.
   Performance note 012: Keep authentication passwords inside Firebase Authentication only.
   Performance note 012: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 012: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4549,7 +4708,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 013: Keep public chat data separate from connection chat data.
   Performance note 013: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 013: Keep connection requests separate from private-space invitations.
-  Performance note 013: Use numeric public UIDs for human-friendly discovery.
+  Performance note 013: Use six-letter public UIDs for human-friendly discovery.
   Performance note 013: Keep authentication passwords inside Firebase Authentication only.
   Performance note 013: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 013: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4579,7 +4738,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 014: Keep public chat data separate from connection chat data.
   Performance note 014: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 014: Keep connection requests separate from private-space invitations.
-  Performance note 014: Use numeric public UIDs for human-friendly discovery.
+  Performance note 014: Use six-letter public UIDs for human-friendly discovery.
   Performance note 014: Keep authentication passwords inside Firebase Authentication only.
   Performance note 014: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 014: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4609,7 +4768,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 015: Keep public chat data separate from connection chat data.
   Performance note 015: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 015: Keep connection requests separate from private-space invitations.
-  Performance note 015: Use numeric public UIDs for human-friendly discovery.
+  Performance note 015: Use six-letter public UIDs for human-friendly discovery.
   Performance note 015: Keep authentication passwords inside Firebase Authentication only.
   Performance note 015: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 015: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4639,7 +4798,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 016: Keep public chat data separate from connection chat data.
   Performance note 016: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 016: Keep connection requests separate from private-space invitations.
-  Performance note 016: Use numeric public UIDs for human-friendly discovery.
+  Performance note 016: Use six-letter public UIDs for human-friendly discovery.
   Performance note 016: Keep authentication passwords inside Firebase Authentication only.
   Performance note 016: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 016: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4669,7 +4828,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 017: Keep public chat data separate from connection chat data.
   Performance note 017: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 017: Keep connection requests separate from private-space invitations.
-  Performance note 017: Use numeric public UIDs for human-friendly discovery.
+  Performance note 017: Use six-letter public UIDs for human-friendly discovery.
   Performance note 017: Keep authentication passwords inside Firebase Authentication only.
   Performance note 017: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 017: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4699,7 +4858,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 018: Keep public chat data separate from connection chat data.
   Performance note 018: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 018: Keep connection requests separate from private-space invitations.
-  Performance note 018: Use numeric public UIDs for human-friendly discovery.
+  Performance note 018: Use six-letter public UIDs for human-friendly discovery.
   Performance note 018: Keep authentication passwords inside Firebase Authentication only.
   Performance note 018: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 018: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4729,7 +4888,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 019: Keep public chat data separate from connection chat data.
   Performance note 019: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 019: Keep connection requests separate from private-space invitations.
-  Performance note 019: Use numeric public UIDs for human-friendly discovery.
+  Performance note 019: Use six-letter public UIDs for human-friendly discovery.
   Performance note 019: Keep authentication passwords inside Firebase Authentication only.
   Performance note 019: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 019: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4759,7 +4918,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 020: Keep public chat data separate from connection chat data.
   Performance note 020: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 020: Keep connection requests separate from private-space invitations.
-  Performance note 020: Use numeric public UIDs for human-friendly discovery.
+  Performance note 020: Use six-letter public UIDs for human-friendly discovery.
   Performance note 020: Keep authentication passwords inside Firebase Authentication only.
   Performance note 020: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 020: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4789,7 +4948,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 021: Keep public chat data separate from connection chat data.
   Performance note 021: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 021: Keep connection requests separate from private-space invitations.
-  Performance note 021: Use numeric public UIDs for human-friendly discovery.
+  Performance note 021: Use six-letter public UIDs for human-friendly discovery.
   Performance note 021: Keep authentication passwords inside Firebase Authentication only.
   Performance note 021: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 021: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4819,7 +4978,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 022: Keep public chat data separate from connection chat data.
   Performance note 022: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 022: Keep connection requests separate from private-space invitations.
-  Performance note 022: Use numeric public UIDs for human-friendly discovery.
+  Performance note 022: Use six-letter public UIDs for human-friendly discovery.
   Performance note 022: Keep authentication passwords inside Firebase Authentication only.
   Performance note 022: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 022: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4849,7 +5008,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 023: Keep public chat data separate from connection chat data.
   Performance note 023: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 023: Keep connection requests separate from private-space invitations.
-  Performance note 023: Use numeric public UIDs for human-friendly discovery.
+  Performance note 023: Use six-letter public UIDs for human-friendly discovery.
   Performance note 023: Keep authentication passwords inside Firebase Authentication only.
   Performance note 023: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 023: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4879,7 +5038,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 024: Keep public chat data separate from connection chat data.
   Performance note 024: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 024: Keep connection requests separate from private-space invitations.
-  Performance note 024: Use numeric public UIDs for human-friendly discovery.
+  Performance note 024: Use six-letter public UIDs for human-friendly discovery.
   Performance note 024: Keep authentication passwords inside Firebase Authentication only.
   Performance note 024: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 024: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4909,7 +5068,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 025: Keep public chat data separate from connection chat data.
   Performance note 025: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 025: Keep connection requests separate from private-space invitations.
-  Performance note 025: Use numeric public UIDs for human-friendly discovery.
+  Performance note 025: Use six-letter public UIDs for human-friendly discovery.
   Performance note 025: Keep authentication passwords inside Firebase Authentication only.
   Performance note 025: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 025: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4939,7 +5098,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 026: Keep public chat data separate from connection chat data.
   Performance note 026: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 026: Keep connection requests separate from private-space invitations.
-  Performance note 026: Use numeric public UIDs for human-friendly discovery.
+  Performance note 026: Use six-letter public UIDs for human-friendly discovery.
   Performance note 026: Keep authentication passwords inside Firebase Authentication only.
   Performance note 026: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 026: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4969,7 +5128,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 027: Keep public chat data separate from connection chat data.
   Performance note 027: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 027: Keep connection requests separate from private-space invitations.
-  Performance note 027: Use numeric public UIDs for human-friendly discovery.
+  Performance note 027: Use six-letter public UIDs for human-friendly discovery.
   Performance note 027: Keep authentication passwords inside Firebase Authentication only.
   Performance note 027: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 027: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -4999,7 +5158,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 028: Keep public chat data separate from connection chat data.
   Performance note 028: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 028: Keep connection requests separate from private-space invitations.
-  Performance note 028: Use numeric public UIDs for human-friendly discovery.
+  Performance note 028: Use six-letter public UIDs for human-friendly discovery.
   Performance note 028: Keep authentication passwords inside Firebase Authentication only.
   Performance note 028: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 028: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5029,7 +5188,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 029: Keep public chat data separate from connection chat data.
   Performance note 029: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 029: Keep connection requests separate from private-space invitations.
-  Performance note 029: Use numeric public UIDs for human-friendly discovery.
+  Performance note 029: Use six-letter public UIDs for human-friendly discovery.
   Performance note 029: Keep authentication passwords inside Firebase Authentication only.
   Performance note 029: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 029: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5059,7 +5218,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 030: Keep public chat data separate from connection chat data.
   Performance note 030: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 030: Keep connection requests separate from private-space invitations.
-  Performance note 030: Use numeric public UIDs for human-friendly discovery.
+  Performance note 030: Use six-letter public UIDs for human-friendly discovery.
   Performance note 030: Keep authentication passwords inside Firebase Authentication only.
   Performance note 030: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 030: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5089,7 +5248,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 031: Keep public chat data separate from connection chat data.
   Performance note 031: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 031: Keep connection requests separate from private-space invitations.
-  Performance note 031: Use numeric public UIDs for human-friendly discovery.
+  Performance note 031: Use six-letter public UIDs for human-friendly discovery.
   Performance note 031: Keep authentication passwords inside Firebase Authentication only.
   Performance note 031: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 031: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5119,7 +5278,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 032: Keep public chat data separate from connection chat data.
   Performance note 032: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 032: Keep connection requests separate from private-space invitations.
-  Performance note 032: Use numeric public UIDs for human-friendly discovery.
+  Performance note 032: Use six-letter public UIDs for human-friendly discovery.
   Performance note 032: Keep authentication passwords inside Firebase Authentication only.
   Performance note 032: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 032: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5149,7 +5308,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 033: Keep public chat data separate from connection chat data.
   Performance note 033: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 033: Keep connection requests separate from private-space invitations.
-  Performance note 033: Use numeric public UIDs for human-friendly discovery.
+  Performance note 033: Use six-letter public UIDs for human-friendly discovery.
   Performance note 033: Keep authentication passwords inside Firebase Authentication only.
   Performance note 033: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 033: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5179,7 +5338,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 034: Keep public chat data separate from connection chat data.
   Performance note 034: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 034: Keep connection requests separate from private-space invitations.
-  Performance note 034: Use numeric public UIDs for human-friendly discovery.
+  Performance note 034: Use six-letter public UIDs for human-friendly discovery.
   Performance note 034: Keep authentication passwords inside Firebase Authentication only.
   Performance note 034: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 034: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5209,7 +5368,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 035: Keep public chat data separate from connection chat data.
   Performance note 035: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 035: Keep connection requests separate from private-space invitations.
-  Performance note 035: Use numeric public UIDs for human-friendly discovery.
+  Performance note 035: Use six-letter public UIDs for human-friendly discovery.
   Performance note 035: Keep authentication passwords inside Firebase Authentication only.
   Performance note 035: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 035: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5239,7 +5398,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 036: Keep public chat data separate from connection chat data.
   Performance note 036: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 036: Keep connection requests separate from private-space invitations.
-  Performance note 036: Use numeric public UIDs for human-friendly discovery.
+  Performance note 036: Use six-letter public UIDs for human-friendly discovery.
   Performance note 036: Keep authentication passwords inside Firebase Authentication only.
   Performance note 036: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 036: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5269,7 +5428,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 037: Keep public chat data separate from connection chat data.
   Performance note 037: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 037: Keep connection requests separate from private-space invitations.
-  Performance note 037: Use numeric public UIDs for human-friendly discovery.
+  Performance note 037: Use six-letter public UIDs for human-friendly discovery.
   Performance note 037: Keep authentication passwords inside Firebase Authentication only.
   Performance note 037: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 037: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5299,7 +5458,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 038: Keep public chat data separate from connection chat data.
   Performance note 038: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 038: Keep connection requests separate from private-space invitations.
-  Performance note 038: Use numeric public UIDs for human-friendly discovery.
+  Performance note 038: Use six-letter public UIDs for human-friendly discovery.
   Performance note 038: Keep authentication passwords inside Firebase Authentication only.
   Performance note 038: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 038: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5329,7 +5488,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 039: Keep public chat data separate from connection chat data.
   Performance note 039: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 039: Keep connection requests separate from private-space invitations.
-  Performance note 039: Use numeric public UIDs for human-friendly discovery.
+  Performance note 039: Use six-letter public UIDs for human-friendly discovery.
   Performance note 039: Keep authentication passwords inside Firebase Authentication only.
   Performance note 039: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 039: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5359,7 +5518,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 040: Keep public chat data separate from connection chat data.
   Performance note 040: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 040: Keep connection requests separate from private-space invitations.
-  Performance note 040: Use numeric public UIDs for human-friendly discovery.
+  Performance note 040: Use six-letter public UIDs for human-friendly discovery.
   Performance note 040: Keep authentication passwords inside Firebase Authentication only.
   Performance note 040: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 040: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5389,7 +5548,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 041: Keep public chat data separate from connection chat data.
   Performance note 041: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 041: Keep connection requests separate from private-space invitations.
-  Performance note 041: Use numeric public UIDs for human-friendly discovery.
+  Performance note 041: Use six-letter public UIDs for human-friendly discovery.
   Performance note 041: Keep authentication passwords inside Firebase Authentication only.
   Performance note 041: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 041: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5419,7 +5578,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 042: Keep public chat data separate from connection chat data.
   Performance note 042: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 042: Keep connection requests separate from private-space invitations.
-  Performance note 042: Use numeric public UIDs for human-friendly discovery.
+  Performance note 042: Use six-letter public UIDs for human-friendly discovery.
   Performance note 042: Keep authentication passwords inside Firebase Authentication only.
   Performance note 042: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 042: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5449,7 +5608,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 043: Keep public chat data separate from connection chat data.
   Performance note 043: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 043: Keep connection requests separate from private-space invitations.
-  Performance note 043: Use numeric public UIDs for human-friendly discovery.
+  Performance note 043: Use six-letter public UIDs for human-friendly discovery.
   Performance note 043: Keep authentication passwords inside Firebase Authentication only.
   Performance note 043: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 043: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5479,7 +5638,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 044: Keep public chat data separate from connection chat data.
   Performance note 044: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 044: Keep connection requests separate from private-space invitations.
-  Performance note 044: Use numeric public UIDs for human-friendly discovery.
+  Performance note 044: Use six-letter public UIDs for human-friendly discovery.
   Performance note 044: Keep authentication passwords inside Firebase Authentication only.
   Performance note 044: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 044: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5509,7 +5668,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 045: Keep public chat data separate from connection chat data.
   Performance note 045: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 045: Keep connection requests separate from private-space invitations.
-  Performance note 045: Use numeric public UIDs for human-friendly discovery.
+  Performance note 045: Use six-letter public UIDs for human-friendly discovery.
   Performance note 045: Keep authentication passwords inside Firebase Authentication only.
   Performance note 045: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 045: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5539,7 +5698,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 046: Keep public chat data separate from connection chat data.
   Performance note 046: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 046: Keep connection requests separate from private-space invitations.
-  Performance note 046: Use numeric public UIDs for human-friendly discovery.
+  Performance note 046: Use six-letter public UIDs for human-friendly discovery.
   Performance note 046: Keep authentication passwords inside Firebase Authentication only.
   Performance note 046: Use password reset mail instead of storing password recovery data in Firestore.
   Performance note 046: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
@@ -5569,7 +5728,7 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 047: Keep public chat data separate from connection chat data.
   Performance note 047: Keep private-space data under privateSpaces and verify membership server-side.
   Performance note 047: Keep connection requests separate from private-space invitations.
-  Performance note 047: Use numeric public UIDs for human-friendly discovery.
+  Performance note 047: Use six-letter public UIDs for human-friendly discovery.
   Performance note 047: Keep authentication passwords inside Firebase Authentication only.
   Performance note 047: Use password reset mail instead of storing password recovery data in Firestore.
 -->
