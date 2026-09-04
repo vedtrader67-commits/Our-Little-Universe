@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fff0f6">
+  <meta name="theme-color" content="#fff0f6" />
   <meta name="color-scheme" content="light">
   <meta name="description" content="Our Little Universe — a smooth private and connected social space.">
   <title>Our Little Universe</title>
@@ -921,23 +921,25 @@
     }
 
     /* ==============================
-       DESKTOP
+       PHONE-FIRST LAYOUT
+       Keep the experience compact even when a browser requests
+       a desktop viewport. The app remains touch-first and narrow.
     ============================== */
 
     @media (min-width: 700px) {
       .screen {
-        padding-top: 28px;
+        padding-top: 18px;
       }
 
       .memory-grid {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
       .hero-card,
       .counter-card,
       .setting-card {
-        padding-left: 28px;
-        padding-right: 28px;
+        padding-left: 20px;
+        padding-right: 20px;
       }
 
       #chatScreen.active {
@@ -945,7 +947,7 @@
       }
 
       .message {
-        max-width: 65%;
+        max-width: 78%;
       }
     }
   
@@ -965,6 +967,31 @@
     .nav-btn { padding-left: 1px; padding-right: 1px; }
     .chat-input { min-width: 0; }
     .audio-player { min-width: 190px; }
+  }
+
+  /* PHONE MODE: intentionally wins over desktop-style browser viewports. */
+  .app { width:100%; max-width:430px; margin:0 auto; padding-bottom:calc(92px + env(safe-area-inset-bottom,0px)); }
+  .screen { width:100%; max-width:430px; margin:0 auto; padding-left:12px; padding-right:12px; }
+  .screen > .container, .container { width:100%; max-width:100%; }
+  .login-card { width:min(100%,430px); max-width:430px; }
+  #loginScreen { width:100%; max-width:430px; margin:0 auto; padding-left:14px; padding-right:14px; }
+  .bottom-nav { width:100%; max-width:430px; left:50%; right:auto; transform:translateX(-50%); }
+  .nav-inner { width:100% !important; max-width:430px; grid-template-columns:repeat(6,minmax(0,1fr)) !important; }
+  .hero-card { padding:20px 16px; }
+  .counter-card { padding:18px 12px; }
+  .stats { gap:7px; }
+  .stat { padding:12px 7px; }
+  .setting-card { padding:16px; }
+  .chat-card { border-radius:22px; }
+  .chat-header { padding:12px; }
+  .messages { padding-left:9px; padding-right:9px; }
+  .chat-composer-wrap { padding-left:7px; padding-right:7px; }
+  .chat-form { gap:5px; }
+  .chat-action { width:40px; height:40px; flex-basis:40px; }
+  .chat-input { min-height:40px; padding:10px; }
+  @media (min-width:700px) {
+    .app, .screen, #loginScreen, .bottom-nav { max-width:430px; }
+    .bottom-nav { left:50%; right:auto; transform:translateX(-50%); }
   }
 
     /* EXTRA SMOOTHNESS / POLISH LAYER */
@@ -988,8 +1015,8 @@
     @media (max-width:700px) { .app-shell { min-height:calc(100dvh - env(safe-area-inset-top,0px)); } }
 </style>
 
-</style>
-\n<style id="polish-layer">
+<!-- phone-first polish styles continue below -->
+<style id="polish-layer">
 /* ================================================================
    POLISH LAYER — SMOOTHNESS, ACCESSIBILITY, MICRO-INTERACTIONS
    This layer intentionally stays additive so the main application
@@ -1031,8 +1058,376 @@ input,textarea{caret-color:var(--pink-dark);}
 }
 </style>
 
+
+<!-- UNIVERSAL DECORATED BUTTON SYSTEM -->
+<style id="universal-button-decoration">
+  :root{
+    --btn-pink-1:#f59bc1;
+    --btn-pink-2:#c9578b;
+    --btn-soft:#fff1f7;
+    --btn-border:rgba(255,255,255,.82);
+    --btn-shadow:0 10px 24px rgba(191,79,128,.18);
+    --btn-glow:0 0 0 4px rgba(220,110,157,.11);
+    --btn-ease:cubic-bezier(.22,1,.36,1);
+  }
+
+  /* Base: every actionable button feels intentionally designed. */
+  button,
+  .chat-action,
+  .photo-action,
+  .forgot,
+  .text-btn,
+  .recording-small-btn,
+  .mini-btn,
+  .nav-btn,
+  .auth-tab{
+    position:relative;
+    isolation:isolate;
+    overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+    backface-visibility:hidden;
+  }
+
+  button::before,
+  .chat-action::before,
+  .photo-action::before,
+  .forgot::before,
+  .text-btn::before,
+  .recording-small-btn::before,
+  .mini-btn::before,
+  .nav-btn::before,
+  .auth-tab::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    pointer-events:none;
+    background:linear-gradient(
+      115deg,
+      rgba(255,255,255,0) 0%,
+      rgba(255,255,255,.34) 46%,
+      rgba(255,255,255,0) 62%
+    );
+    transform:translateX(-130%);
+    transition:transform .48s var(--btn-ease);
+  }
+
+  button:hover::before,
+  .chat-action:hover::before,
+  .photo-action:hover::before,
+  .forgot:hover::before,
+  .text-btn:hover::before,
+  .recording-small-btn:hover::before,
+  .mini-btn:hover::before,
+  .nav-btn:hover::before,
+  .auth-tab:hover::before{
+    transform:translateX(130%);
+  }
+
+  button:focus-visible,
+  .chat-action:focus-visible,
+  .photo-action:focus-visible,
+  .forgot:focus-visible,
+  .text-btn:focus-visible,
+  .recording-small-btn:focus-visible,
+  .mini-btn:focus-visible,
+  .nav-btn:focus-visible,
+  .auth-tab:focus-visible{
+    outline:none;
+    box-shadow:var(--btn-glow),0 8px 22px rgba(180,72,119,.14);
+  }
+
+  /* Main CTA buttons */
+  .primary-btn{
+    border:1px solid rgba(255,255,255,.62) !important;
+    background:
+      radial-gradient(circle at 20% 10%,rgba(255,255,255,.34),transparent 28%),
+      linear-gradient(135deg,var(--btn-pink-1),var(--btn-pink-2)) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.35),
+      var(--btn-shadow) !important;
+    text-shadow:0 1px 1px rgba(100,35,66,.14);
+    transition:
+      transform .16s var(--btn-ease),
+      box-shadow .2s var(--btn-ease),
+      filter .2s var(--btn-ease);
+  }
+
+  .primary-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.4),
+      0 14px 30px rgba(191,79,128,.23) !important;
+    filter:saturate(1.04);
+  }
+
+  .primary-btn:active{
+    transform:translateY(1px) scale(.975);
+    box-shadow:
+      inset 0 2px 7px rgba(90,25,55,.12),
+      0 6px 14px rgba(191,79,128,.15) !important;
+  }
+
+  /* Secondary / outline */
+  .secondary-btn{
+    border:1px solid rgba(216,170,191,.7) !important;
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,246,250,.88)) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.92),
+      0 7px 18px rgba(120,62,88,.08);
+    transition:
+      transform .16s var(--btn-ease),
+      box-shadow .2s var(--btn-ease),
+      border-color .2s ease;
+  }
+
+  .secondary-btn:hover{
+    transform:translateY(-1px);
+    border-color:rgba(202,122,157,.68) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95),
+      0 11px 24px rgba(120,62,88,.11);
+  }
+
+  .secondary-btn:active{
+    transform:scale(.975);
+  }
+
+  /* Login tabs */
+  .auth-tab{
+    border:1px solid transparent;
+    transition:
+      transform .16s var(--btn-ease),
+      background .2s ease,
+      box-shadow .2s ease,
+      color .2s ease;
+  }
+
+  .auth-tab.active{
+    background:
+      linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,245,250,.92)) !important;
+    color:#a64875 !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.95),
+      0 7px 16px rgba(120,62,88,.09);
+    border-color:rgba(222,188,204,.62);
+  }
+
+  /* Small action buttons */
+  .mini-btn,
+  .recording-small-btn{
+    border:1px solid rgba(229,198,212,.72);
+    box-shadow:0 5px 14px rgba(100,50,73,.06);
+    transition:
+      transform .15s var(--btn-ease),
+      box-shadow .18s var(--btn-ease),
+      filter .18s ease;
+  }
+
+  .mini-btn:hover,
+  .recording-small-btn:hover{
+    transform:translateY(-1px);
+    box-shadow:0 8px 18px rgba(100,50,73,.09);
+  }
+
+  .mini-btn:active,
+  .recording-small-btn:active{
+    transform:scale(.96);
+  }
+
+  .mini-btn.primary{
+    background:linear-gradient(135deg,#fff0f6,#fbd4e5) !important;
+    color:#a64875 !important;
+    border-color:#efc4d7 !important;
+  }
+
+  .mini-btn.accept{
+    background:linear-gradient(135deg,#ebfaef,#d8f0df) !important;
+    border-color:#c7e7d0 !important;
+  }
+
+  .mini-btn.decline{
+    background:linear-gradient(135deg,#fff3f6,#f6e5eb) !important;
+    border-color:#ecced9 !important;
+  }
+
+  /* Chat controls */
+  .chat-action{
+    border:1px solid rgba(255,255,255,.78) !important;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.8),
+      0 7px 16px rgba(90,40,62,.08);
+    transition:
+      transform .15s var(--btn-ease),
+      box-shadow .18s var(--btn-ease),
+      filter .18s ease,
+      background .18s ease;
+  }
+
+  .chat-action:hover{
+    transform:translateY(-1px);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.88),
+      0 10px 22px rgba(90,40,62,.11);
+  }
+
+  .chat-action:active{
+    transform:scale(.94);
+  }
+
+  .photo-action{
+    display:grid;
+    place-items:center;
+    font-weight:800;
+  }
+
+  .voice-action{
+    background:
+      linear-gradient(180deg,#fffaff,#fff0f7) !important;
+  }
+
+  .voice-action.recording{
+    box-shadow:
+      0 0 0 4px rgba(215,82,131,.1),
+      0 9px 22px rgba(215,82,131,.18) !important;
+  }
+
+  .send-action{
+    background:
+      radial-gradient(circle at 25% 15%,rgba(255,255,255,.34),transparent 27%),
+      linear-gradient(135deg,#ee82b0,#c7538a) !important;
+  }
+
+  /* Forgot / text controls */
+  .forgot,
+  .text-btn{
+    border-radius:10px;
+    transition:
+      transform .15s var(--btn-ease),
+      background .16s ease,
+      color .16s ease;
+  }
+
+  .forgot:hover,
+  .text-btn:hover{
+    background:rgba(255,236,245,.72);
+    color:#a33d6e;
+    transform:translateY(-1px);
+  }
+
+  .forgot:active,
+  .text-btn:active{
+    transform:scale(.97);
+  }
+
+  /* Bottom navigation: decorative but still compact on phones. */
+  .nav-btn{
+    border:1px solid transparent;
+    box-shadow:none;
+    transition:
+      transform .15s var(--btn-ease),
+      background .2s ease,
+      box-shadow .2s ease,
+      color .2s ease;
+  }
+
+  .nav-btn.active{
+    background:
+      linear-gradient(180deg,rgba(255,241,247,.98),rgba(255,230,241,.95)) !important;
+    border-color:rgba(231,186,206,.48);
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.85),
+      0 6px 16px rgba(150,68,104,.08);
+  }
+
+  .nav-btn.active .nav-icon{
+    filter:drop-shadow(0 2px 5px rgba(196,76,130,.18));
+  }
+
+  .nav-btn:active{
+    transform:scale(.94);
+  }
+
+  /* Recording controls */
+  .recording-small-btn.stop{
+    box-shadow:
+      0 7px 17px rgba(195,68,113,.16);
+  }
+
+  /* Universal disabled state */
+  button:disabled,
+  .chat-action:disabled{
+    filter:grayscale(.12);
+    box-shadow:none !important;
+    transform:none !important;
+    cursor:default;
+  }
+
+  /* Tiny animated shine only for capable devices. */
+  @media (hover:hover) and (pointer:fine){
+    .primary-btn:hover,
+    .secondary-btn:hover,
+    .mini-btn:hover,
+    .chat-action:hover{
+      will-change:transform;
+    }
+  }
+
+  /* Phone tuning */
+  @media (max-width:520px){
+    .primary-btn,
+    .secondary-btn{
+      min-height:44px;
+    }
+
+    .mini-btn{
+      min-height:36px;
+    }
+
+    .chat-action{
+      min-width:40px;
+      min-height:40px;
+    }
+
+    .auth-tab{
+      min-height:42px;
+    }
+
+    .nav-btn{
+      min-height:46px;
+    }
+  }
+
+  /* Respect user/device reduced-motion settings. */
+  @media (prefers-reduced-motion:reduce){
+    button,
+    .chat-action,
+    .photo-action,
+    .forgot,
+    .text-btn,
+    .recording-small-btn,
+    .mini-btn,
+    .nav-btn,
+    .auth-tab{
+      transition:none !important;
+    }
+
+    button::before,
+    .chat-action::before,
+    .photo-action::before,
+    .forgot::before,
+    .text-btn::before,
+    .recording-small-btn::before,
+    .mini-btn::before,
+    .nav-btn::before,
+    .auth-tab::before{
+      display:none !important;
+    }
+  }
+</style>
+
 </head>
-<body>
+<body data-ui-theme="decorated-phone">
 
   <div class="decor" aria-hidden="true">
     <span>♡</span><span>✦</span><span>♡</span><span>✧</span><span>♡</span>
@@ -3307,7 +3702,6 @@ input,textarea{caret-color:var(--pink-dark);}
       scroller.scrollTo({ top: scroller.scrollHeight, behavior: polishState.reducedMotion ? "auto" : "smooth" });
     });
   }
-
   function installMessageAutoFollow() {
     const scroller = findMessagesScroller();
     if (!scroller) return;
@@ -3319,11 +3713,9 @@ input,textarea{caret-color:var(--pink-dark);}
     observer.observe(scroller, { childList: true, subtree: true });
     polishState.observers.add(observer);
   }
-
   function getActiveScreen() {
     return qs("main .screen.active") || qs(".screen.active");
   }
-
   function refreshScreenEnhancements() {
     const screen = getActiveScreen();
     if (!screen) return;
@@ -3332,7 +3724,6 @@ input,textarea{caret-color:var(--pink-dark);}
     enhanceInputs(screen);
     if (screen.id === "chatScreen") timeout(() => smartScrollMessages(true), 20);
   }
-
   function installScreenObserver() {
     const app = byId("app");
     if (!app) return;
@@ -3340,7 +3731,6 @@ input,textarea{caret-color:var(--pink-dark);}
     observer.observe(app, { childList: true, subtree: true, attributes: true, attributeFilter: ["class"] });
     polishState.observers.add(observer);
   }
-
   function installNavigationSmoothness() {
     qsa(".nav-btn").forEach(button => {
       on(button, "click", () => {
@@ -3355,7 +3745,6 @@ input,textarea{caret-color:var(--pink-dark);}
       });
     });
   }
-
   function installChatInputGuard() {
     const input = byId("messageInput");
     if (!input) return;
@@ -3367,7 +3756,6 @@ input,textarea{caret-color:var(--pink-dark);}
       }
     });
   }
-
   function installPhotoPreview() {
     const fileInputs = qsa("input[type='file'][accept*='image']");
     fileInputs.forEach(input => {
@@ -3381,14 +3769,12 @@ input,textarea{caret-color:var(--pink-dark);}
       });
     });
   }
-
   function releasePreviewUrls() {
     qsa("input[type='file'][data-preview-url]").forEach(input => {
       safeCall(() => URL.revokeObjectURL(input.dataset.previewUrl));
       delete input.dataset.previewUrl;
     });
   }
-
   function installOnlineIndicator() {
     const ensure = () => {
       let node = byId("networkStatus");
@@ -3407,7 +3793,6 @@ input,textarea{caret-color:var(--pink-dark);}
     on(window, "online", ensure);
     on(window, "offline", ensure);
   }
-
   function installVisibilityRecovery() {
     on(document, "visibilitychange", () => {
       if (document.visibilityState !== "visible") return;
@@ -3416,13 +3801,11 @@ input,textarea{caret-color:var(--pink-dark);}
       timeout(() => smartScrollMessages(false), 60);
     });
   }
-
   function installPageTransitionHint() {
     const root = document.documentElement;
     root.classList.add("polish-ready");
     timeout(() => root.classList.add("polish-settled"), 50);
   }
-
   function installIntersectionWarmup() {
     if (!("IntersectionObserver" in window)) return;
     const images = qsa("img[loading='lazy']");
@@ -3439,7 +3822,6 @@ input,textarea{caret-color:var(--pink-dark);}
     images.forEach(image => observer.observe(image));
     polishState.observers.add(observer);
   }
-
   function installPassiveScrollHints() {
     on(window, "scroll", () => {
       rafOnce("window-scroll", () => {
@@ -3447,7 +3829,6 @@ input,textarea{caret-color:var(--pink-dark);}
       });
     }, { passive: true });
   }
-
   function installDoubleTapGuard() {
     let lastTap = 0;
     on(document, "pointerup", event => {
@@ -3463,7 +3844,6 @@ input,textarea{caret-color:var(--pink-dark);}
       lastTap = now;
     }, { passive: false });
   }
-
   function installSafeAreaPadding() {
     const style = document.documentElement.style;
     style.setProperty("--safe-top", "env(safe-area-inset-top, 0px)");
@@ -3471,7 +3851,6 @@ input,textarea{caret-color:var(--pink-dark);}
     style.setProperty("--safe-bottom", "env(safe-area-inset-bottom, 0px)");
     style.setProperty("--safe-left", "env(safe-area-inset-left, 0px)");
   }
-
   function installErrorBoundary() {
     on(window, "error", event => {
       const message = String(event.message || "");
@@ -3482,7 +3861,6 @@ input,textarea{caret-color:var(--pink-dark);}
       console.debug("Async error observed by polish layer:", event.reason);
     });
   }
-
   function installBeforeUnloadCleanup() {
     on(window, "pagehide", () => {
       polishState.timers.forEach(clearTimeout);
@@ -3494,7 +3872,6 @@ input,textarea{caret-color:var(--pink-dark);}
       polishState.observers.clear();
     }, { passive: true });
   }
-
   function addRuntimeStyle() {
     if (byId("polish-runtime-style")) return;
     const style = document.createElement("style");
@@ -3510,7 +3887,6 @@ input,textarea{caret-color:var(--pink-dark);}
     `;
     document.head.appendChild(style);
   }
-
   function init() {
     if (polishState.ready) return;
     polishState.ready = true;
@@ -3540,13 +3916,11 @@ input,textarea{caret-color:var(--pink-dark);}
     enhanceInputs(document);
     refreshScreenEnhancements();
   }
-
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init, { once: true });
   } else {
     init();
   }
-
   window.__OUR_UNIVERSE_POLISH__ = Object.freeze({
     refresh: refreshScreenEnhancements,
     scrollToMessages: () => smartScrollMessages(true),
@@ -3554,7 +3928,6 @@ input,textarea{caret-color:var(--pink-dark);}
     reducedMotion: () => polishState.reducedMotion
   });
 })();
-
     /* EXTRA SMOOTHNESS / RESILIENCE ENGINE */
     const Smoothness = (() => {
       const rafQueue=new Map(); const idleQueue=[]; let idleHandle=null;
@@ -3578,7 +3951,6 @@ input,textarea{caret-color:var(--pink-dark);}
       return {raf,idle,debounce,throttleFrame,reducedMotion,installImageLazyLoading,install};
     })();
     Smoothness.install();
-
     const DataSafety=(()=>{
       const limits={text:4000,name:40,uid:4};
       function cleanText(value,limit=limits.text){return String(value??'').replace(/[\u0000-\u001F\u007F]/g,'').trim().slice(0,limit);}
@@ -3587,7 +3959,6 @@ input,textarea{caret-color:var(--pink-dark);}
       function safeUrl(value){try{const url=new URL(value);return ['http:','https:'].includes(url.protocol)?url.href:'';}catch(_){return '';}}
       return {cleanText,cleanName,cleanUid,safeUrl};
     })();
-
     const ChatUX=(()=>{
       let renderVersion=0;
       function beginRender(){renderVersion+=1;return renderVersion;}
@@ -3597,8 +3968,6 @@ input,textarea{caret-color:var(--pink-dark);}
       return {beginRender,isCurrent,nearBottom,scrollBottom};
     })();
 </script>
-
-
 <!--
   MAINTAINABILITY NOTES — THE LINES BELOW DOCUMENT THE POLISH LAYER.
   They intentionally contain no executable behavior and do not alter the app.
@@ -4997,4 +5366,3 @@ input,textarea{caret-color:var(--pink-dark);}
 -->
 </body>
 </html>
-
