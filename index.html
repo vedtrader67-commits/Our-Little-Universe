@@ -1810,6 +1810,12 @@ input,textarea{caret-color:var(--pink-dark);}
     const auth = getAuth(firebaseApp);
     const db = getFirestore(firebaseApp);
 
+    /* Wait for Firebase Auth to restore the existing session before protected
+       Firestore reads. */
+    let resolveAuthReady;
+    const authReady = new Promise(resolve => { resolveAuthReady = resolve; });
+    let authReadyUser = null;
+
     /* ============================================================
        DOM / APP STATE
        ============================================================ */
@@ -1911,6 +1917,8 @@ input,textarea{caret-color:var(--pink-dark);}
 
     async function getProfile(uid) {
       if (!uid) return null;
+      await authReady;
+      if (!auth.currentUser) return null;
       if (state.cache.profiles.has(uid)) return state.cache.profiles.get(uid);
       const snapshot = await getDoc(doc(db, "users", uid));
       if (!snapshot.exists()) return null;
@@ -1920,6 +1928,8 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     async function generatePublicUid() {
+      await authReady;
+      if (!auth.currentUser) throw Object.assign(new Error("Authentication is not ready."), { code: "auth/not-ready" });
       for (let attempt = 0; attempt < 60; attempt++) {
         const candidate = String(Math.floor(1000 + Math.random() * 9000));
         const snapshot = await getDocs(query(collection(db, "users"), where("publicUid", "==", candidate), limit(1)));
@@ -1929,9 +1939,14 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     async function ensurePublicUid(profile) {
-      if (profile?.publicUid && /^\d{4}$/.test(profile.publicUid)) return profile;
+      await authReady;
+      if (!auth.currentUser) throw Object.assign(new Error("Authentication is not ready."), { code: "auth/not-ready" });
+      if (profile?.publicUid && /^\d{4}$/.test(String(profile.publicUid))) {
+        return { ...profile, publicUid: String(profile.publicUid) };
+      }
       const publicUid = await generatePublicUid();
       await setDoc(doc(db, "users", auth.currentUser.uid), {
+        uid: auth.currentUser.uid,
         publicUid,
         updatedAt: serverTimestamp()
       }, { merge: true });
@@ -2060,6 +2075,8 @@ input,textarea{caret-color:var(--pink-dark);}
        AUTH STATE / PROFILE SETUP
        ============================================================ */
     onAuthStateChanged(auth, async user => {
+      authReadyUser = user || null;
+      resolveAuthReady(authReadyUser);
       cleanupAllListeners();
       stopRecordingNow(true);
       if (!user) {
@@ -2145,7 +2162,14 @@ input,textarea{caret-color:var(--pink-dark);}
       const box = $("searchResult");
       box.innerHTML = "";
       if (!/^\d{4}$/.test(uid)) return toast("Enter a 4-digit UID.");
-      if (!auth.currentUser) return;
+      await authReady;
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        box.innerHTML = '<div class="empty glass">Please sign in first, then search again.</div>';
+        return;
+      }
+      const searchButton = $("userSearchBtn");
+      if (searchButton) { searchButton.disabled = true; searchButton.textContent = "Searching…"; }
 
       try {
         // Public UID is normally stored as a 4-digit string.
@@ -2170,7 +2194,7 @@ input,textarea{caret-color:var(--pink-dark);}
         }
 
         const result = { uid: snapshot.docs[0].id, ...snapshot.docs[0].data() };
-        if (result.uid === auth.currentUser.uid) {
+        if (result.uid === currentUser.uid) {
           box.innerHTML = '<div class="empty glass">That is your own UID.</div>';
           return;
         }
@@ -2187,6 +2211,8 @@ input,textarea{caret-color:var(--pink-dark);}
         } else {
           box.innerHTML = `<div class="empty glass">Search failed (${escapeText(code)}). Please try again.</div>`;
         }
+      } finally {
+        if (searchButton) { searchButton.disabled = false; searchButton.textContent = "Search"; }
       }
     }
 
