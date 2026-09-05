@@ -2772,7 +2772,12 @@ input,textarea{caret-color:var(--pink-dark);}
     async function sendPrivateInvite(connectionId, toUid, button) {
       button.disabled = true;
       try {
-        const connection = await getDoc(doc(db, "connections", connectionId));
+        let connection;
+        try {
+          connection = await getDoc(doc(db, "connections", connectionId));
+        } catch (error) {
+          throw new Error(`STEP-1-connection-read: ${error?.code || error?.message}`);
+        }
         if (!connection.exists() || !connection.data().members?.includes(auth.currentUser.uid)) {
           throw new Error("not-connected");
         }
@@ -2782,11 +2787,16 @@ input,textarea{caret-color:var(--pink-dark);}
         // can only be opened after both people accept the separate invitation.
         // Checking the invite through an allowed participant query also avoids
         // permission errors for a document that does not yet exist.
-        const outgoingInvites = await getDocs(query(
-          collection(db, "privateInvites"),
-          where("fromUid", "==", auth.currentUser.uid),
-          limit(100)
-        ));
+        let outgoingInvites;
+        try {
+          outgoingInvites = await getDocs(query(
+            collection(db, "privateInvites"),
+            where("fromUid", "==", auth.currentUser.uid),
+            limit(100)
+          ));
+        } catch (error) {
+          throw new Error(`STEP-2-invites-list: ${error?.code || error?.message}`);
+        }
         const existingInvite = outgoingInvites.docs.find(item => {
           const data = item.data() || {};
           return data.toUid === toUid && data.status === "pending";
@@ -2797,14 +2807,18 @@ input,textarea{caret-color:var(--pink-dark);}
         }
 
         const inviteRef = doc(db, "privateInvites", `${spaceId}__${auth.currentUser.uid}`);
-        await setDoc(inviteRef, {
-          connectionId,
-          fromUid: auth.currentUser.uid,
-          toUid,
-          status: "pending",
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
-        }, { merge: true });
+        try {
+          await setDoc(inviteRef, {
+            connectionId,
+            fromUid: auth.currentUser.uid,
+            toUid,
+            status: "pending",
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+          }, { merge: true });
+        } catch (error) {
+          throw new Error(`STEP-3-invite-write: ${error?.code || error?.message}`);
+        }
         toast("Private-space invitation sent.");
         await loadPrivateSpace();
       } catch (error) {
@@ -3515,6 +3529,22 @@ input,textarea{caret-color:var(--pink-dark);}
         play.textContent = "▶";
         paintTime(0);
       });
+      // DIAGNOSTIC: if the file itself fails to load (bad URL, wrong
+      // format, blocked by Cloudinary, network error), the browser
+      // fires "error" on the audio element rather than rejecting
+      // play(). Surface it so we know the real cause next time
+      // instead of guessing.
+      audio.addEventListener("error", () => {
+        const code = audio.error?.code;
+        const reason = code === 1 ? "aborted"
+          : code === 2 ? "network error"
+          : code === 3 ? "could not decode this audio format"
+          : code === 4 ? "audio source not supported/found"
+          : "unknown";
+        console.error("Voice note load error:", code, audio.src);
+        toast(`Voice note failed to load: ${reason}`);
+        play.textContent = "▶";
+      });
       progress.addEventListener("click", event => {
         const rect = progress.getBoundingClientRect();
         if (!audio.duration || !rect.width) return;
@@ -3835,19 +3865,9 @@ input,textarea{caret-color:var(--pink-dark);}
         const result = await response.json();
         if (!response.ok || !result.secure_url) throw new Error(result?.error?.message || "Voice upload failed.");
 
-        // FIX: the raw upload (webm/ogg/mp4 depending on device) is not
-        // reliably playable everywhere — notably, Safari/iOS cannot
-        // decode webm audio at all, and ambiguous "video"-typed audio
-        // can get silenced by the phone's mute switch. Requesting an
-        // explicit .mp3 delivery from Cloudinary transcodes it to a
-        // universally-decodable audio format on the fly.
-        const audioUrl = result.public_id
-          ? `https://res.cloudinary.com/${CLOUD}/video/upload/${result.public_id}.mp3`
-          : result.secure_url;
-
         await addDoc(chatCollection(), {
           type: "audio",
-          audioUrl,
+          audioUrl: result.secure_url,
           publicId: result.public_id || "",
           duration: durationSeconds,
           senderId: auth.currentUser.uid,
