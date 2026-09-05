@@ -3,22 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#fff0f6" />
+  <meta name="theme-color" content="#f0f7ff" />
   <meta name="color-scheme" content="light">
   <meta name="description" content="Our Little Universe — a smooth private and connected social space.">
   <title>Our Little Universe</title>
 <style>
     :root {
+      --pink: #6ea2dc;
+      --pink-dark: #4d86bd;
+      --pink-soft: #f0f7ff;
+      --rose: #d6e6f7;
+      --text: #2c3538;
+      --muted: #6f7a80;
+      --white: rgba(255,255,255,0.86);
+      --border: rgba(255,255,255,0.7);
+      --shadow: 0 18px 50px rgba(53, 83, 106, 0.12);
+      --radius: 24px;
+    }
+
+    /* Private-space theme: the app is blue by default. Pink only
+       shows once a private space is actually unlocked (accepted)
+       and you're viewing it — toggled in showScreen(). */
+    body.private-theme {
       --pink: #dc6e9d;
       --pink-dark: #bd4d80;
       --pink-soft: #fff0f6;
       --rose: #f7d6e4;
-      --text: #382c34;
-      --muted: #806f79;
-      --white: rgba(255,255,255,0.86);
-      --border: rgba(255,255,255,0.7);
-      --shadow: 0 18px 50px rgba(106, 53, 80, 0.12);
-      --radius: 24px;
+    }
+
+    /* ------------------------------------------------------------
+       PRIVATE-SPACE THEME
+       The app is blue by default. body.private-theme is toggled on
+       only while genuinely inside an unlocked private space screen
+       or an unlocked private chat (see showScreen()) — everywhere
+       else stays blue. This restores the original pink palette
+       scoped to that state only.
+       ------------------------------------------------------------ */
+    body.private-theme {
+      --pink: #dc6e9d;
+      --pink-dark: #bd4d80;
+      --pink-soft: #fff0f6;
+      --rose: #f7d6e4;
     }
     * {
       box-sizing: border-box;
@@ -33,10 +58,10 @@
       font-family: "DM Sans", sans-serif;
       color: var(--text);
       background:
-        radial-gradient(circle at 10% 10%, rgba(255, 214, 230, 0.8), transparent 28%),
+        radial-gradient(circle at 10% 10%, rgba(214, 232, 255, 0.8), transparent 28%),
         radial-gradient(circle at 90% 15%, rgba(240, 212, 255, 0.5), transparent 24%),
-        radial-gradient(circle at 50% 100%, rgba(255, 230, 240, 0.75), transparent 32%),
-        linear-gradient(145deg, #fff9fc 0%, #fff4f8 45%, #f9eff8 100%);
+        radial-gradient(circle at 50% 100%, rgba(230, 241, 255, 0.75), transparent 32%),
+        linear-gradient(145deg, #f9fcff 0%, #f4f9ff 45%, #eff8f9 100%);
       overflow-x: hidden;
     }
     body.keyboard-open {
@@ -177,7 +202,7 @@
       border-radius: 999px;
       padding: 7px 12px;
       background: rgba(255,255,255,0.75);
-      border: 1px solid rgba(230, 205, 216, 0.7);
+      border: 1px solid rgba(205, 217, 230, 0.7);
       font-size: 12px;
       color: var(--muted);
     }
@@ -186,12 +211,12 @@
       border-radius: 16px;
       padding: 12px 16px;
       color: #fff;
-      background: linear-gradient(135deg, #ee82b0, #c7538a);
-      box-shadow: 0 12px 28px rgba(200, 78, 137, 0.22);
+      background: linear-gradient(135deg, #82b5ee, #5390c7);
+      box-shadow: 0 12px 28px rgba(78, 143, 200, 0.22);
       font-weight: 700;
     }
     .secondary-btn {
-      border: 1px solid rgba(217, 190, 203, 0.75);
+      border: 1px solid rgba(190, 204, 217, 0.75);
       border-radius: 15px;
       padding: 11px 14px;
       color: var(--text);
@@ -226,10 +251,10 @@
       margin: 0 auto 18px;
       display: grid;
       place-items: center;
-      background: linear-gradient(145deg, #f5b6cf, #dd72a2);
+      background: linear-gradient(145deg, #b6d2f5, #72a7dd);
       color: white;
       font-size: 37px;
-      box-shadow: 0 18px 38px rgba(208, 89, 139, 0.22);
+      box-shadow: 0 18px 38px rgba(89, 145, 208, 0.22);
     }
     .login-title {
       font-size: 39px;
@@ -251,11 +276,11 @@
       font-size: 12px;
       font-weight: 700;
       margin: 0 0 7px 4px;
-      color: #695664;
+      color: #566569;
     }
     .field input {
       width: 100%;
-      border: 1px solid rgba(226, 204, 215, 0.8);
+      border: 1px solid rgba(204, 216, 226, 0.8);
       outline: none;
       background: rgba(255,255,255,0.75);
       padding: 14px 14px;
@@ -263,12 +288,12 @@
       color: var(--text);
     }
     .field input:focus {
-      border-color: #e49abb;
-      box-shadow: 0 0 0 4px rgba(228,154,187,0.12);
+      border-color: #9abfe4;
+      box-shadow: 0 0 0 4px rgba(154, 191, 228, 0.12);
     }
     .login-error {
       margin: 12px 0 0;
-      color: #ba4d72;
+      color: #4d77ba;
       font-size: 13px;
       min-height: 18px;
     }
@@ -282,7 +307,7 @@
       position: relative;
       background:
         radial-gradient(circle at 80% 20%, rgba(255,255,255,0.74), transparent 28%),
-        linear-gradient(145deg, rgba(255,241,247,0.95), rgba(255,255,255,0.82));
+        linear-gradient(145deg, rgba(241, 248, 255, 0.95), rgba(255,255,255,0.82));
     }
     .hero-card::after {
       content: "";
@@ -290,7 +315,7 @@
       width: 190px;
       height: 190px;
       border-radius: 50%;
-      background: rgba(238, 143, 184, 0.10);
+      background: rgba(143, 189, 238, 0.10);
       right: -62px;
       bottom: -78px;
       filter: blur(2px);
@@ -431,7 +456,7 @@
     }
     .date-row input {
       width: 100%;
-      border: 1px solid rgba(224, 199, 213, 0.8);
+      border: 1px solid rgba(199, 214, 224, 0.8);
       border-radius: 15px;
       padding: 12px;
       background: rgba(255,255,255,0.82);
@@ -468,9 +493,9 @@
       border-radius: 19px;
       overflow: hidden;
       aspect-ratio: 1;
-      background: #f4e8ee;
+      background: #e8eff4;
       border: 1px solid rgba(255,255,255,0.78);
-      box-shadow: 0 10px 26px rgba(74, 37, 60, 0.09);
+      box-shadow: 0 10px 26px rgba(37, 62, 74, 0.09);
     }
 
     .memory-item img {
@@ -534,7 +559,7 @@
     .chat-header {
       flex: 0 0 auto;
       padding: 14px 16px;
-      border-bottom: 1px solid rgba(225, 205, 214, 0.7);
+      border-bottom: 1px solid rgba(205, 215, 225, 0.7);
       background: rgba(255,255,255,0.7);
       display: flex;
       align-items: center;
@@ -545,7 +570,7 @@
       width: 42px;
       height: 42px;
       border-radius: 14px;
-      background: linear-gradient(145deg, #efb1ca, #d46b99);
+      background: linear-gradient(145deg, #b1cdef, #6b9ed4);
       display: grid;
       place-items: center;
       color: #fff;
@@ -559,7 +584,7 @@
 
     .chat-header-subtitle {
       font-size: 11px;
-      color: #6f6068;
+      color: #60696f;
       margin-top: 2px;
     }
 
@@ -600,8 +625,14 @@
     .message.sent {
       align-self: flex-end;
       color: #fff;
-      background: linear-gradient(135deg, #eb7eae, #c95489);
+      background: linear-gradient(135deg, #7eb3eb, #548fc9);
       border-bottom-right-radius: 6px;
+    }
+
+    /* Private-space theme: pink only shows once a private space is
+       actually unlocked and you're viewing it (see showScreen()). */
+    body.private-theme .message.sent {
+      background: linear-gradient(135deg, #eb7eae, #c95489);
     }
 
     .message.received {
@@ -609,7 +640,7 @@
       color: var(--text);
       background: rgba(255,255,255,0.9);
       border-bottom-left-radius: 6px;
-      box-shadow: 0 7px 22px rgba(61, 32, 51, 0.08);
+      box-shadow: 0 7px 22px rgba(32, 52, 61, 0.08);
     }
 
     .message-text {
@@ -635,7 +666,7 @@
     .chat-composer-wrap {
       flex: 0 0 auto;
       padding: 10px;
-      border-top: 1px solid rgba(225, 205, 214, 0.75);
+      border-top: 1px solid rgba(205, 215, 225, 0.75);
       background: rgba(255,255,255,0.68);
       padding-bottom: calc(
         10px + env(safe-area-inset-bottom)
@@ -649,14 +680,14 @@
       margin-bottom: 8px;
       padding: 9px 11px;
       border-radius: 16px;
-      background: rgba(255, 240, 247, 0.95);
+      background: rgba(240, 248, 255, 0.95);
     }
 
     .recording-dot {
       width: 9px;
       height: 9px;
       border-radius: 50%;
-      background: #dc4f82;
+      background: #4f89dc;
       animation: recBlink 1s infinite;
     }
 
@@ -668,14 +699,14 @@
 
     .recording-label {
       flex: 1;
-      color: #785b69;
+      color: #5b6a78;
       font-size: 12px;
     }
 
     .recording-time {
       font-weight: 700;
       font-size: 12px;
-      color: #a24b74;
+      color: #4b78a2;
     }
 
     .recording-small-btn {
@@ -683,13 +714,13 @@
       border-radius: 11px;
       padding: 7px 9px;
       background: #fff;
-      color: #6f5b65;
+      color: #5b666f;
       font-size: 11px;
       font-weight: 700;
     }
 
     .recording-small-btn.stop {
-      background: #d85b8b;
+      background: #5b91d8;
       color: #fff;
     }
 
@@ -703,7 +734,7 @@
       flex: 1;
       min-width: 0;
       min-height: 42px;
-      border: 1px solid rgba(219, 195, 208, 0.8);
+      border: 1px solid rgba(195, 209, 219, 0.8);
       outline: none;
       border-radius: 16px;
       padding: 11px 12px;
@@ -712,8 +743,8 @@
     }
 
     .chat-input:focus {
-      border-color: #df91b0;
-      box-shadow: 0 0 0 4px rgba(223,145,176,0.10);
+      border-color: #91b4df;
+      box-shadow: 0 0 0 4px rgba(145, 180, 223, 0.10);
     }
 
     .chat-action {
@@ -729,34 +760,34 @@
     }
 
     .photo-action {
-      background: #fff1f6;
-      color: #a64e75;
+      background: #f1f7ff;
+      color: #4e79a6;
     }
 
     .voice-action {
-      background: #fff6fa;
+      background: #f6faff;
     }
 
     .voice-action.recording {
-      background: #d75283;
+      background: #528ad7;
       color: white;
       animation: voicePulse 1s infinite;
     }
 
     @keyframes voicePulse {
       0% {
-        box-shadow: 0 0 0 0 rgba(215,82,131,0.25);
+        box-shadow: 0 0 0 0 rgba(82, 138, 215, 0.25);
       }
       70% {
-        box-shadow: 0 0 0 10px rgba(215,82,131,0);
+        box-shadow: 0 0 0 10px rgba(82, 138, 215, 0);
       }
       100% {
-        box-shadow: 0 0 0 0 rgba(215,82,131,0);
+        box-shadow: 0 0 0 0 rgba(82, 138, 215, 0);
       }
     }
 
     .send-action {
-      background: linear-gradient(135deg, #ee7ead, #ca5489);
+      background: linear-gradient(135deg, #7eb3ee, #548fca);
       color: white;
     }
 
@@ -785,10 +816,10 @@
       position: fixed;
       z-index: 99999;
       background: rgba(255,255,255,0.97);
-      border: 1px solid rgba(225, 202, 214, 0.85);
+      border: 1px solid rgba(202, 215, 225, 0.85);
       border-radius: 14px;
       padding: 5px;
-      box-shadow: 0 18px 42px rgba(59, 29, 48, 0.18);
+      box-shadow: 0 18px 42px rgba(29, 49, 59, 0.18);
       backdrop-filter: blur(18px);
       -webkit-backdrop-filter: blur(18px);
     }
@@ -796,14 +827,14 @@
     .unsend-menu button {
       border: 0;
       background: transparent;
-      color: #bb4b78;
+      color: #4b7ebb;
       font-weight: 700;
       padding: 10px 14px;
       border-radius: 10px;
     }
 
     .unsend-menu button:active {
-      background: #fff0f6;
+      background: #f0f7ff;
     }
 
     /* ==============================
@@ -864,28 +895,28 @@
     .nav-btn {
       border: 0;
       background: transparent;
-      color: #88727e;
+      color: #727f88;
       border-radius: 15px;
-      padding: 8px 4px;
+      padding: 12px 6px;
       transition: transform 0.15s ease, background 0.15s ease;
     }
 
     .nav-icon {
       display: block;
-      font-size: 17px;
+      font-size: 23px;
       line-height: 1;
     }
 
     .nav-label {
       display: block;
       margin-top: 4px;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
     }
 
     .nav-btn.active {
-      color: #a34470;
-      background: #fff0f6;
+      color: #4475a3;
+      background: #f0f7ff;
     }
 
     /* ==============================
@@ -902,7 +933,7 @@
       padding: 10px 14px;
       border-radius: 999px;
       color: #fff;
-      background: rgba(49, 38, 45, 0.92);
+      background: rgba(38, 46, 49, 0.92);
       font-size: 12px;
       font-weight: 700;
       opacity: 0;
@@ -1033,11 +1064,11 @@
   --ease-soft:cubic-bezier(.16,1,.3,1);
   --ease-quick:cubic-bezier(.4,0,.2,1);
   --tap-scale:.985;
-  --focus-ring:0 0 0 4px rgba(220,110,157,.16);
+  --focus-ring:0 0 0 4px rgba(110, 162, 220, .16);
 }
 html{scrollbar-gutter:stable both-edges;-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility;}
 body{isolation:isolate;}
-body::selection{background:rgba(220,110,157,.18);}
+body::selection{background:rgba(110, 162, 220, .18);}
 button,input,textarea{touch-action:manipulation;}
 button{-webkit-user-select:none;user-select:none;}
 button:focus-visible,input:focus-visible,textarea:focus-visible{outline:0;box-shadow:var(--focus-ring);}
@@ -1068,13 +1099,23 @@ input,textarea{caret-color:var(--pink-dark);}
 <!-- UNIVERSAL DECORATED BUTTON SYSTEM -->
 <style id="universal-button-decoration">
   :root{
+    --btn-pink-1:#9bc6f5;
+    --btn-pink-2:#5791c9;
+    --btn-soft:#f1f8ff;
+    --btn-border:rgba(255,255,255,.82);
+    --btn-shadow:0 10px 24px rgba(79, 134, 191, .18), 0 0 22px rgba(110, 162, 220, .45);
+    --btn-glow:0 0 0 4px rgba(110, 162, 220, .11);
+    --btn-ease:cubic-bezier(.22,1,.36,1);
+  }
+
+  /* Private-space theme: buttons turn pink only once a private space
+     is actually unlocked and you're viewing it (see showScreen()). */
+  body.private-theme{
     --btn-pink-1:#f59bc1;
     --btn-pink-2:#c9578b;
     --btn-soft:#fff1f7;
-    --btn-border:rgba(255,255,255,.82);
-    --btn-shadow:0 10px 24px rgba(191,79,128,.18);
-    --btn-glow:0 0 0 4px rgba(220,110,157,.11);
-    --btn-ease:cubic-bezier(.22,1,.36,1);
+    --btn-shadow:0 10px 24px rgba(191, 79, 128, .18), 0 0 22px rgba(220, 110, 156, .45);
+    --btn-glow:0 0 0 4px rgba(220, 110, 156, .11);
   }
 
   /* Base: every actionable button feels intentionally designed. */
@@ -1139,7 +1180,7 @@ input,textarea{caret-color:var(--pink-dark);}
   .nav-btn:focus-visible,
   .auth-tab:focus-visible{
     outline:none;
-    box-shadow:var(--btn-glow),0 8px 22px rgba(180,72,119,.14);
+    box-shadow:var(--btn-glow),0 8px 22px rgba(72, 124, 180, .14);
   }
 
   /* Main CTA buttons */
@@ -1151,7 +1192,7 @@ input,textarea{caret-color:var(--pink-dark);}
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.35),
       var(--btn-shadow) !important;
-    text-shadow:0 1px 1px rgba(100,35,66,.14);
+    text-shadow:0 1px 1px rgba(35, 69, 100, .14);
     transition:
       transform .16s var(--btn-ease),
       box-shadow .2s var(--btn-ease),
@@ -1162,25 +1203,25 @@ input,textarea{caret-color:var(--pink-dark);}
     transform:translateY(-2px);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.4),
-      0 14px 30px rgba(191,79,128,.23) !important;
+      0 14px 30px rgba(79, 134, 191, .23) !important;
     filter:saturate(1.04);
   }
 
   .primary-btn:active{
     transform:translateY(1px) scale(.975);
     box-shadow:
-      inset 0 2px 7px rgba(90,25,55,.12),
-      0 6px 14px rgba(191,79,128,.15) !important;
+      inset 0 2px 7px rgba(25, 58, 90, .12),
+      0 6px 14px rgba(79, 134, 191, .15) !important;
   }
 
   /* Secondary / outline */
   .secondary-btn{
-    border:1px solid rgba(216,170,191,.7) !important;
+    border:1px solid rgba(170, 193, 216, .7) !important;
     background:
-      linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,246,250,.88)) !important;
+      linear-gradient(180deg,rgba(255,255,255,.96),rgba(246, 250, 255, .88)) !important;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.92),
-      0 7px 18px rgba(120,62,88,.08);
+      0 7px 18px rgba(62, 91, 120, .08);
     transition:
       transform .16s var(--btn-ease),
       box-shadow .2s var(--btn-ease),
@@ -1189,10 +1230,10 @@ input,textarea{caret-color:var(--pink-dark);}
 
   .secondary-btn:hover{
     transform:translateY(-1px);
-    border-color:rgba(202,122,157,.68) !important;
+    border-color:rgba(122, 161, 202, .68) !important;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.95),
-      0 11px 24px rgba(120,62,88,.11);
+      0 11px 24px rgba(62, 91, 120, .11);
   }
 
   .secondary-btn:active{
@@ -1211,19 +1252,19 @@ input,textarea{caret-color:var(--pink-dark);}
 
   .auth-tab.active{
     background:
-      linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,245,250,.92)) !important;
-    color:#a64875 !important;
+      linear-gradient(180deg,rgba(255,255,255,.98),rgba(245, 250, 255, .92)) !important;
+    color:#487aa6 !important;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.95),
-      0 7px 16px rgba(120,62,88,.09);
-    border-color:rgba(222,188,204,.62);
+      0 7px 16px rgba(62, 91, 120, .09);
+    border-color:rgba(188, 206, 222, .62);
   }
 
   /* Small action buttons */
   .mini-btn,
   .recording-small-btn{
-    border:1px solid rgba(229,198,212,.72);
-    box-shadow:0 5px 14px rgba(100,50,73,.06);
+    border:1px solid rgba(198, 214, 229, .72);
+    box-shadow:0 5px 14px rgba(50, 75, 100, .06);
     transition:
       transform .15s var(--btn-ease),
       box-shadow .18s var(--btn-ease),
@@ -1233,7 +1274,7 @@ input,textarea{caret-color:var(--pink-dark);}
   .mini-btn:hover,
   .recording-small-btn:hover{
     transform:translateY(-1px);
-    box-shadow:0 8px 18px rgba(100,50,73,.09);
+    box-shadow:0 8px 18px rgba(50, 75, 100, .09);
   }
 
   .mini-btn:active,
@@ -1242,9 +1283,9 @@ input,textarea{caret-color:var(--pink-dark);}
   }
 
   .mini-btn.primary{
-    background:linear-gradient(135deg,#fff0f6,#fbd4e5) !important;
-    color:#a64875 !important;
-    border-color:#efc4d7 !important;
+    background:linear-gradient(135deg,#f0f7ff,#d4e7fb) !important;
+    color:#487aa6 !important;
+    border-color:#c4d9ef !important;
   }
 
   .mini-btn.accept{
@@ -1253,8 +1294,8 @@ input,textarea{caret-color:var(--pink-dark);}
   }
 
   .mini-btn.decline{
-    background:linear-gradient(135deg,#fff3f6,#f6e5eb) !important;
-    border-color:#ecced9 !important;
+    background:linear-gradient(135deg,#f3f7ff,#e5ecf6) !important;
+    border-color:#cedaec !important;
   }
 
   /* Chat controls */
@@ -1262,7 +1303,7 @@ input,textarea{caret-color:var(--pink-dark);}
     border:1px solid rgba(255,255,255,.78) !important;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.8),
-      0 7px 16px rgba(90,40,62,.08);
+      0 7px 16px rgba(40, 64, 90, .08);
     transition:
       transform .15s var(--btn-ease),
       box-shadow .18s var(--btn-ease),
@@ -1274,7 +1315,7 @@ input,textarea{caret-color:var(--pink-dark);}
     transform:translateY(-1px);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.88),
-      0 10px 22px rgba(90,40,62,.11);
+      0 10px 22px rgba(40, 64, 90, .11);
   }
 
   .chat-action:active{
@@ -1289,19 +1330,19 @@ input,textarea{caret-color:var(--pink-dark);}
 
   .voice-action{
     background:
-      linear-gradient(180deg,#fffaff,#fff0f7) !important;
+      linear-gradient(180deg,#faffff,#f0f8ff) !important;
   }
 
   .voice-action.recording{
     box-shadow:
-      0 0 0 4px rgba(215,82,131,.1),
-      0 9px 22px rgba(215,82,131,.18) !important;
+      0 0 0 4px rgba(82, 138, 215, .1),
+      0 9px 22px rgba(82, 138, 215, .18) !important;
   }
 
   .send-action{
     background:
       radial-gradient(circle at 25% 15%,rgba(255,255,255,.34),transparent 27%),
-      linear-gradient(135deg,#ee82b0,#c7538a) !important;
+      linear-gradient(135deg,#82b5ee,#5390c7) !important;
   }
 
   /* Forgot / text controls */
@@ -1316,8 +1357,8 @@ input,textarea{caret-color:var(--pink-dark);}
 
   .forgot:hover,
   .text-btn:hover{
-    background:rgba(255,236,245,.72);
-    color:#a33d6e;
+    background:rgba(236, 246, 255, .72);
+    color:#3d73a3;
     transform:translateY(-1px);
   }
 
@@ -1339,15 +1380,15 @@ input,textarea{caret-color:var(--pink-dark);}
 
   .nav-btn.active{
     background:
-      linear-gradient(180deg,rgba(255,241,247,.98),rgba(255,230,241,.95)) !important;
-    border-color:rgba(231,186,206,.48);
+      linear-gradient(180deg,rgba(241, 248, 255, .98),rgba(230, 242, 255, .95)) !important;
+    border-color:rgba(186, 208, 231, .48);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,.85),
-      0 6px 16px rgba(150,68,104,.08);
+      0 6px 16px rgba(68, 108, 150, .08);
   }
 
   .nav-btn.active .nav-icon{
-    filter:drop-shadow(0 2px 5px rgba(196,76,130,.18));
+    filter:drop-shadow(0 2px 5px rgba(76, 136, 196, .18));
   }
 
   .nav-btn:active{
@@ -1357,7 +1398,7 @@ input,textarea{caret-color:var(--pink-dark);}
   /* Recording controls */
   .recording-small-btn.stop{
     box-shadow:
-      0 7px 17px rgba(195,68,113,.16);
+      0 7px 17px rgba(68, 119, 195, .16);
   }
 
   /* Universal disabled state */
@@ -1524,24 +1565,24 @@ input,textarea{caret-color:var(--pink-dark);}
 /* Search result / people suggestions */
 .people-result-card{
   position:relative;display:flex;gap:12px;align-items:center;padding:14px;
-  border:1px solid rgba(232,205,218,.72);border-radius:18px;
-  background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(255,245,250,.78));
-  box-shadow:0 10px 24px rgba(92,44,67,.07);
+  border:1px solid rgba(205, 219, 232, .72);border-radius:18px;
+  background:linear-gradient(145deg,rgba(255,255,255,.9),rgba(245, 250, 255, .78));
+  box-shadow:0 10px 24px rgba(44, 69, 92, .07);
 }
 .people-result-main{min-width:0;flex:1}
 .people-result-top{display:flex;align-items:center;gap:8px;min-width:0}
 .people-result-name{font-weight:800;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .suggestion-badge{
   display:inline-flex;align-items:center;justify-content:center;width:25px;height:25px;border-radius:50%;
-  background:linear-gradient(135deg,#fff1f7,#f6d2e3);border:1px solid #ecc4d7;color:#a64875;
-  font-weight:900;font-size:13px;box-shadow:0 5px 12px rgba(100,50,73,.08);flex:0 0 auto;
+  background:linear-gradient(135deg,#f1f8ff,#d2e5f6);border:1px solid #c4d9ec;color:#487aa6;
+  font-weight:900;font-size:13px;box-shadow:0 5px 12px rgba(50, 75, 100, .08);flex:0 0 auto;
 }
 .people-result-status{font-size:11px;color:var(--muted);margin-top:3px}
 .people-result-actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end}
 .people-result-actions .mini-btn{white-space:nowrap}
-.mini-btn.send-request{background:linear-gradient(135deg,#fff0f6,#fbd4e5);color:#a64875}
+.mini-btn.send-request{background:linear-gradient(135deg,#f0f7ff,#d4e7fb);color:#487aa6}
 .mini-btn.chat-direct{background:linear-gradient(135deg,#edf7ff,#dceeff);color:#3f658a}
-.mini-btn.ghost{background:rgba(255,255,255,.72);color:#6d5963}
+.mini-btn.ghost{background:rgba(255,255,255,.72);color:#59646d}
 .mini-btn:disabled{opacity:.62;cursor:not-allowed;transform:none !important}
 @media (max-width:560px){
   .people-result-card{align-items:flex-start;flex-wrap:wrap}
@@ -1595,7 +1636,7 @@ input,textarea{caret-color:var(--pink-dark);}
       <h1 id="authTitle" class="login-title">Welcome back.</h1>
       <p id="authSubtitle" class="login-subtitle">A little corner for public conversations, connections, private rooms, memories and the moments you choose to keep.</p>
 
-      <div class="auth-tabs" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:#fff3f8;border-radius:14px;margin-bottom:16px">
+      <div class="auth-tabs" style="display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:#f3f9ff;border-radius:14px;margin-bottom:16px">
         <button class="auth-tab active" data-auth="login" type="button">Login</button>
         <button class="auth-tab" data-auth="register" type="button">Create account</button>
       </div>
@@ -1648,7 +1689,7 @@ input,textarea{caret-color:var(--pink-dark);}
           <p class="hero-copy">Anyone with an account can join the public side. Accepted connections can chat one-to-one. A private space unlocks only after a separate invitation is accepted.</p>
         </div>
 
-        <div class="counter-card glass">
+        <div class="counter-card glass hidden" id="counterCard">
           <div class="eyebrow">private relationship</div>
           <div class="heart-counter">
             <div class="heart-shape"></div>
@@ -1657,8 +1698,8 @@ input,textarea{caret-color:var(--pink-dark);}
               <div class="days-label">days</div>
             </div>
           </div>
-          <div id="relationshipDate" class="counter-date">Private relationship timer appears after a shared private space exists.</div>
-          <div id="counterLiveText" class="counter-live">Private space locked</div>
+          <div id="relationshipDate" class="counter-date"></div>
+          <div id="counterLiveText" class="counter-live"></div>
         </div>
 
         <div class="stats">
@@ -1680,12 +1721,12 @@ input,textarea{caret-color:var(--pink-dark);}
           <div class="setting-head">
             <div>
               <div class="eyebrow">your private space</div>
-              <h3>Shared relationship time</h3>
+              <h3 id="homePrivateHeading">Private space</h3>
             </div>
             <div id="homePrivateBadge" class="pill">locked</div>
           </div>
-          <p id="homePrivateCopy" class="muted" style="font-size:13px;line-height:1.5;margin:0">Connect with someone first, then create a private-space invitation. The relationship date and timer are shared inside that private room.</p>
-          <button id="homePrivateBtn" class="secondary-btn" type="button" style="margin-top:12px">Open Private</button>
+          <p id="homePrivateCopy" class="muted" style="font-size:13px;line-height:1.5;margin:0">Connect with someone first, then create a private-space invitation.</p>
+          <button id="homePrivateBtn" class="secondary-btn" type="button" style="margin-top:12px;width:100%;padding:16px;font-size:16px;border-radius:18px">Open Private</button>
         </div>
       </div>
     </section>
@@ -1819,8 +1860,8 @@ input,textarea{caret-color:var(--pink-dark);}
       <div class="container">
         <div class="topbar">
           <div>
-            <div class="eyebrow">private relationship</div>
-            <h2 class="page-title">Our private room.</h2>
+            <div class="eyebrow" id="privateEyebrow">private space</div>
+            <h2 class="page-title" id="privateTitle">Our private room.</h2>
           </div>
           <div id="privateStatusPill" class="pill">locked</div>
         </div>
@@ -2298,6 +2339,18 @@ input,textarea{caret-color:var(--pink-dark);}
       });
       document.body.classList.remove("keyboard-open");
       if (document.activeElement?.matches("input,textarea")) document.activeElement.blur();
+
+      // Pink only shows once a private space is actually unlocked
+      // (accepted) AND you're viewing a private-space screen — not
+      // just because an invite is pending. Everywhere else stays blue.
+      document.body.classList.toggle(
+        "private-theme",
+        !!state.privateSpace && (
+          id === "privateScreen" ||
+          id === "memoriesScreen" ||
+          (id === "chatScreen" && state.activeChat.kind === "private")
+        )
+      );
 
       if (id === "homeScreen") refreshHome();
       if (id === "requestsScreen") loadRequests();
@@ -2874,6 +2927,7 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     async function renderPrivateLocked(incomingSnapshot, outgoingSnapshot) {
+      $("privateEyebrow").textContent = "private space";
       $("privateStatusPill").textContent = incomingSnapshot?.size ? "invite waiting" : "locked";
       const box = $("privateContent");
       box.innerHTML = "";
@@ -3003,6 +3057,7 @@ input,textarea{caret-color:var(--pink-dark);}
 
     function renderPrivateUnlocked() {
       if (!state.privateSpace) return;
+      $("privateEyebrow").textContent = "private relationship";
       $("privateStatusPill").textContent = "unlocked";
       const box = $("privateContent");
       box.innerHTML = "";
@@ -3091,18 +3146,22 @@ input,textarea{caret-color:var(--pink-dark);}
        RELATIONSHIP COUNTER
        ============================================================ */
     function refreshHome() {
+      const unlocked = !!state.privateSpace;
+      $("counterCard").classList.toggle("hidden", !unlocked);
+      $("homePrivateHeading").textContent = unlocked ? "Shared relationship time" : "Private space";
+
       if (!state.privateSpace?.relationshipStartAt) {
         clearInterval(state.relationshipTimer);
         state.relationshipTimer = null;
         $("daysTogether").textContent = "0";
-        $("relationshipDate").textContent = state.privateSpace
+        $("relationshipDate").textContent = unlocked
           ? "Set the relationship start inside your private room."
-          : "Private relationship timer appears after a shared private space exists.";
-        $("counterLiveText").textContent = state.privateSpace ? "Private space unlocked" : "Private space locked";
-        $("homePrivateBadge").textContent = state.privateSpace ? "unlocked" : "locked";
-        $("homePrivateCopy").textContent = state.privateSpace
+          : "";
+        $("counterLiveText").textContent = unlocked ? "Private space unlocked" : "";
+        $("homePrivateBadge").textContent = unlocked ? "unlocked" : "locked";
+        $("homePrivateCopy").textContent = unlocked
           ? "Your private room is unlocked. Set a shared relationship start time to begin the live counter."
-          : "Connect with someone first, then create a private-space invitation. The relationship date and timer are shared inside that room.";
+          : "Connect with someone first, then create a private-space invitation.";
         return;
       }
 
@@ -4381,8 +4440,8 @@ input,textarea{caret-color:var(--pink-dark);}
     style.id = "polish-runtime-style";
     style.textContent = `
       html.polish-ready .screen.active{animation-timing-function:var(--ease-standard);}
-      .media-error{object-fit:contain!important;background:#f7eaf0!important;}
-      .network-status{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;pointer-events:none;z-index:110000;max-width:calc(100vw - 28px);padding:9px 13px;border-radius:999px;background:rgba(49,38,45,.94);color:#fff;font-size:11px;font-weight:700;text-align:center;transition:opacity .2s ease,transform .2s ease;}
+      .media-error{object-fit:contain!important;background:#eaf1f7!important;}
+      .network-status{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;pointer-events:none;z-index:110000;max-width:calc(100vw - 28px);padding:9px 13px;border-radius:999px;background:rgba(38, 46, 49, .94);color:#fff;font-size:11px;font-weight:700;text-align:center;transition:opacity .2s ease,transform .2s ease;}
       .network-status.show{opacity:1;transform:translate(-50%,0);}
       .reduced-motion .network-status{transition:none;}
       .polish-settled .glass{transition:background-color .2s ease,border-color .2s ease;}
