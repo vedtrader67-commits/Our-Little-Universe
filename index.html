@@ -1774,6 +1774,10 @@ input,textarea{caret-color:var(--pink-dark);}
             <h2 class="page-title">Requests.</h2>
           </div>
         </div>
+        <div id="privateInviteRequestsBlock" class="hidden">
+          <div class="section-title">Private space invite</div>
+          <div id="incomingPrivateInviteRequests" class="list"></div>
+        </div>
         <div class="section-title">Incoming</div>
         <div id="incomingRequests" class="list"></div>
         <div class="section-title">Outgoing</div>
@@ -2717,6 +2721,35 @@ input,textarea{caret-color:var(--pink-dark);}
       if (!incomingBox || !outgoingBox) return;
       incomingBox.innerHTML = '<div class="empty glass">Loading incoming requests…</div>';
       outgoingBox.innerHTML = '<div class="empty glass">Loading outgoing requests…</div>';
+
+      // Private-space invites (separate system from follow requests) —
+      // shown here too, using the same accept/decline card as the
+      // Private screen, so the Accept button is easy to find.
+      try {
+        const privateBox = $("incomingPrivateInviteRequests");
+        const privateBlock = $("privateInviteRequestsBlock");
+        const alreadyInSpace = await getDocs(query(collection(db, "privateSpaces"), where("members", "array-contains", user.uid), limit(1)));
+        if (alreadyInSpace.empty) {
+          const incomingInvites = await getDocs(query(collection(db, "privateInvites"), where("toUid", "==", user.uid), limit(50)));
+          const pendingInvites = incomingInvites.docs.filter(item => item.data().status === "pending");
+          if (pendingInvites.length) {
+            privateBlock.classList.remove("hidden");
+            privateBox.innerHTML = "";
+            for (const inviteDoc of pendingInvites) {
+              const invite = inviteDoc.data();
+              const profile = await getProfile(invite.fromUid) || { uid: invite.fromUid, displayName: "User", publicUid: "------" };
+              privateBox.appendChild(buildIncomingPrivateInviteCard(profile, inviteDoc.id, invite));
+            }
+          } else {
+            privateBlock.classList.add("hidden");
+          }
+        } else {
+          privateBlock.classList.add("hidden");
+        }
+      } catch (error) {
+        console.error("Private invite load failed:", error);
+      }
+
       try {
         const [incomingSnapshot, outgoingSnapshot] = await Promise.all([
           getDocs(query(collection(db, "followRequests"), where("toUid", "==", user.uid), limit(50))),
