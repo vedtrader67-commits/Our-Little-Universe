@@ -2202,6 +2202,7 @@ input,textarea{caret-color:var(--pink-dark);}
       where,
       arrayUnion,
       arrayRemove,
+      deleteField,
       runTransaction
     } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
@@ -4118,13 +4119,16 @@ input,textarea{caret-color:var(--pink-dark);}
         const snapshot = await getDoc(ref);
         if (!snapshot.exists()) return;
         const uid = auth.currentUser.uid;
-        const reactions = { ...(snapshot.data().reactions || {}) };
-        if (reactions[uid] === emoji) delete reactions[uid];
-        else reactions[uid] = emoji;
-        await updateDoc(ref, { reactions });
+        const alreadyReacted = snapshot.data().reactions?.[uid] === emoji;
+        // Update only this one person's reaction field rather than
+        // rewriting the whole map — smaller write, and more likely to
+        // pass a Firestore rule that checks which fields changed.
+        await updateDoc(ref, { [`reactions.${uid}`]: alreadyReacted ? deleteField() : emoji });
       } catch (error) {
         console.error(error);
-        toast("Reaction could not be sent.");
+        toast(error?.code === "permission-denied"
+          ? "Firestore is blocking reactions — your security rules need to allow any chat member to update the 'reactions' field on a message, not just the original sender. Publish the updated rules."
+          : "Reaction could not be sent.");
       }
     }
 
@@ -4775,8 +4779,13 @@ input,textarea{caret-color:var(--pink-dark);}
       } catch (error) {
         console.error(error);
         state.screenShare.pc?.close();
+        state.screenShare.localStream?.getTracks().forEach(track => track.stop());
         state.screenShare = { pc: null, localStream: null, role: null, watchingKey: state.screenShare.watchingKey, seenCallerCandidates: 0, seenCalleeCandidates: 0, ringing: false };
-        toast(error?.name === "NotAllowedError" ? "Camera permission is needed for video calls." : "Video call could not be started.");
+        toast(error?.name === "NotAllowedError"
+          ? "Camera permission is needed for video calls."
+          : error?.code === "permission-denied"
+          ? "Firestore is blocking the call — your security rules need to allow chat members to read/write the 'meta/screenShare' document. Publish the updated rules."
+          : "Video call could not be started.");
       }
     }
 
@@ -4906,9 +4915,15 @@ input,textarea{caret-color:var(--pink-dark);}
         updateScreenShareButton();
       } catch (error) {
         console.error(error);
-        toast(error?.name === "NotAllowedError" ? "Camera permission is needed for video calls." : "Could not join the call.");
+        toast(error?.name === "NotAllowedError"
+          ? "Camera permission is needed for video calls."
+          : error?.code === "permission-denied"
+          ? "Firestore is blocking the call — your security rules need to allow chat members to read/write the 'meta/screenShare' document. Publish the updated rules."
+          : "Could not join the call.");
         state.screenShare.pc?.close();
+        state.screenShare.localStream?.getTracks().forEach(track => track.stop());
         state.screenShare.pc = null;
+        state.screenShare.localStream = null;
       }
     }
 
