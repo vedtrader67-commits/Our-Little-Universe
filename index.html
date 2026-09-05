@@ -2809,7 +2809,7 @@ input,textarea{caret-color:var(--pink-dark);}
         await loadPrivateSpace();
       } catch (error) {
         console.error(error);
-        toast("Could not send the private invitation.");
+        toast(`Could not send invite: ${error?.code || error?.message || error}`);
       } finally {
         button.disabled = false;
       }
@@ -3440,8 +3440,10 @@ input,textarea{caret-color:var(--pink-dark);}
         image.loading = "lazy";
         image.decoding = "async";
         message.appendChild(image);
+        if (isMine) attachUnsendLongPress(message, messageId, data);
       } else if (data.type === "audio") {
         message.appendChild(buildAudioPlayer(data.audioUrl, Number(data.duration || 0), isMine));
+        if (isMine) attachUnsendLongPress(message, messageId, data);
       }
 
       return message;
@@ -3833,9 +3835,19 @@ input,textarea{caret-color:var(--pink-dark);}
         const result = await response.json();
         if (!response.ok || !result.secure_url) throw new Error(result?.error?.message || "Voice upload failed.");
 
+        // FIX: the raw upload (webm/ogg/mp4 depending on device) is not
+        // reliably playable everywhere — notably, Safari/iOS cannot
+        // decode webm audio at all, and ambiguous "video"-typed audio
+        // can get silenced by the phone's mute switch. Requesting an
+        // explicit .mp3 delivery from Cloudinary transcodes it to a
+        // universally-decodable audio format on the fly.
+        const audioUrl = result.public_id
+          ? `https://res.cloudinary.com/${CLOUD}/video/upload/${result.public_id}.mp3`
+          : result.secure_url;
+
         await addDoc(chatCollection(), {
           type: "audio",
-          audioUrl: result.secure_url,
+          audioUrl,
           publicId: result.public_id || "",
           duration: durationSeconds,
           senderId: auth.currentUser.uid,
@@ -3851,14 +3863,14 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     /* ============================================================
-       TEXT-ONLY UNSEND
+       UNSEND (any message type you sent: text, image, or voice note)
        ============================================================ */
     function attachUnsendLongPress(messageElement, messageId, data) {
       let timer = null;
       let longPressed = false;
 
       const start = event => {
-        if (!auth.currentUser || data.senderId !== auth.currentUser.uid || data.type !== "text") return;
+        if (!auth.currentUser || data.senderId !== auth.currentUser.uid) return;
         longPressed = false;
         timer = setTimeout(() => {
           longPressed = true;
@@ -3883,13 +3895,13 @@ input,textarea{caret-color:var(--pink-dark);}
       });
       messageElement.addEventListener("contextmenu", event => {
         event.preventDefault();
-        if (data.senderId === auth.currentUser?.uid && data.type === "text") showUnsendMenu(event, messageId, data);
+        if (data.senderId === auth.currentUser?.uid) showUnsendMenu(event, messageId, data);
       });
     }
 
     function showUnsendMenu(event, messageId, data) {
       closeUnsendMenu();
-      if (!auth.currentUser || data.senderId !== auth.currentUser.uid || data.type !== "text") return;
+      if (!auth.currentUser || data.senderId !== auth.currentUser.uid) return;
 
       const menu = document.createElement("div");
       menu.className = "unsend-menu";
