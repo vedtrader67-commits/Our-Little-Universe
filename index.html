@@ -873,6 +873,96 @@
       background: #f0f7ff;
     }
 
+    .unsend-menu .reaction-row {
+      display: flex;
+      gap: 2px;
+      padding: 4px;
+      border-bottom: 1px solid rgba(202, 215, 225, 0.6);
+      margin-bottom: 4px;
+    }
+
+    .unsend-menu .reaction-row button {
+      font-size: 20px;
+      padding: 6px 8px;
+      line-height: 1;
+    }
+
+    .message-reactions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 4px;
+    }
+
+    .reaction-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      background: rgba(255,255,255,0.85);
+      border: 1px solid rgba(202, 215, 225, 0.8);
+      border-radius: 999px;
+      padding: 2px 7px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .reaction-pill.mine-reacted {
+      border-color: var(--pink-dark);
+      background: var(--pink-soft);
+    }
+
+    /* ==============================
+       SCREEN SHARE
+    ============================== */
+    .screen-share-action {
+      background: rgba(255,255,255,0.7);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 18px;
+      width: 38px;
+      height: 38px;
+      margin-left: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen-share-action.live {
+      background: var(--pink);
+      color: #fff;
+    }
+    .screen-share-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 16, 20, 0.92);
+      z-index: 99998;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      padding: 20px;
+    }
+    .screen-share-overlay video {
+      max-width: 100%;
+      max-height: 78vh;
+      border-radius: 16px;
+      background: #000;
+    }
+    .screen-share-label {
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    .screen-share-end {
+      border: 0;
+      background: #e0587c;
+      color: #fff;
+      font-weight: 700;
+      padding: 12px 22px;
+      border-radius: 999px;
+    }
+
     /* ==============================
        MORE
     ============================== */
@@ -1926,6 +2016,7 @@ input,textarea{caret-color:var(--pink-dark);}
               <div id="chatTypePill" class="pill">public</div>
               <div id="chatPresencePill" class="pill presence-pill hidden">Offline</div>
             </div>
+            <button id="screenShareBtn" class="chat-action screen-share-action hidden" type="button" title="Share your screen">🖥️</button>
           </div>
 
           <div id="messages" class="messages"></div>
@@ -2060,6 +2151,14 @@ input,textarea{caret-color:var(--pink-dark);}
   <div id="toast" class="toast"></div>
   <div id="msgPopupContainer" class="msg-popup-container"></div>
 
+  <div id="screenShareOverlay" class="screen-share-overlay hidden">
+    <video id="screenShareVideo" autoplay playsinline></video>
+    <div id="screenShareLabel" class="screen-share-label"></div>
+    <button id="screenShareEndBtn" class="screen-share-end" type="button">End screen share</button>
+  </div>
+
+  <div id="screenShareRingContainer" class="msg-popup-container" style="top:auto;bottom:110px;"></div>
+
   <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
 
   <script type="module">
@@ -2178,7 +2277,16 @@ input,textarea{caret-color:var(--pink-dark);}
       ignoreRecordingUpload: false,
       typingStopTimer: null,
       typingWriteTimer: null,
-      typingActive: false
+      typingActive: false,
+      screenShare: {
+        pc: null,
+        localStream: null,
+        role: null,
+        watchingKey: null,
+        seenCallerCandidates: 0,
+        seenCalleeCandidates: 0,
+        ringing: false
+      }
     };
 
     /* ============================================================
@@ -2557,6 +2665,8 @@ input,textarea{caret-color:var(--pink-dark);}
       loadConnections();
       loadPrivateSpace();
       startPrivateMemories();
+      startConnectionInboxWatches();
+      ensureNotificationPermission();
       refreshHome();
       startHeartbeat();
     }
@@ -2687,46 +2797,89 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     /* ============================================================
-       INCOMING MESSAGE POPUP (private chat)
-       Watches the latest private-chat message globally (not tied to
-       the chat screen's lifecycle) and pops a small side card when
-       a new message arrives from the other person while you're not
+       INCOMING MESSAGE POPUP (private chat + regular connection chats)
+       Watches the latest message in each chat globally (not tied to
+       the chat screen's lifecycle) and pops a small side card — or a
+       real OS notification if the tab is in the background/minimized
+       — when a new message arrives from someone else while you're not
        already looking at that chat.
        ============================================================ */
-    function startPrivateInboxWatch(spaceId) {
-      if (state.privateInbox.watchingSpaceId === spaceId) return;
-      cleanupListener("privateInboxWatch");
-      state.privateInbox.watchingSpaceId = spaceId;
-      state.privateInbox.initialized = false;
-      state.privateInbox.lastSeenMessageId = null;
+    async function ensureNotificationPermission() {
+      if (!("Notification" in window)) return "unsupported";
+      if (Notification.permission === "default") {
+        try { return await Notification.requestPermission(); } catch (_) { return "denied"; }
+      }
+      return Notification.permission;
+    }
 
-      const q = query(collection(db, "privateSpaces", spaceId, "messages"), orderBy("createdAt", "desc"), limit(1));
-      state.unsub.privateInboxWatch = onSnapshot(q, async snapshot => {
+    function watchChatForPopup(kind, id) {
+      const watchKey = `${kind}:${id}`;
+      state.inboxWatches = state.inboxWatches || new Map();
+      state.unsub.inboxWatches = state.unsub.inboxWatches || new Map();
+      if (state.inboxWatches.has(watchKey)) return;
+
+      const watchState = { initialized: false, lastSeenMessageId: null };
+      state.inboxWatches.set(watchKey, watchState);
+
+      const messagesCollection = kind === "private"
+        ? collection(db, "privateSpaces", id, "messages")
+        : collection(db, "connections", id, "messages");
+      const q = query(messagesCollection, orderBy("createdAt", "desc"), limit(1));
+
+      const unsub = onSnapshot(q, async snapshot => {
         if (snapshot.empty) return;
         const latestDoc = snapshot.docs[0];
         const data = latestDoc.data();
 
-        if (!state.privateInbox.initialized) {
+        if (!watchState.initialized) {
           // Skip notifying about whatever was already the last
           // message when the listener first attaches.
-          state.privateInbox.initialized = true;
-          state.privateInbox.lastSeenMessageId = latestDoc.id;
+          watchState.initialized = true;
+          watchState.lastSeenMessageId = latestDoc.id;
           return;
         }
-        if (latestDoc.id === state.privateInbox.lastSeenMessageId) return;
-        state.privateInbox.lastSeenMessageId = latestDoc.id;
+        if (latestDoc.id === watchState.lastSeenMessageId) return;
+        watchState.lastSeenMessageId = latestDoc.id;
 
         if (!auth.currentUser || data.senderId === auth.currentUser.uid) return;
 
-        const alreadyViewing = state.activeChat.kind === "private"
+        const alreadyViewing = state.activeChat.kind === kind
+          && state.activeChat.id === id
           && document.visibilityState === "visible";
         if (alreadyViewing) return;
 
         const sender = await getProfile(data.senderId) || { displayName: "Someone" };
-        showIncomingMessagePopup(sender, data);
+        showIncomingMessagePopup(sender, data, kind, id);
       }, error => {
-        console.error("Private inbox watch failed:", error);
+        console.error(`Inbox watch failed for ${watchKey}:`, error);
       });
+      state.unsub.inboxWatches.set(watchKey, unsub);
+    }
+
+    function stopWatchingChatForPopup(kind, id) {
+      const watchKey = `${kind}:${id}`;
+      const unsub = state.unsub.inboxWatches?.get(watchKey);
+      if (unsub) { unsub(); state.unsub.inboxWatches.delete(watchKey); }
+      state.inboxWatches?.delete(watchKey);
+    }
+
+    // Kept as a thin alias so the existing private-space call site
+    // doesn't need to change.
+    function startPrivateInboxWatch(spaceId) {
+      watchChatForPopup("private", spaceId);
+    }
+
+    // Attaches a popup watcher to every accepted connection chat, so
+    // regular 1:1 chats (not just the private space) also notify you.
+    async function startConnectionInboxWatches() {
+      const user = auth.currentUser;
+      if (!user) return;
+      try {
+        const snapshot = await getDocs(query(collection(db, "connections"), where("members", "array-contains", user.uid), limit(100)));
+        snapshot.forEach(connectionDoc => watchChatForPopup("connection", connectionDoc.id));
+      } catch (error) {
+        console.error("Could not attach connection inbox watches:", error);
+      }
     }
 
     function messagePreviewText(data) {
@@ -2735,7 +2888,27 @@ input,textarea{caret-color:var(--pink-dark);}
       return safeText(data.text) || "New message";
     }
 
-    function showIncomingMessagePopup(sender, data) {
+    function showIncomingMessagePopup(sender, data, kind = "private", id = state.privateSpace?.id) {
+      // If the tab is backgrounded or minimized, an in-page card is
+      // invisible — that's the main reason notifications seemed to
+      // silently not work. Use a real OS notification there instead.
+      if (document.visibilityState !== "visible" && "Notification" in window && Notification.permission === "granted") {
+        try {
+          const osNotification = new Notification(sender.displayName || "New message", {
+            body: messagePreviewText(data),
+            tag: `chat-${kind}-${id}`
+          });
+          osNotification.onclick = () => {
+            window.focus();
+            if (id) openChat(kind, id);
+            osNotification.close();
+          };
+          return;
+        } catch (error) {
+          console.error("OS notification failed, falling back to in-app popup:", error);
+        }
+      }
+
       const container = $("msgPopupContainer");
       const card = document.createElement("div");
       card.className = "msg-popup";
@@ -2755,7 +2928,7 @@ input,textarea{caret-color:var(--pink-dark);}
 
       card.addEventListener("click", () => {
         card.remove();
-        if (state.privateSpace) openChat("private", state.privateSpace.id);
+        if (id) openChat(kind, id);
       });
 
       container.appendChild(card);
@@ -3752,6 +3925,8 @@ input,textarea{caret-color:var(--pink-dark);}
       $("messages").innerHTML = "";
       document.body.classList.remove("keyboard-open");
       showScreen("chatScreen");
+      updateScreenShareButton();
+      if (screenShareSupportedForActiveChat()) watchScreenShareSession(kind, id, state.screenShare.role);
 
       const avatar = $("chatAvatar");
       avatar.replaceChildren();
@@ -3873,7 +4048,6 @@ input,textarea{caret-color:var(--pink-dark);}
         text.className = "message-text";
         text.textContent = safeText(data.text);
         message.appendChild(text);
-        if (isMine) attachUnsendLongPress(message, messageId, data);
       } else if (data.type === "image") {
         const image = document.createElement("img");
         image.className = "chat-image";
@@ -3882,18 +4056,65 @@ input,textarea{caret-color:var(--pink-dark);}
         image.loading = "lazy";
         image.decoding = "async";
         message.appendChild(image);
-        if (isMine) attachUnsendLongPress(message, messageId, data);
       } else if (data.type === "audio") {
         message.appendChild(buildAudioPlayer(data.audioUrl, Number(data.duration || 0), isMine));
-        if (isMine) attachUnsendLongPress(message, messageId, data);
       }
+
+      const reactionsBar = buildReactionsBar(data.reactions);
+      if (reactionsBar) message.appendChild(reactionsBar);
 
       const time = document.createElement("div");
       time.className = "message-time";
       time.textContent = formatMessageTimeIST(data.createdAt);
       message.appendChild(time);
 
+      // Long-press (or right-click) opens a quick emoji-reaction picker
+      // for any message, plus an Unsend option for your own messages.
+      attachMessageLongPress(message, messageId, data);
+
       return message;
+    }
+
+    const QUICK_REACTIONS = ["❤️", "😂", "😮", "😢", "👍", "🙏"];
+
+    function buildReactionsBar(reactions) {
+      if (!reactions || typeof reactions !== "object") return null;
+      const counts = new Map();
+      const myUid = auth.currentUser?.uid;
+      let mineEmoji = null;
+      Object.entries(reactions).forEach(([uid, emoji]) => {
+        if (!emoji) return;
+        counts.set(emoji, (counts.get(emoji) || 0) + 1);
+        if (uid === myUid) mineEmoji = emoji;
+      });
+      if (!counts.size) return null;
+
+      const bar = document.createElement("div");
+      bar.className = "message-reactions";
+      counts.forEach((count, emoji) => {
+        const pill = document.createElement("span");
+        pill.className = `reaction-pill${emoji === mineEmoji ? " mine-reacted" : ""}`;
+        pill.textContent = count > 1 ? `${emoji} ${count}` : emoji;
+        bar.appendChild(pill);
+      });
+      return bar;
+    }
+
+    async function toggleReaction(messageId, emoji) {
+      if (!auth.currentUser) return;
+      try {
+        const ref = doc(chatCollection(), messageId);
+        const snapshot = await getDoc(ref);
+        if (!snapshot.exists()) return;
+        const uid = auth.currentUser.uid;
+        const reactions = { ...(snapshot.data().reactions || {}) };
+        if (reactions[uid] === emoji) delete reactions[uid];
+        else reactions[uid] = emoji;
+        await updateDoc(ref, { reactions });
+      } catch (error) {
+        console.error(error);
+        toast("Reaction could not be sent.");
+      }
     }
 
     // Always shows the send time in India Standard Time, regardless of
@@ -3908,6 +4129,29 @@ input,textarea{caret-color:var(--pink-dark);}
         minute: "2-digit",
         hour12: true
       }).format(date) + " IST";
+    }
+
+    // Voice notes are recorded in whatever format the sender's browser
+    // supports (often audio/webm;codecs=opus on Android/desktop Chrome).
+    // iOS Safari cannot decode webm/opus at all, so a note recorded on
+    // one platform would silently fail to play on the other — this is
+    // why voice notes were inaudible for either side depending on who
+    // sent it. Cloudinary can transcode on the fly at delivery time, so
+    // we always request an mp3 (universally playable) version of the
+    // audio, regardless of the format it was originally uploaded as.
+    // This fixes playback for every voice note already sent too, since
+    // the transform is applied here rather than at upload time.
+    function transformAudioUrl(url) {
+      if (!url) return url;
+      try {
+        if (url.includes("/f_mp3")) return url;
+        const marker = "/upload/";
+        const index = url.indexOf(marker);
+        if (index === -1) return url;
+        return url.slice(0, index + marker.length) + "f_mp3/" + url.slice(index + marker.length);
+      } catch (_) {
+        return url;
+      }
     }
 
     function buildAudioPlayer(url, duration, isMine) {
@@ -3940,7 +4184,7 @@ input,textarea{caret-color:var(--pink-dark);}
       const audio = document.createElement("audio");
       audio.className = "vis-audio";
       audio.preload = "metadata";
-      audio.src = safeText(url);
+      audio.src = transformAudioUrl(safeText(url));
       audio.playsInline = true;
       audio.controls = false;
       wrapper.appendChild(audio);
@@ -4330,19 +4574,20 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     /* ============================================================
-       UNSEND (any message type you sent: text, image, or voice note)
+       LONG-PRESS MENU (quick emoji reactions for any message, plus
+       Unsend for messages you sent yourself)
        ============================================================ */
-    function attachUnsendLongPress(messageElement, messageId, data) {
+    function attachMessageLongPress(messageElement, messageId, data) {
       let timer = null;
       let longPressed = false;
 
       const start = event => {
-        if (!auth.currentUser || data.senderId !== auth.currentUser.uid) return;
+        if (!auth.currentUser) return;
         longPressed = false;
         timer = setTimeout(() => {
           longPressed = true;
           showUnsendMenu(event, messageId, data);
-        }, 600);
+        }, 500);
       };
       const cancel = () => {
         clearTimeout(timer);
@@ -4362,32 +4607,50 @@ input,textarea{caret-color:var(--pink-dark);}
       });
       messageElement.addEventListener("contextmenu", event => {
         event.preventDefault();
-        if (data.senderId === auth.currentUser?.uid) showUnsendMenu(event, messageId, data);
+        if (auth.currentUser) showUnsendMenu(event, messageId, data);
       });
     }
 
     function showUnsendMenu(event, messageId, data) {
       closeUnsendMenu();
-      if (!auth.currentUser || data.senderId !== auth.currentUser.uid) return;
+      if (!auth.currentUser) return;
+      const isMine = data.senderId === auth.currentUser.uid;
 
       const menu = document.createElement("div");
       menu.className = "unsend-menu";
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = "Unsend";
-      button.onclick = async () => {
-        try {
-          const collectionRef = chatCollection();
-          await deleteDoc(doc(collectionRef, messageId));
-          toast("Message unsent.");
-        } catch (error) {
-          console.error(error);
-          toast("Message could not be unsent.");
-        } finally {
+
+      const reactionRow = document.createElement("div");
+      reactionRow.className = "reaction-row";
+      QUICK_REACTIONS.forEach(emoji => {
+        const emojiButton = document.createElement("button");
+        emojiButton.type = "button";
+        emojiButton.textContent = emoji;
+        emojiButton.onclick = () => {
+          toggleReaction(messageId, emoji);
           closeUnsendMenu();
-        }
-      };
-      menu.appendChild(button);
+        };
+        reactionRow.appendChild(emojiButton);
+      });
+      menu.appendChild(reactionRow);
+
+      if (isMine) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "Unsend";
+        button.onclick = async () => {
+          try {
+            const collectionRef = chatCollection();
+            await deleteDoc(doc(collectionRef, messageId));
+            toast("Message unsent.");
+          } catch (error) {
+            console.error(error);
+            toast("Message could not be unsent.");
+          } finally {
+            closeUnsendMenu();
+          }
+        };
+        menu.appendChild(button);
+      }
       document.body.appendChild(menu);
 
       let x = event.clientX || 20;
@@ -4407,6 +4670,248 @@ input,textarea{caret-color:var(--pink-dark);}
 
     function closeUnsendMenu() {
       document.querySelector(".unsend-menu")?.remove();
+    }
+
+    /* ============================================================
+       LIVE SCREEN SHARING (private + connection chats)
+       Peer-to-peer via WebRTC, signaled through a small Firestore
+       doc so no extra server is needed. STUN-only: this works on
+       most home/mobile networks, but a small number of strict
+       corporate/carrier networks block STUN-only peer connections —
+       a TURN relay would be needed to guarantee those too.
+       ============================================================ */
+    const ICE_SERVERS = [
+      { urls: "stun:stun.l.google.com:19302" },
+      { urls: "stun:stun1.l.google.com:19302" }
+    ];
+
+    function screenShareSupportedForActiveChat() {
+      return state.activeChat.kind === "private" || state.activeChat.kind === "connection";
+    }
+
+    function screenShareSessionRef(kind, id) {
+      if (kind === "private") return doc(db, "privateSpaces", id, "meta", "screenShare");
+      if (kind === "connection") return doc(db, "connections", id, "meta", "screenShare");
+      return null;
+    }
+
+    function updateScreenShareButton() {
+      const button = $("screenShareBtn");
+      if (!button) return;
+      const supported = screenShareSupportedForActiveChat();
+      button.classList.toggle("hidden", !supported);
+      button.classList.toggle("live", !!state.screenShare.pc);
+    }
+
+    $("screenShareBtn")?.addEventListener("click", async () => {
+      if (!screenShareSupportedForActiveChat()) return;
+      if (state.screenShare.pc) {
+        await endScreenShare(true);
+      } else {
+        await startScreenShareAsCaller();
+      }
+    });
+
+    $("screenShareEndBtn")?.addEventListener("click", () => endScreenShare(true));
+
+    async function startScreenShareAsCaller() {
+      if (!navigator.mediaDevices?.getDisplayMedia) {
+        return toast("Your browser does not support screen sharing.");
+      }
+      const { kind, id } = state.activeChat;
+      const ref = screenShareSessionRef(kind, id);
+      if (!ref || !auth.currentUser) return;
+
+      try {
+        const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        state.screenShare.localStream = localStream;
+        state.screenShare.role = "caller";
+
+        const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+        state.screenShare.pc = pc;
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+        localStream.getVideoTracks()[0].addEventListener("ended", () => endScreenShare(true));
+
+        pc.onicecandidate = event => {
+          if (event.candidate) {
+            updateDoc(ref, { callerCandidates: arrayUnion(JSON.stringify(event.candidate)) }).catch(() => {});
+          }
+        };
+
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+
+        await setDoc(ref, {
+          status: "calling",
+          callerId: auth.currentUser.uid,
+          callerName: state.profile?.displayName || "Someone",
+          offer: { type: offer.type, sdp: offer.sdp },
+          answer: null,
+          callerCandidates: [],
+          calleeCandidates: [],
+          updatedAt: serverTimestamp()
+        });
+
+        state.screenShare.seenCalleeCandidates = 0;
+        watchScreenShareSession(kind, id, "caller");
+        showScreenShareOverlay(localStream, "Sharing your screen…");
+        updateScreenShareButton();
+        toast("Screen sharing started.");
+      } catch (error) {
+        console.error(error);
+        state.screenShare.pc?.close();
+        state.screenShare = { pc: null, localStream: null, role: null, watchingKey: state.screenShare.watchingKey, seenCallerCandidates: 0, seenCalleeCandidates: 0, ringing: false };
+        toast("Screen sharing could not be started.");
+      }
+    }
+
+    function watchScreenShareSession(kind, id, myRole) {
+      const watchKey = `${kind}:${id}`;
+      if (state.screenShare.watchingKey === watchKey && state.screenShare.sessionUnsub) return;
+      state.screenShare.sessionUnsub?.();
+      state.screenShare.watchingKey = watchKey;
+      const ref = screenShareSessionRef(kind, id);
+      if (!ref) return;
+
+      state.screenShare.sessionUnsub = onSnapshot(ref, async snapshot => {
+        if (!snapshot.exists()) return;
+        const data = snapshot.data();
+        if (!auth.currentUser) return;
+        const myUid = auth.currentUser.uid;
+
+        if (data.status === "ended") {
+          if (state.screenShare.pc) await endScreenShare(false);
+          closeIncomingScreenShareRing();
+          return;
+        }
+
+        // Someone else is calling and I haven't answered/started yet.
+        if (data.status === "calling" && data.callerId !== myUid && myRole !== "callee" && !state.screenShare.pc && !state.screenShare.ringing) {
+          state.screenShare.ringing = true;
+          showIncomingScreenShareRing(kind, id, data.callerName || "Someone");
+          return;
+        }
+
+        // I'm the caller: watch for the callee's answer + candidates.
+        if (state.screenShare.role === "caller" && state.screenShare.pc) {
+          if (data.answer && !state.screenShare.pc.currentRemoteDescription) {
+            await state.screenShare.pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+          }
+          const calleeCandidates = data.calleeCandidates || [];
+          for (let i = state.screenShare.seenCalleeCandidates; i < calleeCandidates.length; i++) {
+            try { await state.screenShare.pc.addIceCandidate(JSON.parse(calleeCandidates[i])); } catch (_) {}
+          }
+          state.screenShare.seenCalleeCandidates = calleeCandidates.length;
+        }
+
+        // I'm the callee: watch for new caller candidates.
+        if (state.screenShare.role === "callee" && state.screenShare.pc) {
+          const callerCandidates = data.callerCandidates || [];
+          for (let i = state.screenShare.seenCallerCandidates; i < callerCandidates.length; i++) {
+            try { await state.screenShare.pc.addIceCandidate(JSON.parse(callerCandidates[i])); } catch (_) {}
+          }
+          state.screenShare.seenCallerCandidates = callerCandidates.length;
+        }
+      }, error => console.error("Screen share session watch failed:", error));
+    }
+
+    function showIncomingScreenShareRing(kind, id, callerName) {
+      const container = $("screenShareRingContainer");
+      if (!container) return;
+      const card = document.createElement("div");
+      card.className = "msg-popup";
+      const body = document.createElement("div");
+      body.className = "msg-popup-body";
+      const name = document.createElement("div");
+      name.className = "msg-popup-name";
+      name.textContent = `${callerName} is sharing their screen`;
+      const text = document.createElement("div");
+      text.className = "msg-popup-text";
+      text.textContent = "Tap to view";
+      body.append(name, text);
+      card.appendChild(body);
+      card.addEventListener("click", () => {
+        card.remove();
+        state.screenShare.ringing = false;
+        joinScreenShareAsCallee(kind, id);
+      });
+      container.appendChild(card);
+      requestAnimationFrame(() => card.classList.add("show"));
+      setTimeout(() => {
+        card.classList.remove("show");
+        setTimeout(() => { card.remove(); state.screenShare.ringing = false; }, 300);
+      }, 15000);
+    }
+
+    function closeIncomingScreenShareRing() {
+      $("screenShareRingContainer").innerHTML = "";
+      state.screenShare.ringing = false;
+    }
+
+    async function joinScreenShareAsCallee(kind, id) {
+      const ref = screenShareSessionRef(kind, id);
+      if (!ref || !auth.currentUser) return;
+      try {
+        const snapshot = await getDoc(ref);
+        if (!snapshot.exists() || !snapshot.data().offer) return toast("That screen share has ended.");
+        const data = snapshot.data();
+
+        const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+        state.screenShare.pc = pc;
+        state.screenShare.role = "callee";
+        state.screenShare.seenCallerCandidates = 0;
+
+        pc.ontrack = event => {
+          showScreenShareOverlay(event.streams[0], `${data.callerName || "Someone"}'s screen`);
+        };
+        pc.onicecandidate = event => {
+          if (event.candidate) {
+            updateDoc(ref, { calleeCandidates: arrayUnion(JSON.stringify(event.candidate)) }).catch(() => {});
+          }
+        };
+
+        await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await updateDoc(ref, {
+          status: "active",
+          calleeId: auth.currentUser.uid,
+          answer: { type: answer.type, sdp: answer.sdp }
+        });
+
+        watchScreenShareSession(kind, id, "callee");
+        updateScreenShareButton();
+      } catch (error) {
+        console.error(error);
+        toast("Could not join the screen share.");
+        state.screenShare.pc?.close();
+        state.screenShare.pc = null;
+      }
+    }
+
+    function showScreenShareOverlay(stream, label) {
+      $("screenShareVideo").srcObject = stream;
+      $("screenShareLabel").textContent = label;
+      $("screenShareOverlay").classList.remove("hidden");
+    }
+
+    async function endScreenShare(notifyPeer) {
+      const { pc, localStream, role, watchingKey } = state.screenShare;
+      if (localStream) localStream.getTracks().forEach(track => track.stop());
+      if (pc) pc.close();
+      if (notifyPeer && watchingKey && role) {
+        const [kind, id] = watchingKey.split(":");
+        const ref = screenShareSessionRef(kind, id);
+        if (ref) await setDoc(ref, { status: "ended", updatedAt: serverTimestamp() }, { merge: true }).catch(() => {});
+      }
+      $("screenShareOverlay").classList.add("hidden");
+      $("screenShareVideo").srcObject = null;
+      state.screenShare.pc = null;
+      state.screenShare.localStream = null;
+      state.screenShare.role = null;
+      state.screenShare.seenCallerCandidates = 0;
+      state.screenShare.seenCalleeCandidates = 0;
+      updateScreenShareButton();
     }
 
     /* ============================================================
@@ -4435,7 +4940,7 @@ input,textarea{caret-color:var(--pink-dark);}
       window.visualViewport.addEventListener("scroll", updateKeyboardState);
     }
 
-    window.addEventListener("beforeunload", () => stopRecordingNow(true));
+    window.addEventListener("beforeunload", () => { stopRecordingNow(true); if (state.screenShare.pc) endScreenShare(true); });
   </script>
 \n<script>
 (() => {
@@ -4918,1401 +5423,6 @@ input,textarea{caret-color:var(--pink-dark);}
       return {beginRender,isCurrent,nearBottom,scrollBottom};
     })();
 </script>
-<!--
-  MAINTAINABILITY NOTES — THE LINES BELOW DOCUMENT THE POLISH LAYER.
-  They intentionally contain no executable behavior and do not alter the app.
-  The executable enhancements live in the CSS and JavaScript above.
-  Performance note 001: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 001: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 001: Prefer lazy image loading for galleries and chat media.
-  Performance note 001: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 001: Keep profile images round and crop them with object-fit: cover.
-  Performance note 001: Keep public chat data separate from connection chat data.
-  Performance note 001: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 001: Keep connection requests separate from private-space invitations.
-  Performance note 001: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 001: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 001: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 001: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 001: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 001: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 001: Use textContent when inserting user-provided text into the DOM.
-  Performance note 001: Avoid innerHTML for untrusted message bodies.
-  Performance note 001: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 001: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 001: Preserve scroll position when the user is reading older messages.
-  Performance note 001: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 001: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 001: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 001: Batch repeated visual work through requestAnimationFrame.
-  Performance note 001: Avoid synchronous layout loops during message rendering.
-  Performance note 001: Decode images asynchronously when supported by the browser.
-  Performance note 001: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 001: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 001: Use aria-live status messaging for transient connectivity state.
-  Performance note 001: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 001: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 002: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 002: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 002: Prefer lazy image loading for galleries and chat media.
-  Performance note 002: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 002: Keep profile images round and crop them with object-fit: cover.
-  Performance note 002: Keep public chat data separate from connection chat data.
-  Performance note 002: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 002: Keep connection requests separate from private-space invitations.
-  Performance note 002: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 002: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 002: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 002: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 002: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 002: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 002: Use textContent when inserting user-provided text into the DOM.
-  Performance note 002: Avoid innerHTML for untrusted message bodies.
-  Performance note 002: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 002: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 002: Preserve scroll position when the user is reading older messages.
-  Performance note 002: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 002: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 002: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 002: Batch repeated visual work through requestAnimationFrame.
-  Performance note 002: Avoid synchronous layout loops during message rendering.
-  Performance note 002: Decode images asynchronously when supported by the browser.
-  Performance note 002: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 002: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 002: Use aria-live status messaging for transient connectivity state.
-  Performance note 002: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 002: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 003: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 003: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 003: Prefer lazy image loading for galleries and chat media.
-  Performance note 003: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 003: Keep profile images round and crop them with object-fit: cover.
-  Performance note 003: Keep public chat data separate from connection chat data.
-  Performance note 003: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 003: Keep connection requests separate from private-space invitations.
-  Performance note 003: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 003: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 003: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 003: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 003: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 003: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 003: Use textContent when inserting user-provided text into the DOM.
-  Performance note 003: Avoid innerHTML for untrusted message bodies.
-  Performance note 003: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 003: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 003: Preserve scroll position when the user is reading older messages.
-  Performance note 003: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 003: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 003: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 003: Batch repeated visual work through requestAnimationFrame.
-  Performance note 003: Avoid synchronous layout loops during message rendering.
-  Performance note 003: Decode images asynchronously when supported by the browser.
-  Performance note 003: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 003: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 003: Use aria-live status messaging for transient connectivity state.
-  Performance note 003: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 003: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 004: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 004: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 004: Prefer lazy image loading for galleries and chat media.
-  Performance note 004: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 004: Keep profile images round and crop them with object-fit: cover.
-  Performance note 004: Keep public chat data separate from connection chat data.
-  Performance note 004: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 004: Keep connection requests separate from private-space invitations.
-  Performance note 004: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 004: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 004: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 004: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 004: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 004: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 004: Use textContent when inserting user-provided text into the DOM.
-  Performance note 004: Avoid innerHTML for untrusted message bodies.
-  Performance note 004: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 004: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 004: Preserve scroll position when the user is reading older messages.
-  Performance note 004: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 004: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 004: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 004: Batch repeated visual work through requestAnimationFrame.
-  Performance note 004: Avoid synchronous layout loops during message rendering.
-  Performance note 004: Decode images asynchronously when supported by the browser.
-  Performance note 004: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 004: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 004: Use aria-live status messaging for transient connectivity state.
-  Performance note 004: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 004: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 005: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 005: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 005: Prefer lazy image loading for galleries and chat media.
-  Performance note 005: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 005: Keep profile images round and crop them with object-fit: cover.
-  Performance note 005: Keep public chat data separate from connection chat data.
-  Performance note 005: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 005: Keep connection requests separate from private-space invitations.
-  Performance note 005: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 005: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 005: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 005: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 005: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 005: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 005: Use textContent when inserting user-provided text into the DOM.
-  Performance note 005: Avoid innerHTML for untrusted message bodies.
-  Performance note 005: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 005: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 005: Preserve scroll position when the user is reading older messages.
-  Performance note 005: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 005: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 005: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 005: Batch repeated visual work through requestAnimationFrame.
-  Performance note 005: Avoid synchronous layout loops during message rendering.
-  Performance note 005: Decode images asynchronously when supported by the browser.
-  Performance note 005: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 005: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 005: Use aria-live status messaging for transient connectivity state.
-  Performance note 005: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 005: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 006: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 006: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 006: Prefer lazy image loading for galleries and chat media.
-  Performance note 006: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 006: Keep profile images round and crop them with object-fit: cover.
-  Performance note 006: Keep public chat data separate from connection chat data.
-  Performance note 006: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 006: Keep connection requests separate from private-space invitations.
-  Performance note 006: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 006: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 006: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 006: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 006: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 006: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 006: Use textContent when inserting user-provided text into the DOM.
-  Performance note 006: Avoid innerHTML for untrusted message bodies.
-  Performance note 006: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 006: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 006: Preserve scroll position when the user is reading older messages.
-  Performance note 006: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 006: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 006: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 006: Batch repeated visual work through requestAnimationFrame.
-  Performance note 006: Avoid synchronous layout loops during message rendering.
-  Performance note 006: Decode images asynchronously when supported by the browser.
-  Performance note 006: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 006: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 006: Use aria-live status messaging for transient connectivity state.
-  Performance note 006: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 006: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 007: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 007: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 007: Prefer lazy image loading for galleries and chat media.
-  Performance note 007: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 007: Keep profile images round and crop them with object-fit: cover.
-  Performance note 007: Keep public chat data separate from connection chat data.
-  Performance note 007: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 007: Keep connection requests separate from private-space invitations.
-  Performance note 007: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 007: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 007: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 007: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 007: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 007: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 007: Use textContent when inserting user-provided text into the DOM.
-  Performance note 007: Avoid innerHTML for untrusted message bodies.
-  Performance note 007: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 007: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 007: Preserve scroll position when the user is reading older messages.
-  Performance note 007: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 007: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 007: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 007: Batch repeated visual work through requestAnimationFrame.
-  Performance note 007: Avoid synchronous layout loops during message rendering.
-  Performance note 007: Decode images asynchronously when supported by the browser.
-  Performance note 007: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 007: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 007: Use aria-live status messaging for transient connectivity state.
-  Performance note 007: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 007: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 008: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 008: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 008: Prefer lazy image loading for galleries and chat media.
-  Performance note 008: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 008: Keep profile images round and crop them with object-fit: cover.
-  Performance note 008: Keep public chat data separate from connection chat data.
-  Performance note 008: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 008: Keep connection requests separate from private-space invitations.
-  Performance note 008: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 008: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 008: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 008: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 008: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 008: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 008: Use textContent when inserting user-provided text into the DOM.
-  Performance note 008: Avoid innerHTML for untrusted message bodies.
-  Performance note 008: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 008: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 008: Preserve scroll position when the user is reading older messages.
-  Performance note 008: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 008: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 008: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 008: Batch repeated visual work through requestAnimationFrame.
-  Performance note 008: Avoid synchronous layout loops during message rendering.
-  Performance note 008: Decode images asynchronously when supported by the browser.
-  Performance note 008: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 008: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 008: Use aria-live status messaging for transient connectivity state.
-  Performance note 008: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 008: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 009: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 009: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 009: Prefer lazy image loading for galleries and chat media.
-  Performance note 009: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 009: Keep profile images round and crop them with object-fit: cover.
-  Performance note 009: Keep public chat data separate from connection chat data.
-  Performance note 009: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 009: Keep connection requests separate from private-space invitations.
-  Performance note 009: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 009: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 009: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 009: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 009: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 009: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 009: Use textContent when inserting user-provided text into the DOM.
-  Performance note 009: Avoid innerHTML for untrusted message bodies.
-  Performance note 009: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 009: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 009: Preserve scroll position when the user is reading older messages.
-  Performance note 009: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 009: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 009: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 009: Batch repeated visual work through requestAnimationFrame.
-  Performance note 009: Avoid synchronous layout loops during message rendering.
-  Performance note 009: Decode images asynchronously when supported by the browser.
-  Performance note 009: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 009: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 009: Use aria-live status messaging for transient connectivity state.
-  Performance note 009: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 009: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 010: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 010: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 010: Prefer lazy image loading for galleries and chat media.
-  Performance note 010: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 010: Keep profile images round and crop them with object-fit: cover.
-  Performance note 010: Keep public chat data separate from connection chat data.
-  Performance note 010: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 010: Keep connection requests separate from private-space invitations.
-  Performance note 010: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 010: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 010: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 010: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 010: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 010: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 010: Use textContent when inserting user-provided text into the DOM.
-  Performance note 010: Avoid innerHTML for untrusted message bodies.
-  Performance note 010: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 010: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 010: Preserve scroll position when the user is reading older messages.
-  Performance note 010: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 010: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 010: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 010: Batch repeated visual work through requestAnimationFrame.
-  Performance note 010: Avoid synchronous layout loops during message rendering.
-  Performance note 010: Decode images asynchronously when supported by the browser.
-  Performance note 010: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 010: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 010: Use aria-live status messaging for transient connectivity state.
-  Performance note 010: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 010: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 011: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 011: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 011: Prefer lazy image loading for galleries and chat media.
-  Performance note 011: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 011: Keep profile images round and crop them with object-fit: cover.
-  Performance note 011: Keep public chat data separate from connection chat data.
-  Performance note 011: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 011: Keep connection requests separate from private-space invitations.
-  Performance note 011: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 011: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 011: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 011: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 011: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 011: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 011: Use textContent when inserting user-provided text into the DOM.
-  Performance note 011: Avoid innerHTML for untrusted message bodies.
-  Performance note 011: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 011: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 011: Preserve scroll position when the user is reading older messages.
-  Performance note 011: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 011: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 011: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 011: Batch repeated visual work through requestAnimationFrame.
-  Performance note 011: Avoid synchronous layout loops during message rendering.
-  Performance note 011: Decode images asynchronously when supported by the browser.
-  Performance note 011: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 011: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 011: Use aria-live status messaging for transient connectivity state.
-  Performance note 011: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 011: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 012: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 012: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 012: Prefer lazy image loading for galleries and chat media.
-  Performance note 012: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 012: Keep profile images round and crop them with object-fit: cover.
-  Performance note 012: Keep public chat data separate from connection chat data.
-  Performance note 012: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 012: Keep connection requests separate from private-space invitations.
-  Performance note 012: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 012: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 012: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 012: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 012: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 012: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 012: Use textContent when inserting user-provided text into the DOM.
-  Performance note 012: Avoid innerHTML for untrusted message bodies.
-  Performance note 012: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 012: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 012: Preserve scroll position when the user is reading older messages.
-  Performance note 012: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 012: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 012: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 012: Batch repeated visual work through requestAnimationFrame.
-  Performance note 012: Avoid synchronous layout loops during message rendering.
-  Performance note 012: Decode images asynchronously when supported by the browser.
-  Performance note 012: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 012: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 012: Use aria-live status messaging for transient connectivity state.
-  Performance note 012: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 012: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 013: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 013: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 013: Prefer lazy image loading for galleries and chat media.
-  Performance note 013: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 013: Keep profile images round and crop them with object-fit: cover.
-  Performance note 013: Keep public chat data separate from connection chat data.
-  Performance note 013: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 013: Keep connection requests separate from private-space invitations.
-  Performance note 013: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 013: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 013: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 013: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 013: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 013: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 013: Use textContent when inserting user-provided text into the DOM.
-  Performance note 013: Avoid innerHTML for untrusted message bodies.
-  Performance note 013: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 013: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 013: Preserve scroll position when the user is reading older messages.
-  Performance note 013: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 013: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 013: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 013: Batch repeated visual work through requestAnimationFrame.
-  Performance note 013: Avoid synchronous layout loops during message rendering.
-  Performance note 013: Decode images asynchronously when supported by the browser.
-  Performance note 013: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 013: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 013: Use aria-live status messaging for transient connectivity state.
-  Performance note 013: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 013: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 014: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 014: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 014: Prefer lazy image loading for galleries and chat media.
-  Performance note 014: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 014: Keep profile images round and crop them with object-fit: cover.
-  Performance note 014: Keep public chat data separate from connection chat data.
-  Performance note 014: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 014: Keep connection requests separate from private-space invitations.
-  Performance note 014: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 014: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 014: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 014: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 014: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 014: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 014: Use textContent when inserting user-provided text into the DOM.
-  Performance note 014: Avoid innerHTML for untrusted message bodies.
-  Performance note 014: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 014: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 014: Preserve scroll position when the user is reading older messages.
-  Performance note 014: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 014: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 014: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 014: Batch repeated visual work through requestAnimationFrame.
-  Performance note 014: Avoid synchronous layout loops during message rendering.
-  Performance note 014: Decode images asynchronously when supported by the browser.
-  Performance note 014: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 014: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 014: Use aria-live status messaging for transient connectivity state.
-  Performance note 014: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 014: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 015: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 015: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 015: Prefer lazy image loading for galleries and chat media.
-  Performance note 015: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 015: Keep profile images round and crop them with object-fit: cover.
-  Performance note 015: Keep public chat data separate from connection chat data.
-  Performance note 015: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 015: Keep connection requests separate from private-space invitations.
-  Performance note 015: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 015: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 015: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 015: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 015: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 015: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 015: Use textContent when inserting user-provided text into the DOM.
-  Performance note 015: Avoid innerHTML for untrusted message bodies.
-  Performance note 015: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 015: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 015: Preserve scroll position when the user is reading older messages.
-  Performance note 015: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 015: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 015: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 015: Batch repeated visual work through requestAnimationFrame.
-  Performance note 015: Avoid synchronous layout loops during message rendering.
-  Performance note 015: Decode images asynchronously when supported by the browser.
-  Performance note 015: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 015: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 015: Use aria-live status messaging for transient connectivity state.
-  Performance note 015: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 015: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 016: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 016: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 016: Prefer lazy image loading for galleries and chat media.
-  Performance note 016: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 016: Keep profile images round and crop them with object-fit: cover.
-  Performance note 016: Keep public chat data separate from connection chat data.
-  Performance note 016: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 016: Keep connection requests separate from private-space invitations.
-  Performance note 016: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 016: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 016: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 016: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 016: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 016: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 016: Use textContent when inserting user-provided text into the DOM.
-  Performance note 016: Avoid innerHTML for untrusted message bodies.
-  Performance note 016: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 016: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 016: Preserve scroll position when the user is reading older messages.
-  Performance note 016: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 016: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 016: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 016: Batch repeated visual work through requestAnimationFrame.
-  Performance note 016: Avoid synchronous layout loops during message rendering.
-  Performance note 016: Decode images asynchronously when supported by the browser.
-  Performance note 016: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 016: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 016: Use aria-live status messaging for transient connectivity state.
-  Performance note 016: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 016: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 017: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 017: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 017: Prefer lazy image loading for galleries and chat media.
-  Performance note 017: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 017: Keep profile images round and crop them with object-fit: cover.
-  Performance note 017: Keep public chat data separate from connection chat data.
-  Performance note 017: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 017: Keep connection requests separate from private-space invitations.
-  Performance note 017: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 017: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 017: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 017: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 017: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 017: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 017: Use textContent when inserting user-provided text into the DOM.
-  Performance note 017: Avoid innerHTML for untrusted message bodies.
-  Performance note 017: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 017: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 017: Preserve scroll position when the user is reading older messages.
-  Performance note 017: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 017: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 017: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 017: Batch repeated visual work through requestAnimationFrame.
-  Performance note 017: Avoid synchronous layout loops during message rendering.
-  Performance note 017: Decode images asynchronously when supported by the browser.
-  Performance note 017: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 017: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 017: Use aria-live status messaging for transient connectivity state.
-  Performance note 017: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 017: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 018: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 018: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 018: Prefer lazy image loading for galleries and chat media.
-  Performance note 018: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 018: Keep profile images round and crop them with object-fit: cover.
-  Performance note 018: Keep public chat data separate from connection chat data.
-  Performance note 018: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 018: Keep connection requests separate from private-space invitations.
-  Performance note 018: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 018: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 018: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 018: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 018: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 018: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 018: Use textContent when inserting user-provided text into the DOM.
-  Performance note 018: Avoid innerHTML for untrusted message bodies.
-  Performance note 018: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 018: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 018: Preserve scroll position when the user is reading older messages.
-  Performance note 018: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 018: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 018: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 018: Batch repeated visual work through requestAnimationFrame.
-  Performance note 018: Avoid synchronous layout loops during message rendering.
-  Performance note 018: Decode images asynchronously when supported by the browser.
-  Performance note 018: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 018: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 018: Use aria-live status messaging for transient connectivity state.
-  Performance note 018: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 018: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 019: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 019: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 019: Prefer lazy image loading for galleries and chat media.
-  Performance note 019: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 019: Keep profile images round and crop them with object-fit: cover.
-  Performance note 019: Keep public chat data separate from connection chat data.
-  Performance note 019: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 019: Keep connection requests separate from private-space invitations.
-  Performance note 019: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 019: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 019: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 019: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 019: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 019: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 019: Use textContent when inserting user-provided text into the DOM.
-  Performance note 019: Avoid innerHTML for untrusted message bodies.
-  Performance note 019: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 019: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 019: Preserve scroll position when the user is reading older messages.
-  Performance note 019: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 019: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 019: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 019: Batch repeated visual work through requestAnimationFrame.
-  Performance note 019: Avoid synchronous layout loops during message rendering.
-  Performance note 019: Decode images asynchronously when supported by the browser.
-  Performance note 019: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 019: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 019: Use aria-live status messaging for transient connectivity state.
-  Performance note 019: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 019: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 020: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 020: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 020: Prefer lazy image loading for galleries and chat media.
-  Performance note 020: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 020: Keep profile images round and crop them with object-fit: cover.
-  Performance note 020: Keep public chat data separate from connection chat data.
-  Performance note 020: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 020: Keep connection requests separate from private-space invitations.
-  Performance note 020: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 020: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 020: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 020: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 020: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 020: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 020: Use textContent when inserting user-provided text into the DOM.
-  Performance note 020: Avoid innerHTML for untrusted message bodies.
-  Performance note 020: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 020: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 020: Preserve scroll position when the user is reading older messages.
-  Performance note 020: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 020: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 020: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 020: Batch repeated visual work through requestAnimationFrame.
-  Performance note 020: Avoid synchronous layout loops during message rendering.
-  Performance note 020: Decode images asynchronously when supported by the browser.
-  Performance note 020: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 020: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 020: Use aria-live status messaging for transient connectivity state.
-  Performance note 020: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 020: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 021: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 021: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 021: Prefer lazy image loading for galleries and chat media.
-  Performance note 021: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 021: Keep profile images round and crop them with object-fit: cover.
-  Performance note 021: Keep public chat data separate from connection chat data.
-  Performance note 021: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 021: Keep connection requests separate from private-space invitations.
-  Performance note 021: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 021: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 021: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 021: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 021: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 021: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 021: Use textContent when inserting user-provided text into the DOM.
-  Performance note 021: Avoid innerHTML for untrusted message bodies.
-  Performance note 021: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 021: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 021: Preserve scroll position when the user is reading older messages.
-  Performance note 021: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 021: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 021: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 021: Batch repeated visual work through requestAnimationFrame.
-  Performance note 021: Avoid synchronous layout loops during message rendering.
-  Performance note 021: Decode images asynchronously when supported by the browser.
-  Performance note 021: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 021: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 021: Use aria-live status messaging for transient connectivity state.
-  Performance note 021: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 021: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 022: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 022: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 022: Prefer lazy image loading for galleries and chat media.
-  Performance note 022: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 022: Keep profile images round and crop them with object-fit: cover.
-  Performance note 022: Keep public chat data separate from connection chat data.
-  Performance note 022: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 022: Keep connection requests separate from private-space invitations.
-  Performance note 022: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 022: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 022: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 022: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 022: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 022: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 022: Use textContent when inserting user-provided text into the DOM.
-  Performance note 022: Avoid innerHTML for untrusted message bodies.
-  Performance note 022: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 022: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 022: Preserve scroll position when the user is reading older messages.
-  Performance note 022: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 022: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 022: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 022: Batch repeated visual work through requestAnimationFrame.
-  Performance note 022: Avoid synchronous layout loops during message rendering.
-  Performance note 022: Decode images asynchronously when supported by the browser.
-  Performance note 022: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 022: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 022: Use aria-live status messaging for transient connectivity state.
-  Performance note 022: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 022: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 023: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 023: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 023: Prefer lazy image loading for galleries and chat media.
-  Performance note 023: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 023: Keep profile images round and crop them with object-fit: cover.
-  Performance note 023: Keep public chat data separate from connection chat data.
-  Performance note 023: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 023: Keep connection requests separate from private-space invitations.
-  Performance note 023: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 023: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 023: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 023: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 023: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 023: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 023: Use textContent when inserting user-provided text into the DOM.
-  Performance note 023: Avoid innerHTML for untrusted message bodies.
-  Performance note 023: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 023: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 023: Preserve scroll position when the user is reading older messages.
-  Performance note 023: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 023: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 023: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 023: Batch repeated visual work through requestAnimationFrame.
-  Performance note 023: Avoid synchronous layout loops during message rendering.
-  Performance note 023: Decode images asynchronously when supported by the browser.
-  Performance note 023: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 023: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 023: Use aria-live status messaging for transient connectivity state.
-  Performance note 023: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 023: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 024: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 024: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 024: Prefer lazy image loading for galleries and chat media.
-  Performance note 024: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 024: Keep profile images round and crop them with object-fit: cover.
-  Performance note 024: Keep public chat data separate from connection chat data.
-  Performance note 024: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 024: Keep connection requests separate from private-space invitations.
-  Performance note 024: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 024: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 024: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 024: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 024: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 024: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 024: Use textContent when inserting user-provided text into the DOM.
-  Performance note 024: Avoid innerHTML for untrusted message bodies.
-  Performance note 024: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 024: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 024: Preserve scroll position when the user is reading older messages.
-  Performance note 024: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 024: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 024: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 024: Batch repeated visual work through requestAnimationFrame.
-  Performance note 024: Avoid synchronous layout loops during message rendering.
-  Performance note 024: Decode images asynchronously when supported by the browser.
-  Performance note 024: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 024: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 024: Use aria-live status messaging for transient connectivity state.
-  Performance note 024: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 024: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 025: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 025: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 025: Prefer lazy image loading for galleries and chat media.
-  Performance note 025: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 025: Keep profile images round and crop them with object-fit: cover.
-  Performance note 025: Keep public chat data separate from connection chat data.
-  Performance note 025: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 025: Keep connection requests separate from private-space invitations.
-  Performance note 025: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 025: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 025: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 025: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 025: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 025: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 025: Use textContent when inserting user-provided text into the DOM.
-  Performance note 025: Avoid innerHTML for untrusted message bodies.
-  Performance note 025: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 025: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 025: Preserve scroll position when the user is reading older messages.
-  Performance note 025: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 025: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 025: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 025: Batch repeated visual work through requestAnimationFrame.
-  Performance note 025: Avoid synchronous layout loops during message rendering.
-  Performance note 025: Decode images asynchronously when supported by the browser.
-  Performance note 025: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 025: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 025: Use aria-live status messaging for transient connectivity state.
-  Performance note 025: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 025: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 026: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 026: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 026: Prefer lazy image loading for galleries and chat media.
-  Performance note 026: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 026: Keep profile images round and crop them with object-fit: cover.
-  Performance note 026: Keep public chat data separate from connection chat data.
-  Performance note 026: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 026: Keep connection requests separate from private-space invitations.
-  Performance note 026: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 026: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 026: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 026: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 026: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 026: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 026: Use textContent when inserting user-provided text into the DOM.
-  Performance note 026: Avoid innerHTML for untrusted message bodies.
-  Performance note 026: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 026: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 026: Preserve scroll position when the user is reading older messages.
-  Performance note 026: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 026: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 026: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 026: Batch repeated visual work through requestAnimationFrame.
-  Performance note 026: Avoid synchronous layout loops during message rendering.
-  Performance note 026: Decode images asynchronously when supported by the browser.
-  Performance note 026: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 026: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 026: Use aria-live status messaging for transient connectivity state.
-  Performance note 026: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 026: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 027: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 027: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 027: Prefer lazy image loading for galleries and chat media.
-  Performance note 027: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 027: Keep profile images round and crop them with object-fit: cover.
-  Performance note 027: Keep public chat data separate from connection chat data.
-  Performance note 027: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 027: Keep connection requests separate from private-space invitations.
-  Performance note 027: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 027: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 027: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 027: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 027: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 027: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 027: Use textContent when inserting user-provided text into the DOM.
-  Performance note 027: Avoid innerHTML for untrusted message bodies.
-  Performance note 027: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 027: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 027: Preserve scroll position when the user is reading older messages.
-  Performance note 027: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 027: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 027: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 027: Batch repeated visual work through requestAnimationFrame.
-  Performance note 027: Avoid synchronous layout loops during message rendering.
-  Performance note 027: Decode images asynchronously when supported by the browser.
-  Performance note 027: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 027: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 027: Use aria-live status messaging for transient connectivity state.
-  Performance note 027: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 027: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 028: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 028: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 028: Prefer lazy image loading for galleries and chat media.
-  Performance note 028: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 028: Keep profile images round and crop them with object-fit: cover.
-  Performance note 028: Keep public chat data separate from connection chat data.
-  Performance note 028: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 028: Keep connection requests separate from private-space invitations.
-  Performance note 028: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 028: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 028: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 028: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 028: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 028: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 028: Use textContent when inserting user-provided text into the DOM.
-  Performance note 028: Avoid innerHTML for untrusted message bodies.
-  Performance note 028: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 028: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 028: Preserve scroll position when the user is reading older messages.
-  Performance note 028: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 028: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 028: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 028: Batch repeated visual work through requestAnimationFrame.
-  Performance note 028: Avoid synchronous layout loops during message rendering.
-  Performance note 028: Decode images asynchronously when supported by the browser.
-  Performance note 028: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 028: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 028: Use aria-live status messaging for transient connectivity state.
-  Performance note 028: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 028: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 029: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 029: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 029: Prefer lazy image loading for galleries and chat media.
-  Performance note 029: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 029: Keep profile images round and crop them with object-fit: cover.
-  Performance note 029: Keep public chat data separate from connection chat data.
-  Performance note 029: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 029: Keep connection requests separate from private-space invitations.
-  Performance note 029: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 029: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 029: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 029: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 029: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 029: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 029: Use textContent when inserting user-provided text into the DOM.
-  Performance note 029: Avoid innerHTML for untrusted message bodies.
-  Performance note 029: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 029: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 029: Preserve scroll position when the user is reading older messages.
-  Performance note 029: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 029: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 029: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 029: Batch repeated visual work through requestAnimationFrame.
-  Performance note 029: Avoid synchronous layout loops during message rendering.
-  Performance note 029: Decode images asynchronously when supported by the browser.
-  Performance note 029: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 029: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 029: Use aria-live status messaging for transient connectivity state.
-  Performance note 029: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 029: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 030: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 030: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 030: Prefer lazy image loading for galleries and chat media.
-  Performance note 030: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 030: Keep profile images round and crop them with object-fit: cover.
-  Performance note 030: Keep public chat data separate from connection chat data.
-  Performance note 030: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 030: Keep connection requests separate from private-space invitations.
-  Performance note 030: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 030: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 030: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 030: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 030: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 030: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 030: Use textContent when inserting user-provided text into the DOM.
-  Performance note 030: Avoid innerHTML for untrusted message bodies.
-  Performance note 030: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 030: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 030: Preserve scroll position when the user is reading older messages.
-  Performance note 030: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 030: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 030: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 030: Batch repeated visual work through requestAnimationFrame.
-  Performance note 030: Avoid synchronous layout loops during message rendering.
-  Performance note 030: Decode images asynchronously when supported by the browser.
-  Performance note 030: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 030: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 030: Use aria-live status messaging for transient connectivity state.
-  Performance note 030: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 030: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 031: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 031: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 031: Prefer lazy image loading for galleries and chat media.
-  Performance note 031: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 031: Keep profile images round and crop them with object-fit: cover.
-  Performance note 031: Keep public chat data separate from connection chat data.
-  Performance note 031: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 031: Keep connection requests separate from private-space invitations.
-  Performance note 031: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 031: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 031: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 031: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 031: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 031: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 031: Use textContent when inserting user-provided text into the DOM.
-  Performance note 031: Avoid innerHTML for untrusted message bodies.
-  Performance note 031: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 031: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 031: Preserve scroll position when the user is reading older messages.
-  Performance note 031: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 031: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 031: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 031: Batch repeated visual work through requestAnimationFrame.
-  Performance note 031: Avoid synchronous layout loops during message rendering.
-  Performance note 031: Decode images asynchronously when supported by the browser.
-  Performance note 031: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 031: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 031: Use aria-live status messaging for transient connectivity state.
-  Performance note 031: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 031: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 032: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 032: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 032: Prefer lazy image loading for galleries and chat media.
-  Performance note 032: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 032: Keep profile images round and crop them with object-fit: cover.
-  Performance note 032: Keep public chat data separate from connection chat data.
-  Performance note 032: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 032: Keep connection requests separate from private-space invitations.
-  Performance note 032: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 032: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 032: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 032: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 032: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 032: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 032: Use textContent when inserting user-provided text into the DOM.
-  Performance note 032: Avoid innerHTML for untrusted message bodies.
-  Performance note 032: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 032: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 032: Preserve scroll position when the user is reading older messages.
-  Performance note 032: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 032: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 032: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 032: Batch repeated visual work through requestAnimationFrame.
-  Performance note 032: Avoid synchronous layout loops during message rendering.
-  Performance note 032: Decode images asynchronously when supported by the browser.
-  Performance note 032: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 032: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 032: Use aria-live status messaging for transient connectivity state.
-  Performance note 032: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 032: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 033: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 033: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 033: Prefer lazy image loading for galleries and chat media.
-  Performance note 033: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 033: Keep profile images round and crop them with object-fit: cover.
-  Performance note 033: Keep public chat data separate from connection chat data.
-  Performance note 033: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 033: Keep connection requests separate from private-space invitations.
-  Performance note 033: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 033: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 033: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 033: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 033: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 033: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 033: Use textContent when inserting user-provided text into the DOM.
-  Performance note 033: Avoid innerHTML for untrusted message bodies.
-  Performance note 033: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 033: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 033: Preserve scroll position when the user is reading older messages.
-  Performance note 033: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 033: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 033: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 033: Batch repeated visual work through requestAnimationFrame.
-  Performance note 033: Avoid synchronous layout loops during message rendering.
-  Performance note 033: Decode images asynchronously when supported by the browser.
-  Performance note 033: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 033: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 033: Use aria-live status messaging for transient connectivity state.
-  Performance note 033: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 033: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 034: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 034: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 034: Prefer lazy image loading for galleries and chat media.
-  Performance note 034: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 034: Keep profile images round and crop them with object-fit: cover.
-  Performance note 034: Keep public chat data separate from connection chat data.
-  Performance note 034: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 034: Keep connection requests separate from private-space invitations.
-  Performance note 034: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 034: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 034: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 034: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 034: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 034: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 034: Use textContent when inserting user-provided text into the DOM.
-  Performance note 034: Avoid innerHTML for untrusted message bodies.
-  Performance note 034: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 034: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 034: Preserve scroll position when the user is reading older messages.
-  Performance note 034: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 034: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 034: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 034: Batch repeated visual work through requestAnimationFrame.
-  Performance note 034: Avoid synchronous layout loops during message rendering.
-  Performance note 034: Decode images asynchronously when supported by the browser.
-  Performance note 034: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 034: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 034: Use aria-live status messaging for transient connectivity state.
-  Performance note 034: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 034: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 035: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 035: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 035: Prefer lazy image loading for galleries and chat media.
-  Performance note 035: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 035: Keep profile images round and crop them with object-fit: cover.
-  Performance note 035: Keep public chat data separate from connection chat data.
-  Performance note 035: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 035: Keep connection requests separate from private-space invitations.
-  Performance note 035: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 035: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 035: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 035: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 035: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 035: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 035: Use textContent when inserting user-provided text into the DOM.
-  Performance note 035: Avoid innerHTML for untrusted message bodies.
-  Performance note 035: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 035: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 035: Preserve scroll position when the user is reading older messages.
-  Performance note 035: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 035: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 035: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 035: Batch repeated visual work through requestAnimationFrame.
-  Performance note 035: Avoid synchronous layout loops during message rendering.
-  Performance note 035: Decode images asynchronously when supported by the browser.
-  Performance note 035: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 035: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 035: Use aria-live status messaging for transient connectivity state.
-  Performance note 035: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 035: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 036: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 036: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 036: Prefer lazy image loading for galleries and chat media.
-  Performance note 036: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 036: Keep profile images round and crop them with object-fit: cover.
-  Performance note 036: Keep public chat data separate from connection chat data.
-  Performance note 036: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 036: Keep connection requests separate from private-space invitations.
-  Performance note 036: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 036: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 036: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 036: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 036: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 036: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 036: Use textContent when inserting user-provided text into the DOM.
-  Performance note 036: Avoid innerHTML for untrusted message bodies.
-  Performance note 036: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 036: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 036: Preserve scroll position when the user is reading older messages.
-  Performance note 036: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 036: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 036: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 036: Batch repeated visual work through requestAnimationFrame.
-  Performance note 036: Avoid synchronous layout loops during message rendering.
-  Performance note 036: Decode images asynchronously when supported by the browser.
-  Performance note 036: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 036: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 036: Use aria-live status messaging for transient connectivity state.
-  Performance note 036: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 036: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 037: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 037: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 037: Prefer lazy image loading for galleries and chat media.
-  Performance note 037: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 037: Keep profile images round and crop them with object-fit: cover.
-  Performance note 037: Keep public chat data separate from connection chat data.
-  Performance note 037: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 037: Keep connection requests separate from private-space invitations.
-  Performance note 037: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 037: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 037: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 037: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 037: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 037: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 037: Use textContent when inserting user-provided text into the DOM.
-  Performance note 037: Avoid innerHTML for untrusted message bodies.
-  Performance note 037: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 037: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 037: Preserve scroll position when the user is reading older messages.
-  Performance note 037: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 037: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 037: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 037: Batch repeated visual work through requestAnimationFrame.
-  Performance note 037: Avoid synchronous layout loops during message rendering.
-  Performance note 037: Decode images asynchronously when supported by the browser.
-  Performance note 037: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 037: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 037: Use aria-live status messaging for transient connectivity state.
-  Performance note 037: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 037: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 038: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 038: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 038: Prefer lazy image loading for galleries and chat media.
-  Performance note 038: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 038: Keep profile images round and crop them with object-fit: cover.
-  Performance note 038: Keep public chat data separate from connection chat data.
-  Performance note 038: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 038: Keep connection requests separate from private-space invitations.
-  Performance note 038: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 038: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 038: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 038: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 038: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 038: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 038: Use textContent when inserting user-provided text into the DOM.
-  Performance note 038: Avoid innerHTML for untrusted message bodies.
-  Performance note 038: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 038: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 038: Preserve scroll position when the user is reading older messages.
-  Performance note 038: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 038: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 038: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 038: Batch repeated visual work through requestAnimationFrame.
-  Performance note 038: Avoid synchronous layout loops during message rendering.
-  Performance note 038: Decode images asynchronously when supported by the browser.
-  Performance note 038: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 038: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 038: Use aria-live status messaging for transient connectivity state.
-  Performance note 038: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 038: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 039: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 039: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 039: Prefer lazy image loading for galleries and chat media.
-  Performance note 039: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 039: Keep profile images round and crop them with object-fit: cover.
-  Performance note 039: Keep public chat data separate from connection chat data.
-  Performance note 039: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 039: Keep connection requests separate from private-space invitations.
-  Performance note 039: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 039: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 039: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 039: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 039: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 039: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 039: Use textContent when inserting user-provided text into the DOM.
-  Performance note 039: Avoid innerHTML for untrusted message bodies.
-  Performance note 039: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 039: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 039: Preserve scroll position when the user is reading older messages.
-  Performance note 039: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 039: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 039: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 039: Batch repeated visual work through requestAnimationFrame.
-  Performance note 039: Avoid synchronous layout loops during message rendering.
-  Performance note 039: Decode images asynchronously when supported by the browser.
-  Performance note 039: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 039: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 039: Use aria-live status messaging for transient connectivity state.
-  Performance note 039: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 039: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 040: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 040: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 040: Prefer lazy image loading for galleries and chat media.
-  Performance note 040: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 040: Keep profile images round and crop them with object-fit: cover.
-  Performance note 040: Keep public chat data separate from connection chat data.
-  Performance note 040: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 040: Keep connection requests separate from private-space invitations.
-  Performance note 040: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 040: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 040: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 040: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 040: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 040: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 040: Use textContent when inserting user-provided text into the DOM.
-  Performance note 040: Avoid innerHTML for untrusted message bodies.
-  Performance note 040: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 040: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 040: Preserve scroll position when the user is reading older messages.
-  Performance note 040: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 040: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 040: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 040: Batch repeated visual work through requestAnimationFrame.
-  Performance note 040: Avoid synchronous layout loops during message rendering.
-  Performance note 040: Decode images asynchronously when supported by the browser.
-  Performance note 040: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 040: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 040: Use aria-live status messaging for transient connectivity state.
-  Performance note 040: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 040: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 041: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 041: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 041: Prefer lazy image loading for galleries and chat media.
-  Performance note 041: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 041: Keep profile images round and crop them with object-fit: cover.
-  Performance note 041: Keep public chat data separate from connection chat data.
-  Performance note 041: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 041: Keep connection requests separate from private-space invitations.
-  Performance note 041: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 041: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 041: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 041: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 041: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 041: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 041: Use textContent when inserting user-provided text into the DOM.
-  Performance note 041: Avoid innerHTML for untrusted message bodies.
-  Performance note 041: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 041: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 041: Preserve scroll position when the user is reading older messages.
-  Performance note 041: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 041: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 041: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 041: Batch repeated visual work through requestAnimationFrame.
-  Performance note 041: Avoid synchronous layout loops during message rendering.
-  Performance note 041: Decode images asynchronously when supported by the browser.
-  Performance note 041: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 041: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 041: Use aria-live status messaging for transient connectivity state.
-  Performance note 041: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 041: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 042: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 042: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 042: Prefer lazy image loading for galleries and chat media.
-  Performance note 042: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 042: Keep profile images round and crop them with object-fit: cover.
-  Performance note 042: Keep public chat data separate from connection chat data.
-  Performance note 042: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 042: Keep connection requests separate from private-space invitations.
-  Performance note 042: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 042: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 042: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 042: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 042: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 042: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 042: Use textContent when inserting user-provided text into the DOM.
-  Performance note 042: Avoid innerHTML for untrusted message bodies.
-  Performance note 042: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 042: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 042: Preserve scroll position when the user is reading older messages.
-  Performance note 042: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 042: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 042: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 042: Batch repeated visual work through requestAnimationFrame.
-  Performance note 042: Avoid synchronous layout loops during message rendering.
-  Performance note 042: Decode images asynchronously when supported by the browser.
-  Performance note 042: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 042: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 042: Use aria-live status messaging for transient connectivity state.
-  Performance note 042: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 042: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 043: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 043: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 043: Prefer lazy image loading for galleries and chat media.
-  Performance note 043: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 043: Keep profile images round and crop them with object-fit: cover.
-  Performance note 043: Keep public chat data separate from connection chat data.
-  Performance note 043: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 043: Keep connection requests separate from private-space invitations.
-  Performance note 043: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 043: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 043: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 043: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 043: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 043: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 043: Use textContent when inserting user-provided text into the DOM.
-  Performance note 043: Avoid innerHTML for untrusted message bodies.
-  Performance note 043: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 043: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 043: Preserve scroll position when the user is reading older messages.
-  Performance note 043: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 043: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 043: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 043: Batch repeated visual work through requestAnimationFrame.
-  Performance note 043: Avoid synchronous layout loops during message rendering.
-  Performance note 043: Decode images asynchronously when supported by the browser.
-  Performance note 043: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 043: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 043: Use aria-live status messaging for transient connectivity state.
-  Performance note 043: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 043: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 044: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 044: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 044: Prefer lazy image loading for galleries and chat media.
-  Performance note 044: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 044: Keep profile images round and crop them with object-fit: cover.
-  Performance note 044: Keep public chat data separate from connection chat data.
-  Performance note 044: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 044: Keep connection requests separate from private-space invitations.
-  Performance note 044: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 044: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 044: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 044: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 044: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 044: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 044: Use textContent when inserting user-provided text into the DOM.
-  Performance note 044: Avoid innerHTML for untrusted message bodies.
-  Performance note 044: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 044: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 044: Preserve scroll position when the user is reading older messages.
-  Performance note 044: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 044: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 044: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 044: Batch repeated visual work through requestAnimationFrame.
-  Performance note 044: Avoid synchronous layout loops during message rendering.
-  Performance note 044: Decode images asynchronously when supported by the browser.
-  Performance note 044: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 044: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 044: Use aria-live status messaging for transient connectivity state.
-  Performance note 044: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 044: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 045: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 045: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 045: Prefer lazy image loading for galleries and chat media.
-  Performance note 045: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 045: Keep profile images round and crop them with object-fit: cover.
-  Performance note 045: Keep public chat data separate from connection chat data.
-  Performance note 045: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 045: Keep connection requests separate from private-space invitations.
-  Performance note 045: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 045: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 045: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 045: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 045: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 045: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 045: Use textContent when inserting user-provided text into the DOM.
-  Performance note 045: Avoid innerHTML for untrusted message bodies.
-  Performance note 045: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 045: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 045: Preserve scroll position when the user is reading older messages.
-  Performance note 045: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 045: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 045: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 045: Batch repeated visual work through requestAnimationFrame.
-  Performance note 045: Avoid synchronous layout loops during message rendering.
-  Performance note 045: Decode images asynchronously when supported by the browser.
-  Performance note 045: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 045: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 045: Use aria-live status messaging for transient connectivity state.
-  Performance note 045: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 045: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 046: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 046: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 046: Prefer lazy image loading for galleries and chat media.
-  Performance note 046: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 046: Keep profile images round and crop them with object-fit: cover.
-  Performance note 046: Keep public chat data separate from connection chat data.
-  Performance note 046: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 046: Keep connection requests separate from private-space invitations.
-  Performance note 046: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 046: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 046: Use password reset mail instead of storing password recovery data in Firestore.
-  Performance note 046: Use Cloudinary for media bytes and Firestore for media metadata/URLs.
-  Performance note 046: Use media recorder MIME detection rather than assuming one browser format.
-  Performance note 046: Show duration for recorded audio and provide an explicit play/pause control.
-  Performance note 046: Use textContent when inserting user-provided text into the DOM.
-  Performance note 046: Avoid innerHTML for untrusted message bodies.
-  Performance note 046: Cancel obsolete listeners when switching rooms to prevent duplicate updates.
-  Performance note 046: Keep the message list as a flex column with a dedicated scroll container.
-  Performance note 046: Preserve scroll position when the user is reading older messages.
-  Performance note 046: Auto-follow only when the user is already near the bottom of the chat.
-  Performance note 046: Respect prefers-reduced-motion for users who disable animations.
-  Performance note 046: Use passive event listeners for high-frequency scroll/viewport events.
-  Performance note 046: Batch repeated visual work through requestAnimationFrame.
-  Performance note 046: Avoid synchronous layout loops during message rendering.
-  Performance note 046: Decode images asynchronously when supported by the browser.
-  Performance note 046: Use safe-area insets for bottom navigation and chat composers.
-  Performance note 046: Keep focus visible for keyboard and accessibility navigation.
-  Performance note 046: Use aria-live status messaging for transient connectivity state.
-  Performance note 046: Keep buttons disabled during destructive or duplicate network actions.
-  Performance note 046: Treat offline state as a UI condition, not as a reason to crash the app.
-  Performance note 047: Use transform/opacity for motion-heavy UI feedback whenever possible.
-  Performance note 047: Keep Firestore listeners scoped to the screen or conversation currently visible.
-  Performance note 047: Prefer lazy image loading for galleries and chat media.
-  Performance note 047: Use the dynamic viewport unit on mobile chat layouts to respect the keyboard.
-  Performance note 047: Keep profile images round and crop them with object-fit: cover.
-  Performance note 047: Keep public chat data separate from connection chat data.
-  Performance note 047: Keep private-space data under privateSpaces and verify membership server-side.
-  Performance note 047: Keep connection requests separate from private-space invitations.
-  Performance note 047: Use six-letter public UIDs for human-friendly discovery.
-  Performance note 047: Keep authentication passwords inside Firebase Authentication only.
-  Performance note 047: Use password reset mail instead of storing password recovery data in Firestore.
--->
+
 </body>
 </html>
