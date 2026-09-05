@@ -206,6 +206,32 @@
       font-size: 12px;
       color: var(--muted);
     }
+    .presence-pill {
+      font-size: 10px;
+      padding: 4px 10px;
+      font-weight: 700;
+    }
+    .presence-pill.online {
+      color: #2f9e5e;
+      background: #eafff2;
+      border-color: rgba(47, 158, 94, 0.35);
+    }
+    .presence-pill.online::before {
+      content: "●";
+      margin-right: 4px;
+      color: #2f9e5e;
+    }
+    .presence-pill.offline {
+      color: var(--muted);
+    }
+    .presence-pill.offline::before {
+      content: "●";
+      margin-right: 4px;
+      color: #b7c0c6;
+    }
+    .seen-label {
+      opacity: 0.85;
+    }
     .primary-btn {
       border: 0;
       border-radius: 16px;
@@ -649,6 +675,16 @@
       font-size: 14px;
     }
 
+    .message-time {
+      font-size: 10px;
+      opacity: 0.65;
+      margin-top: 4px;
+      text-align: right;
+    }
+    .message.received .message-time {
+      text-align: left;
+    }
+
     .chat-image {
       width: min(275px, 100%);
       max-height: 380px;
@@ -949,6 +985,61 @@
 
     body.keyboard-open .toast {
       bottom: 14px;
+    }
+
+    .msg-popup-container {
+      position: fixed;
+      top: calc(14px + env(safe-area-inset-top));
+      right: 12px;
+      z-index: 100001;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: min(320px, calc(100vw - 24px));
+      pointer-events: none;
+    }
+
+    .msg-popup {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.97);
+      box-shadow: 0 14px 32px rgba(53, 83, 106, 0.22), 0 0 0 1px rgba(205, 217, 230, 0.5);
+      transform: translateX(120%);
+      transition: transform 0.28s var(--ease-smooth, ease);
+      cursor: pointer;
+    }
+
+    .msg-popup.show {
+      transform: translateX(0);
+    }
+
+    .msg-popup .avatar,
+    .msg-popup .avatar.sm {
+      width: 36px;
+      height: 36px;
+      flex-shrink: 0;
+    }
+
+    .msg-popup-body {
+      min-width: 0;
+    }
+
+    .msg-popup-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .msg-popup-text {
+      font-size: 12px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     /* ==============================
@@ -1831,7 +1922,10 @@ input,textarea{caret-color:var(--pink-dark);}
               <div id="chatSubtitle" class="chat-header-subtitle">Live</div>
               <div id="typingIndicator" class="typing-indicator" aria-live="polite"></div>
             </div>
-            <div id="chatTypePill" class="pill">public</div>
+            <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+              <div id="chatTypePill" class="pill">public</div>
+              <div id="chatPresencePill" class="pill presence-pill hidden">Offline</div>
+            </div>
           </div>
 
           <div id="messages" class="messages"></div>
@@ -1964,6 +2058,7 @@ input,textarea{caret-color:var(--pink-dark);}
   </div>
 
   <div id="toast" class="toast"></div>
+  <div id="msgPopupContainer" class="msg-popup-container"></div>
 
   <script src="https://upload-widget.cloudinary.com/global/all.js"></script>
 
@@ -2051,7 +2146,25 @@ input,textarea{caret-color:var(--pink-dark);}
         privateSpace: null,
         privatePhotos: null,
         chat: null,
-        typing: null
+        typing: null,
+        presence: null,
+        privateInboxWatch: null,
+        readReceipt: null
+      },
+      presence: {
+        lastActiveAt: null,
+        pollTimer: null,
+        heartbeatTimer: null
+      },
+      privateInbox: {
+        lastSeenMessageId: null,
+        initialized: false,
+        watchingSpaceId: null
+      },
+      readReceipt: {
+        partnerUid: null,
+        partnerLastReadAt: null,
+        docRef: null
       },
       cache: {
         profiles: new Map()
@@ -2386,6 +2499,7 @@ input,textarea{caret-color:var(--pink-dark);}
         state.privateSpace = null;
         clearInterval(state.relationshipTimer);
         state.relationshipTimer = null;
+        stopHeartbeat();
         $("app").classList.add("hidden");
         $("loginScreen").classList.remove("hidden");
         $("loginScreen").classList.add("active");
@@ -2444,6 +2558,213 @@ input,textarea{caret-color:var(--pink-dark);}
       loadPrivateSpace();
       startPrivateMemories();
       refreshHome();
+      startHeartbeat();
+    }
+
+    /* ============================================================
+       PRESENCE (online / offline)
+       Heartbeat: while the app is open, touch our own users/{uid}
+       doc every 20s with a fresh timestamp. Anyone viewing a chat
+       with us reads that same field and treats it as "online" if
+       it's recent, "offline" if it's gone stale — no separate
+       presence collection or rules changes needed.
+       ============================================================ */
+    const PRESENCE_HEARTBEAT_MS = 20000;
+    const PRESENCE_ONLINE_WINDOW_MS = 35000;
+
+    function startHeartbeat() {
+      stopHeartbeat();
+      sendHeartbeat();
+      state.presence.heartbeatTimer = setInterval(sendHeartbeat, PRESENCE_HEARTBEAT_MS);
+      document.addEventListener("visibilitychange", handleHeartbeatVisibility);
+    }
+
+    function stopHeartbeat() {
+      clearInterval(state.presence.heartbeatTimer);
+      state.presence.heartbeatTimer = null;
+      document.removeEventListener("visibilitychange", handleHeartbeatVisibility);
+    }
+
+    function handleHeartbeatVisibility() {
+      if (!document.hidden) sendHeartbeat();
+    }
+
+    async function sendHeartbeat() {
+      if (!auth.currentUser) return;
+      try {
+        await updateDoc(doc(db, "users", auth.currentUser.uid), { lastActiveAt: serverTimestamp() });
+      } catch (error) {
+        console.error("Heartbeat failed:", error);
+      }
+    }
+
+    function isRecentlyActive(date) {
+      if (!date) return false;
+      return (Date.now() - date.getTime()) < PRESENCE_ONLINE_WINDOW_MS;
+    }
+
+    // Watches the OTHER person's users/{uid} doc while a 1:1 chat is
+    // open, and keeps re-checking on a timer so "online" correctly
+    // flips to "offline" even without a new snapshot event.
+    function startPresenceWatch(otherUid) {
+      cleanupListener("presence");
+      clearInterval(state.presence.pollTimer);
+      if (!otherUid) return;
+
+      const paint = () => {
+        const online = isRecentlyActive(state.presence.lastActiveAt);
+        const pill = $("chatPresencePill");
+        if (!pill) return;
+        pill.textContent = online ? "Online" : "Offline";
+        pill.classList.toggle("online", online);
+        pill.classList.toggle("offline", !online);
+      };
+
+      state.unsub.presence = onSnapshot(doc(db, "users", otherUid), snapshot => {
+        state.presence.lastActiveAt = dateFromFirestore(snapshot.data()?.lastActiveAt);
+        paint();
+      });
+      state.presence.pollTimer = setInterval(paint, 10000);
+      paint();
+    }
+
+    /* ============================================================
+       READ RECEIPTS ("Seen")
+       Stored as a lastRead.{uid} map field on the connection or
+       private-space document itself (not per-message, to avoid a
+       write per message). Shows "Seen" only under the most recent
+       message you sent, once the other person's lastRead timestamp
+       has passed it — nothing shown otherwise.
+       ============================================================ */
+    function readReceiptDocRef(kind, id) {
+      if (kind === "connection") return doc(db, "connections", id);
+      if (kind === "private") return doc(db, "privateSpaces", id);
+      return null;
+    }
+
+    async function markChatAsRead(kind, id) {
+      const ref = readReceiptDocRef(kind, id);
+      if (!ref || !auth.currentUser) return;
+      try {
+        await updateDoc(ref, { [`lastRead.${auth.currentUser.uid}`]: serverTimestamp() });
+      } catch (error) {
+        console.error("Mark-as-read failed:", error);
+      }
+    }
+
+    function startReadReceiptWatch(kind, id, otherUid) {
+      cleanupListener("readReceipt");
+      state.readReceipt = { partnerUid: otherUid, partnerLastReadAt: null, docRef: readReceiptDocRef(kind, id) };
+      if (!state.readReceipt.docRef || !otherUid) return;
+      state.unsub.readReceipt = onSnapshot(state.readReceipt.docRef, snapshot => {
+        state.readReceipt.partnerLastReadAt = dateFromFirestore(snapshot.data()?.lastRead?.[otherUid]);
+        updateSeenIndicator();
+      });
+    }
+
+    // Shows "Seen" only on the last message you sent, only once the
+    // partner's lastRead timestamp is at or after it. Nothing shown
+    // otherwise — no per-message clutter.
+    function updateSeenIndicator() {
+      const sentMessages = $("messages").querySelectorAll(".message.sent");
+      sentMessages.forEach(node => {
+        const label = node.querySelector(".seen-label");
+        if (label) label.remove();
+      });
+      if (!sentMessages.length) return;
+      const last = sentMessages[sentMessages.length - 1];
+      const createdAtMs = Number(last.dataset.createdAt || 0);
+      const partnerReadAt = state.readReceipt.partnerLastReadAt;
+      if (createdAtMs && partnerReadAt && partnerReadAt.getTime() >= createdAtMs) {
+        const timeEl = last.querySelector(".message-time");
+        if (timeEl) {
+          const label = document.createElement("span");
+          label.className = "seen-label";
+          label.textContent = " · Seen";
+          timeEl.appendChild(label);
+        }
+      }
+    }
+
+    /* ============================================================
+       INCOMING MESSAGE POPUP (private chat)
+       Watches the latest private-chat message globally (not tied to
+       the chat screen's lifecycle) and pops a small side card when
+       a new message arrives from the other person while you're not
+       already looking at that chat.
+       ============================================================ */
+    function startPrivateInboxWatch(spaceId) {
+      if (state.privateInbox.watchingSpaceId === spaceId) return;
+      cleanupListener("privateInboxWatch");
+      state.privateInbox.watchingSpaceId = spaceId;
+      state.privateInbox.initialized = false;
+      state.privateInbox.lastSeenMessageId = null;
+
+      const q = query(collection(db, "privateSpaces", spaceId, "messages"), orderBy("createdAt", "desc"), limit(1));
+      state.unsub.privateInboxWatch = onSnapshot(q, async snapshot => {
+        if (snapshot.empty) return;
+        const latestDoc = snapshot.docs[0];
+        const data = latestDoc.data();
+
+        if (!state.privateInbox.initialized) {
+          // Skip notifying about whatever was already the last
+          // message when the listener first attaches.
+          state.privateInbox.initialized = true;
+          state.privateInbox.lastSeenMessageId = latestDoc.id;
+          return;
+        }
+        if (latestDoc.id === state.privateInbox.lastSeenMessageId) return;
+        state.privateInbox.lastSeenMessageId = latestDoc.id;
+
+        if (!auth.currentUser || data.senderId === auth.currentUser.uid) return;
+
+        const alreadyViewing = state.activeChat.kind === "private"
+          && document.visibilityState === "visible";
+        if (alreadyViewing) return;
+
+        const sender = await getProfile(data.senderId) || { displayName: "Someone" };
+        showIncomingMessagePopup(sender, data);
+      }, error => {
+        console.error("Private inbox watch failed:", error);
+      });
+    }
+
+    function messagePreviewText(data) {
+      if (data.type === "image") return "📷 Photo";
+      if (data.type === "audio") return "🎤 Voice note";
+      return safeText(data.text) || "New message";
+    }
+
+    function showIncomingMessagePopup(sender, data) {
+      const container = $("msgPopupContainer");
+      const card = document.createElement("div");
+      card.className = "msg-popup";
+
+      card.appendChild(avatarElement(sender, "avatar sm"));
+
+      const body = document.createElement("div");
+      body.className = "msg-popup-body";
+      const name = document.createElement("div");
+      name.className = "msg-popup-name";
+      name.textContent = sender.displayName || "Someone";
+      const text = document.createElement("div");
+      text.className = "msg-popup-text";
+      text.textContent = messagePreviewText(data);
+      body.append(name, text);
+      card.appendChild(body);
+
+      card.addEventListener("click", () => {
+        card.remove();
+        if (state.privateSpace) openChat("private", state.privateSpace.id);
+      });
+
+      container.appendChild(card);
+      requestAnimationFrame(() => card.classList.add("show"));
+
+      setTimeout(() => {
+        card.classList.remove("show");
+        setTimeout(() => card.remove(), 300);
+      }, 5000);
     }
 
     $("logoutBtn").addEventListener("click", () => { stopTypingNow(); signOut(auth); });
@@ -2953,6 +3274,7 @@ input,textarea{caret-color:var(--pink-dark);}
         renderPrivateUnlocked();
         refreshHome();
         startPrivateMemories();
+        startPrivateInboxWatch(snapshot.id);
       }, error => {
         console.error(error);
         toast("Private room listener stopped.");
@@ -3435,6 +3757,10 @@ input,textarea{caret-color:var(--pink-dark);}
       avatar.replaceChildren();
 
       if (kind === "public") {
+        cleanupListener("presence");
+        cleanupListener("readReceipt");
+        clearInterval(state.presence.pollTimer);
+        $("chatPresencePill").classList.add("hidden");
         avatar.textContent = "🌍";
         $("chatEyebrow").textContent = "public chat";
         $("chatPageTitle").textContent = "Community.";
@@ -3458,6 +3784,10 @@ input,textarea{caret-color:var(--pink-dark);}
           ? `UID ${user.publicUid || "----"} • private space`
           : `UID ${user.publicUid || "----"} • accepted connection`;
         $("chatTypePill").textContent = kind === "private" ? "private" : "connected";
+        $("chatPresencePill").classList.remove("hidden");
+        startPresenceWatch(otherUid);
+        startReadReceiptWatch(kind, id, otherUid);
+        markChatAsRead(kind, id);
       }
 
       $("photoAction").classList.remove("hidden");
@@ -3498,6 +3828,10 @@ input,textarea{caret-color:var(--pink-dark);}
         }
         messages.appendChild(fragment);
         if (nearBottom || snapshot.empty) requestAnimationFrame(scrollMessagesToBottom);
+        if (state.activeChat.kind === "connection" || state.activeChat.kind === "private") {
+          updateSeenIndicator();
+          markChatAsRead(state.activeChat.kind, state.activeChat.id);
+        }
       }, error => {
         console.error(error);
         toast("Chat could not be loaded. Check Firestore rules/indexes.");
@@ -3527,6 +3861,8 @@ input,textarea{caret-color:var(--pink-dark);}
       const message = document.createElement("div");
       const isMine = auth.currentUser && data.senderId === auth.currentUser.uid;
       message.className = `message ${isMine ? "sent" : "received"}`;
+      const createdDate = dateFromFirestore(data.createdAt);
+      if (isMine && createdDate) message.dataset.createdAt = String(createdDate.getTime());
 
       if (state.activeChat.kind === "public" || state.activeChat.kind === "connection") {
         message.appendChild(messageSenderMeta(data, isMine));
@@ -3552,7 +3888,26 @@ input,textarea{caret-color:var(--pink-dark);}
         if (isMine) attachUnsendLongPress(message, messageId, data);
       }
 
+      const time = document.createElement("div");
+      time.className = "message-time";
+      time.textContent = formatMessageTimeIST(data.createdAt);
+      message.appendChild(time);
+
       return message;
+    }
+
+    // Always shows the send time in India Standard Time, regardless of
+    // the viewer's own device timezone, so both people see one
+    // consistent time for every message.
+    function formatMessageTimeIST(timestamp) {
+      const date = dateFromFirestore(timestamp);
+      if (!date) return "";
+      return new Intl.DateTimeFormat("en-IN", {
+        timeZone: "Asia/Kolkata",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+      }).format(date) + " IST";
     }
 
     function buildAudioPlayer(url, duration, isMine) {
