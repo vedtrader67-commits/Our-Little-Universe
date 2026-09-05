@@ -4716,7 +4716,7 @@ input,textarea{caret-color:var(--pink-dark);}
 
     async function startScreenShareAsCaller() {
       if (!navigator.mediaDevices?.getDisplayMedia) {
-        return toast("Your browser does not support screen sharing.");
+        return toast("Starting a screen share needs a desktop browser (Chrome, Firefox, or Edge) — phones can't capture their own screen this way. You can still watch a screen someone shares with you from here.");
       }
       const { kind, id } = state.activeChat;
       const ref = screenShareSessionRef(kind, id);
