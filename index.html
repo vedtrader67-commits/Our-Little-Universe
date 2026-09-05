@@ -948,6 +948,16 @@
       border-radius: 16px;
       background: #000;
     }
+    #screenShareLocalVideo {
+      position: absolute;
+      bottom: 90px;
+      right: 18px;
+      width: 96px;
+      max-height: 130px;
+      border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.6);
+      z-index: 2;
+    }
     .screen-share-label {
       color: #fff;
       font-weight: 600;
@@ -2016,7 +2026,7 @@ input,textarea{caret-color:var(--pink-dark);}
               <div id="chatTypePill" class="pill">public</div>
               <div id="chatPresencePill" class="pill presence-pill hidden">Offline</div>
             </div>
-            <button id="screenShareBtn" class="chat-action screen-share-action hidden" type="button" title="Share your screen">🖥️</button>
+            <button id="screenShareBtn" class="chat-action screen-share-action hidden" type="button" title="Video call">📹</button>
           </div>
 
           <div id="messages" class="messages"></div>
@@ -2153,8 +2163,9 @@ input,textarea{caret-color:var(--pink-dark);}
 
   <div id="screenShareOverlay" class="screen-share-overlay hidden">
     <video id="screenShareVideo" autoplay playsinline></video>
+    <video id="screenShareLocalVideo" autoplay playsinline muted></video>
     <div id="screenShareLabel" class="screen-share-label"></div>
-    <button id="screenShareEndBtn" class="screen-share-end" type="button">End screen share</button>
+    <button id="screenShareEndBtn" class="screen-share-end" type="button">End call</button>
   </div>
 
   <div id="screenShareRingContainer" class="msg-popup-container" style="top:auto;bottom:110px;"></div>
@@ -4673,7 +4684,9 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     /* ============================================================
-       LIVE SCREEN SHARING (private + connection chats)
+       LIVE VIDEO CALLING (private + connection chats)
+       Works on phones too, unlike screen sharing — it just uses the
+       camera (getUserMedia), which every phone browser supports.
        Peer-to-peer via WebRTC, signaled through a small Firestore
        doc so no extra server is needed. STUN-only: this works on
        most home/mobile networks, but a small number of strict
@@ -4715,22 +4728,24 @@ input,textarea{caret-color:var(--pink-dark);}
     $("screenShareEndBtn")?.addEventListener("click", () => endScreenShare(true));
 
     async function startScreenShareAsCaller() {
-      if (!navigator.mediaDevices?.getDisplayMedia) {
-        return toast("Starting a screen share needs a desktop browser (Chrome, Firefox, or Edge) — phones can't capture their own screen this way. You can still watch a screen someone shares with you from here.");
+      if (!navigator.mediaDevices?.getUserMedia) {
+        return toast("Video calling needs camera access, which this browser doesn't support here.");
       }
       const { kind, id } = state.activeChat;
       const ref = screenShareSessionRef(kind, id);
       if (!ref || !auth.currentUser) return;
 
       try {
-        const localStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        const localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
         state.screenShare.localStream = localStream;
         state.screenShare.role = "caller";
 
         const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
         state.screenShare.pc = pc;
         localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-        localStream.getVideoTracks()[0].addEventListener("ended", () => endScreenShare(true));
+        pc.ontrack = event => {
+          $("screenShareVideo").srcObject = event.streams[0];
+        };
 
         pc.onicecandidate = event => {
           if (event.candidate) {
@@ -4754,14 +4769,14 @@ input,textarea{caret-color:var(--pink-dark);}
 
         state.screenShare.seenCalleeCandidates = 0;
         watchScreenShareSession(kind, id, "caller");
-        showScreenShareOverlay(localStream, "Sharing your screen…");
+        showScreenShareOverlay(localStream, "Calling…");
         updateScreenShareButton();
-        toast("Screen sharing started.");
+        toast("Calling…");
       } catch (error) {
         console.error(error);
         state.screenShare.pc?.close();
         state.screenShare = { pc: null, localStream: null, role: null, watchingKey: state.screenShare.watchingKey, seenCallerCandidates: 0, seenCalleeCandidates: 0, ringing: false };
-        toast("Screen sharing could not be started.");
+        toast(error?.name === "NotAllowedError" ? "Camera permission is needed for video calls." : "Video call could not be started.");
       }
     }
 
@@ -4824,10 +4839,10 @@ input,textarea{caret-color:var(--pink-dark);}
       body.className = "msg-popup-body";
       const name = document.createElement("div");
       name.className = "msg-popup-name";
-      name.textContent = `${callerName} is sharing their screen`;
+      name.textContent = `${callerName} is calling you`;
       const text = document.createElement("div");
       text.className = "msg-popup-text";
-      text.textContent = "Tap to view";
+      text.textContent = "Tap to answer";
       body.append(name, text);
       card.appendChild(body);
       card.addEventListener("click", () => {
@@ -4851,18 +4866,25 @@ input,textarea{caret-color:var(--pink-dark);}
     async function joinScreenShareAsCallee(kind, id) {
       const ref = screenShareSessionRef(kind, id);
       if (!ref || !auth.currentUser) return;
+      if (!navigator.mediaDevices?.getUserMedia) {
+        return toast("Video calling needs camera access, which this browser doesn't support here.");
+      }
       try {
         const snapshot = await getDoc(ref);
-        if (!snapshot.exists() || !snapshot.data().offer) return toast("That screen share has ended.");
+        if (!snapshot.exists() || !snapshot.data().offer) return toast("That call has ended.");
         const data = snapshot.data();
+
+        const localStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: true });
+        state.screenShare.localStream = localStream;
 
         const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
         state.screenShare.pc = pc;
         state.screenShare.role = "callee";
         state.screenShare.seenCallerCandidates = 0;
+        localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
         pc.ontrack = event => {
-          showScreenShareOverlay(event.streams[0], `${data.callerName || "Someone"}'s screen`);
+          $("screenShareVideo").srcObject = event.streams[0];
         };
         pc.onicecandidate = event => {
           if (event.candidate) {
@@ -4880,17 +4902,18 @@ input,textarea{caret-color:var(--pink-dark);}
         });
 
         watchScreenShareSession(kind, id, "callee");
+        showScreenShareOverlay(localStream, `Call with ${data.callerName || "Someone"}`);
         updateScreenShareButton();
       } catch (error) {
         console.error(error);
-        toast("Could not join the screen share.");
+        toast(error?.name === "NotAllowedError" ? "Camera permission is needed for video calls." : "Could not join the call.");
         state.screenShare.pc?.close();
         state.screenShare.pc = null;
       }
     }
 
-    function showScreenShareOverlay(stream, label) {
-      $("screenShareVideo").srcObject = stream;
+    function showScreenShareOverlay(localStream, label) {
+      $("screenShareLocalVideo").srcObject = localStream;
       $("screenShareLabel").textContent = label;
       $("screenShareOverlay").classList.remove("hidden");
     }
@@ -4906,6 +4929,7 @@ input,textarea{caret-color:var(--pink-dark);}
       }
       $("screenShareOverlay").classList.add("hidden");
       $("screenShareVideo").srcObject = null;
+      $("screenShareLocalVideo").srcObject = null;
       state.screenShare.pc = null;
       state.screenShare.localStream = null;
       state.screenShare.role = null;
