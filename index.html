@@ -69,6 +69,17 @@ body{
 a{ color: inherit; }
 .mono{ font-family: 'IBM Plex Mono', monospace; }
 .hidden{ display:none !important; }
+html{ scroll-behavior:smooth; }
+button,input,textarea,select{ -webkit-tap-highlight-color:transparent; }
+video{ background:#090B0C; }
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}
 button{ font-family: inherit; }
 ::selection{ background: var(--live); color: #fff; }
 
@@ -431,6 +442,7 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
       </div>
 
       <div id="msg" class="msg" role="alert"></div>
+      <div id="firebaseConfigStatus" class="msg" role="status"></div>
 
       <!-- LOGIN -->
       <section id="pane-login" class="pane active">
@@ -753,88 +765,6 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
 </div>
 
 
-<!-- ================================================================
-     FIREBASE SETUP MODAL
-     The app cannot invent a Firebase project's Web App credentials.
-     This form accepts the complete firebaseConfig object copied from
-     Firebase Console, so users do not have to manually split values.
-     ================================================================ -->
-<div class="modal-overlay hidden" id="firebaseSetupModal">
-  <div class="modal" role="dialog" aria-labelledby="firebaseSetupTitle">
-    <button class="modal-close" data-close="firebaseSetupModal">✕</button>
-    <h2 id="firebaseSetupTitle">Firebase setup</h2>
-    <p class="sub">
-      Paste the complete <b>firebaseConfig</b> from Firebase Console →
-      Project settings → General → Your apps → Web app → SDK setup and configuration.
-    </p>
-
-    <div id="firebaseSetupMessage" class="msg" role="alert"></div>
-
-    <div class="field">
-      <label for="firebaseConfigPaste">Firebase Web App configuration</label>
-      <textarea id="firebaseConfigPaste" rows="13" spellcheck="false"
-        autocomplete="off"
-        placeholder='const firebaseConfig = {
-  apiKey: "AIza...",
-  authDomain: "your-project.firebaseapp.com",
-  databaseURL: "https://your-project-default-rtdb.firebaseio.com",
-  projectId: "your-project",
-  storageBucket: "your-project.firebasestorage.app",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef"
-};'></textarea>
-    </div>
-
-    <p class="sub" style="font-size:.82rem;margin-top:-4px;">
-      You can paste either the whole <code>const firebaseConfig = { ... }</code>
-      snippet or only the JSON/object contents. Do not paste passwords,
-      service-account private keys, or other secrets.
-    </p>
-
-    <details style="margin:12px 0;">
-      <summary style="cursor:pointer;font-weight:700;">Or edit individual fields</summary>
-      <div style="margin-top:12px;">
-        <div class="field"><label for="cfgApiKey">API key</label><input type="text" id="cfgApiKey" autocomplete="off" spellcheck="false"></div>
-        <div class="field"><label for="cfgAuthDomain">Auth domain</label><input type="text" id="cfgAuthDomain" autocomplete="off" spellcheck="false"></div>
-        <div class="field"><label for="cfgDatabaseURL">Realtime Database URL</label><input type="text" id="cfgDatabaseURL" autocomplete="off" spellcheck="false"></div>
-        <div class="field"><label for="cfgProjectId">Project ID</label><input type="text" id="cfgProjectId" autocomplete="off" spellcheck="false"></div>
-        <div class="field"><label for="cfgStorageBucket">Storage bucket</label><input type="text" id="cfgStorageBucket" autocomplete="off" spellcheck="false"></div>
-        <div class="field"><label for="cfgSenderId">Messaging sender ID</label><input type="text" id="cfgSenderId" autocomplete="off" spellcheck="false"></div>
-        <div class="field"><label for="cfgAppId">App ID</label><input type="text" id="cfgAppId" autocomplete="off" spellcheck="false"></div>
-      </div>
-    </details>
-
-    <div class="modal-actions">
-      <button type="button" class="btn btn-ghost" id="clearFirebaseConfigBtn">Clear saved config</button>
-      <button type="button" class="btn btn-primary" id="saveFirebaseConfigBtn">Validate &amp; save</button>
-    </div>
-  </div>
-</div>
-
-<!-- ================================================================
-     FIND USER MODAL
-     ================================================================ -->
-<div class="modal-overlay hidden" id="findUserModal">
-  <div class="modal" role="dialog" aria-labelledby="findUserTitle">
-    <button class="modal-close" data-close="findUserModal">✕</button>
-    <h2 id="findUserTitle">Find a user</h2>
-    <p class="sub">Search by a user's public ID. Only authenticated users can search.</p>
-
-    <div class="field-row">
-      <div class="field" style="margin-bottom:0;">
-        <label for="publicUidSearch">Public ID</label>
-        <input type="text" id="publicUidSearch" maxlength="12"
-               placeholder="e.g. ABC123" autocomplete="off" spellcheck="false" />
-      </div>
-      <button type="button" class="btn btn-primary btn-auto" id="publicUidSearchBtn"
-              style="align-self:flex-end;">Search</button>
-    </div>
-
-    <div id="publicUidSearchStatus" class="msg" role="status" style="margin-top:14px;"></div>
-    <div id="publicUidResult" class="blocked-list"></div>
-  </div>
-</div>
-
 <div id="toastStack" aria-live="polite"></div>
 
 <!-- Firebase SDKs (compat build — plain <script> tags, no bundler needed) -->
@@ -849,7 +779,10 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
    Firebase Console → Project Settings → General → Your apps →
    Web app → SDK setup and configuration
    ================================================================ */
-const EMBEDDED_FIREBASE_CONFIG = {
+const firebaseConfig = {
+  // IMPORTANT:
+  // Paste the values from Firebase Console → Project settings → Your apps → Web app.
+  // Do not use the example values below.
   apiKey: "",
   authDomain: "",
   databaseURL: "",
@@ -859,102 +792,14 @@ const EMBEDDED_FIREBASE_CONFIG = {
   appId: ""
 };
 
-/*
-  Firebase configuration notes:
-  - Firebase Web API keys are identifiers, not database passwords.
-  - Do NOT replace your key with an API key from another project.
-  - If the key works in Firebase Console but GitHub Pages reports
-    auth/api-key-not-valid, check the API key restrictions in Google Cloud.
-  - GitHub Pages uses HTTPS, so authDomain must match the project and
-    the GitHub Pages domain must be permitted by the key restrictions.
-*/
-let firebaseConfig = null;
 let auth = null;
 let db = null;
 let firebaseReady = false;
 let firebaseBooting = false;
 let firebaseBootError = null;
 
-const FIREBASE_CONFIG_STORAGE_KEY = 'randomeet_firebase_config_v3';
-
-function isPlaceholder(value){
-  if(typeof value !== 'string') return true;
-  const v = value.trim();
-  if(!v) return true;
-  return [
-    'YOUR_API_KEY',
-    'YOUR_PROJECT_ID',
-    'YOUR_SENDER_ID',
-    'YOUR_APP_ID',
-    'YOUR_FIREBASE_API_KEY',
-    'REPLACE_ME',
-    'CHANGE_ME'
-  ].includes(v) || /YOUR_|REPLACE_ME|CHANGE_ME|example\.com/i.test(v);
-}
-
-function parseFirebaseConfigText(text){
-  let source = String(text || '').trim();
-  if(!source) return null;
-
-  // Users often paste the entire Firebase Console block, including comments
-  // or a trailing semicolon. Strip only harmless wrappers; never eval().
-  source = source
-    .replace(/^\uFEFF/, '')
-    .replace(/^\s*```(?:javascript|js|json)?\s*/i, '')
-    .replace(/\s*```\s*$/i, '')
-    .trim();
-
-  let body = source
-    .replace(/^\s*(?:const|let|var)\s+firebaseConfig\s*=\s*/i, '')
-    .replace(/^\s*firebaseConfig\s*=\s*/i, '')
-    .replace(/;\s*$/, '')
-    .trim();
-
-  // JSON with double-quoted keys/values.
-  try{
-    const parsed = JSON.parse(body);
-    return normalizeFirebaseConfig(parsed);
-  }catch(_){}
-
-  if(body.startsWith('{') && body.endsWith('}')){
-    const raw = {};
-
-    // Handles the formats Firebase commonly displays:
-    // apiKey: "..."
-    // apiKey: '...'
-    // "apiKey": "..."
-    const re = /['"]?(apiKey|authDomain|databaseURL|projectId|storageBucket|messagingSenderId|appId)['"]?\s*:\s*(['"])(.*?)\2/gs;
-    let match;
-    while((match = re.exec(body))){
-      raw[match[1]] = match[3];
-    }
-
-    if(Object.keys(raw).length){
-      return normalizeFirebaseConfig(raw);
-    }
-  }
-
-  return null;
-}
-
-function normalizeFirebaseConfig(raw){
-  if(!raw || typeof raw !== 'object') return null;
-
-  const config = {
-    apiKey: String(raw.apiKey || '').trim(),
-    authDomain: String(raw.authDomain || '').trim(),
-    databaseURL: String(raw.databaseURL || '').trim(),
-    projectId: String(raw.projectId || '').trim(),
-    storageBucket: String(raw.storageBucket || '').trim(),
-    messagingSenderId: String(raw.messagingSenderId || '').trim(),
-    appId: String(raw.appId || '').trim()
-  };
-
-  return config;
-}
-
-function isFirebaseConfigUsable(config){
-  if(!config) return false;
+function firebaseConfigIsReady(config){
+  if(!config || typeof config !== 'object') return false;
 
   const required = [
     'apiKey',
@@ -965,255 +810,142 @@ function isFirebaseConfigUsable(config){
     'appId'
   ];
 
-  if(!required.every(key => {
-    const value = config[key];
-    return typeof value === 'string' && value.length > 0 && !isPlaceholder(value);
-  })) return false;
+  if(!required.every(k => typeof config[k] === 'string' && config[k].trim())) {
+    return false;
+  }
 
-  if(!/^AIza[0-9A-Za-z_-]+$/.test(config.apiKey)) return false;
-  if(!/^[a-z0-9-]+\.firebaseapp\.com$/i.test(config.authDomain)) return false;
-  if(!/^https?:\/\/.+/i.test(config.databaseURL)) return false;
-  if(!/^[a-z0-9-]+$/i.test(config.projectId)) return false;
-  if(!/^1:\d+:.+$/i.test(config.appId)) return false;
+  if(/^YOUR_|^REPLACE_|^CHANGE_ME|example\.com/i.test(config.apiKey)) return false;
+  if(/YOUR_|REPLACE_|CHANGE_ME|example\.com/i.test(config.authDomain)) return false;
+  if(/YOUR_|REPLACE_|CHANGE_ME|example\.com/i.test(config.databaseURL)) return false;
+  if(/YOUR_|REPLACE_|CHANGE_ME|example\.com/i.test(config.projectId)) return false;
+  if(/YOUR_|REPLACE_|CHANGE_ME|example\.com/i.test(config.appId)) return false;
 
   return true;
 }
 
-function migrateLegacyFirebaseConfig(){
-  const keys = [
-    'randomeet_firebase_config_v2',
-    'randomeet_firebase_config_v1',
-    'firebaseConfig'
-  ];
+function setFirebaseConfigStatus(text, type='err'){
+  const el = document.getElementById('firebaseConfigStatus');
+  if(!el) return;
 
-  for(const key of keys){
-    try{
-      const raw = localStorage.getItem(key);
-      if(!raw) continue;
-      const parsed = normalizeFirebaseConfig(JSON.parse(raw));
-      if(isFirebaseConfigUsable(parsed)){
-        localStorage.setItem(FIREBASE_CONFIG_STORAGE_KEY, JSON.stringify(parsed));
-        return parsed;
-      }
-    }catch(_){}
+  if(!text){
+    el.textContent = '';
+    el.className = 'msg';
+    return;
   }
-  return null;
+
+  el.textContent = text;
+  el.className = 'msg show ' + type;
 }
 
-function getStoredFirebaseConfig(){
-  try{
-    const stored = localStorage.getItem(FIREBASE_CONFIG_STORAGE_KEY);
-    if(!stored) return null;
-    return normalizeFirebaseConfig(JSON.parse(stored));
-  }catch(err){
-    console.warn('Could not read saved Firebase config:', err);
-    return null;
-  }
-}
-
-function getActiveFirebaseConfig(){
-  const stored = getStoredFirebaseConfig();
-  if(isFirebaseConfigUsable(stored)) return stored;
-
-  const migrated = migrateLegacyFirebaseConfig();
-  if(isFirebaseConfigUsable(migrated)) return migrated;
-
-  const embedded = normalizeFirebaseConfig(EMBEDDED_FIREBASE_CONFIG);
-  return isFirebaseConfigUsable(embedded) ? embedded : null;
-}
-
-function explainFirebaseAuthError(err){
+function explainFirebaseError(err){
   const code = String((err && err.code) || '').toLowerCase();
   const message = String((err && err.message) || '');
 
-  const exact = {
+  const map = {
     'auth/api-key-not-valid':
-      'Firebase rejected the Web API key. Use the Web API key from the SAME Firebase project as your Authentication and Realtime Database.',
+      'Firebase rejected the API key. Check the Web App configuration in this HTML and make sure it belongs to the same Firebase project.',
     'auth/invalid-api-key':
-      'Firebase rejected the Web API key. Copy the current Web app configuration from Firebase Console → Project settings → Your apps.',
+      'Firebase rejected the API key. Copy the current Web App configuration from Firebase Console.',
     'auth/operation-not-allowed':
-      'Email/password sign-in is disabled. Enable Authentication → Sign-in method → Email/Password.',
+      'Email/password authentication is disabled. Enable it in Firebase Console → Authentication → Sign-in method.',
     'auth/network-request-failed':
-      'Firebase could not reach the authentication server. Check your internet connection, GitHub Pages HTTPS, or network filtering.',
+      'Firebase could not reach the server. Check the internet connection and open this site over HTTPS.',
     'auth/invalid-email':
-      'That email address is invalid.',
+      'Enter a valid email address.',
     'auth/user-not-found':
-      'No account was found with that email.',
+      'No RandoMeet account was found with that email.',
     'auth/wrong-password':
-      'Incorrect password.',
+      'The email or password is incorrect.',
     'auth/invalid-credential':
       'The email or password is incorrect.',
     'auth/email-already-in-use':
       'An account with this email already exists.',
     'auth/weak-password':
-      'Password must meet Firebase password requirements.',
+      'Choose a stronger password.',
     'auth/too-many-requests':
-      'Too many authentication attempts. Please wait and try again.',
-    'auth/requires-recent-login':
-      'For security, log out and log back in before doing that again.'
+      'Too many login attempts. Please wait and try again.',
+    'auth/user-disabled':
+      'This account has been disabled.'
   };
 
-  if(exact[code]) return exact[code];
-
-  if(message.toLowerCase().includes('api key not valid')){
-    return 'The Firebase API key is invalid or restricted for this website. Check the Firebase Web App config and Google Cloud API-key restrictions.';
-  }
-
-  return message || 'Firebase authentication failed. Please try again.';
+  return map[code] || message || 'Firebase request failed. Please try again.';
 }
 
-function getFirebaseConfigSummary(config){
-  if(!config) return 'No Firebase configuration is currently available.';
-  return [
-    'projectId=' + (config.projectId || 'missing'),
-    'authDomain=' + (config.authDomain || 'missing'),
-    'databaseURL=' + (config.databaseURL || 'missing'),
-    'appId=' + (config.appId ? 'present' : 'missing'),
-    'apiKey=' + (config.apiKey ? 'present' : 'missing')
-  ].join(' | ');
-}
+async function bootstrapFirebase(){
+  if(firebaseBooting) return;
+  firebaseBooting = true;
+  firebaseBootError = null;
 
-function escapeHtml(str){
-  const div = document.createElement('div');
-  div.textContent = String(str ?? '');
-  return div.innerHTML;
-}
+  try{
+    if(typeof firebase === 'undefined'){
+      try{
+        await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-app-compat.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-auth-compat.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-database-compat.js');
+      }catch(loadErr){
+        throw new Error(
+          'The Firebase SDK could not be loaded. Check the internet connection and make sure the CDN is reachable.'
+        );
+      }
+    }
 
-function showFatalError(message){
-  let old = document.getElementById('firebaseFatalBar');
-  if(old) old.remove();
+    if(!firebaseConfigIsReady(firebaseConfig)){
+      const authButtons = [
+        document.getElementById('loginBtn'),
+        document.getElementById('signupBtn'),
+        document.getElementById('forgotBtn')
+      ];
+      authButtons.forEach(btn => { if(btn) btn.disabled = true; });
 
-  const bar = document.createElement('div');
-  bar.id = 'firebaseFatalBar';
-  bar.style.cssText =
-    'position:sticky;top:0;z-index:9999;background:#2E1712;color:#FFB09A;' +
-    'border-bottom:2px solid #FF5A36;padding:14px 20px;font-family:system-ui,sans-serif;' +
-    'font-size:0.88rem;line-height:1.55;';
-  bar.innerHTML =
-    '<strong>RandoMeet Firebase setup needs attention.</strong><br>' +
-    escapeHtml(message) +
-    ' <button id="openFirebaseSetupInline" style="margin-left:8px;padding:6px 10px;' +
-    'border-radius:6px;border:1px solid #FF5A36;background:transparent;color:#FFB09A;cursor:pointer;">' +
-    'Open Firebase setup</button>';
-  document.body.prepend(bar);
+      setFirebaseConfigStatus(
+        'Firebase is not configured yet. Put your real Firebase Web App configuration into the firebaseConfig block at the top of this file, then reload RandoMeet.',
+        'err'
+      );
+      return;
+    }
 
-  setTimeout(()=>{
-    const btn = document.getElementById('openFirebaseSetupInline');
-    if(btn) btn.addEventListener('click', ()=>openFirebaseSetupModal());
-  }, 0);
-}
+    if(!firebase.apps.length){
+      firebase.initializeApp(firebaseConfig);
+    }
 
-function setFirebaseSetupMessage(text, type){
-  const box = document.getElementById('firebaseSetupMessage');
-  if(!box) return;
-  box.textContent = text || '';
-  box.className = text ? ('msg show ' + (type || 'err')) : 'msg';
-}
+    auth = firebase.auth();
+    db = firebase.database();
+    firebaseReady = true;
 
-function fillFirebaseSetupForm(config){
-  const c = config || {};
-  const textarea = document.getElementById('firebaseConfigPaste');
-  if(textarea){
-    textarea.value = isFirebaseConfigUsable(c)
-      ? JSON.stringify(c, null, 2)
-      : '';
-  }
+    const authButtons = [
+      document.getElementById('loginBtn'),
+      document.getElementById('signupBtn'),
+      document.getElementById('forgotBtn')
+    ];
+    authButtons.forEach(btn => { if(btn) btn.disabled = false; });
+    setFirebaseConfigStatus('');
 
-  const set = (id, value) => {
-    const el = document.getElementById(id);
-    if(el) el.value = value || '';
-  };
-  set('cfgApiKey', c.apiKey);
-  set('cfgAuthDomain', c.authDomain);
-  set('cfgDatabaseURL', c.databaseURL);
-  set('cfgProjectId', c.projectId);
-  set('cfgStorageBucket', c.storageBucket);
-  set('cfgSenderId', c.messagingSenderId);
-  set('cfgAppId', c.appId);
-}
+    db.ref('.info/connected').on('value', snap=>{
+      const connected = snap.val() === true;
 
-function readFirebaseSetupForm(){
-  const pasted = document.getElementById('firebaseConfigPaste')?.value || '';
-  const parsed = parseFirebaseConfigText(pasted);
-  if(parsed) return parsed;
+      window.dispatchEvent(new CustomEvent('randomeet:firebase-connection', {
+        detail: { connected }
+      }));
 
-  return normalizeFirebaseConfig({
-    apiKey: document.getElementById('cfgApiKey')?.value.trim(),
-    authDomain: document.getElementById('cfgAuthDomain')?.value.trim(),
-    databaseURL: document.getElementById('cfgDatabaseURL')?.value.trim(),
-    projectId: document.getElementById('cfgProjectId')?.value.trim(),
-    storageBucket: document.getElementById('cfgStorageBucket')?.value.trim(),
-    messagingSenderId: document.getElementById('cfgSenderId')?.value.trim(),
-    appId: document.getElementById('cfgAppId')?.value.trim()
-  });
-}
+      if(!connected && auth.currentUser){
+        setStatus('connecting', 'Reconnecting…');
+      }else if(connected && mode === 'idle'){
+        setStatus('idle', 'Tap "Start" to find someone');
+      }
+    });
 
-function openFirebaseSetupModal(){
-  fillFirebaseSetupForm(
-    getStoredFirebaseConfig() ||
-    normalizeFirebaseConfig(EMBEDDED_FIREBASE_CONFIG) ||
-    {}
-  );
-  setFirebaseSetupMessage(
-    'Paste the REAL values from Firebase Console. The sample values in the grey box are only examples and will be rejected.',
-    'ok'
-  );
-  openModal('firebaseSetupModal');
-}
+    initApp();
+  }catch(err){
+    console.error('Firebase bootstrap failed:', err);
+    firebaseBootError = err;
 
-document.getElementById('saveFirebaseConfigBtn').addEventListener('click', async ()=>{
-  const pasted = document.getElementById('firebaseConfigPaste')?.value || '';
-  let config = parseFirebaseConfigText(pasted);
-
-  // If the pasted format was not parseable, fall back to individual fields.
-  if(!config) config = readFirebaseSetupForm();
-
-  if(!isFirebaseConfigUsable(config)){
-    setFirebaseSetupMessage(
-      'The configuration could not be validated. Paste the complete Firebase Web App config exactly as shown in Firebase Console. Do not use YOUR_API_KEY, YOUR_PROJECT_ID, or example values.',
+    setFirebaseConfigStatus(
+      explainFirebaseError(err),
       'err'
     );
-    return;
+  }finally{
+    firebaseBooting = false;
   }
-
-  // Realtime Database is mandatory for this RandoMeet build.
-  if(!/^https?:\/\//i.test(config.databaseURL)){
-    setFirebaseSetupMessage('Realtime Database URL must start with http:// or https://.', 'err');
-    return;
-  }
-
-  try{
-    localStorage.setItem(FIREBASE_CONFIG_STORAGE_KEY, JSON.stringify(config));
-    setFirebaseSetupMessage('Valid configuration saved. Reloading RandoMeet…', 'ok');
-    setTimeout(()=>location.reload(), 450);
-  }catch(err){
-    setFirebaseSetupMessage('Could not save configuration in this browser: ' + err.message, 'err');
-  }
-});
-
-document.getElementById('clearFirebaseConfigBtn').addEventListener('click', ()=>{
-  try{
-    localStorage.removeItem(FIREBASE_CONFIG_STORAGE_KEY);
-    setFirebaseSetupMessage('Saved browser configuration cleared. Reload the page to use the embedded configuration.', 'ok');
-  }catch(err){
-    setFirebaseSetupMessage('Could not clear the saved configuration.', 'err');
-  }
-});
-
-function getFirebaseProjectHost(config){
-  if(!config) return '';
-  return String(config.authDomain || '').replace(/^https?:\/\//i,'').split('/')[0];
-}
-
-function describeFirebaseConfig(config){
-  if(!config) return 'No configuration';
-  const checks = [];
-  checks.push(config.apiKey ? 'API key present' : 'API key missing');
-  checks.push(config.projectId ? 'project ID present' : 'project ID missing');
-  checks.push(config.authDomain ? 'auth domain present' : 'auth domain missing');
-  checks.push(config.databaseURL ? 'database URL present' : 'database URL missing');
-  checks.push(config.appId ? 'app ID present' : 'app ID missing');
-  return checks.join(' • ');
 }
 
 async function verifyFirebaseConnection(){
@@ -1229,84 +961,6 @@ async function verifyFirebaseConnection(){
 
   const connectedSnap = await db.ref('.info/connected').once('value');
   return connectedSnap.val() === true;
-}
-
-async function bootstrapFirebase(){
-  if(firebaseBooting) return;
-  firebaseBooting = true;
-  firebaseBootError = null;
-
-  if(typeof firebase === 'undefined'){
-    try{
-      await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-app-compat.js');
-      await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-auth-compat.js');
-      await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-database-compat.js');
-    }catch(err){
-      showFatalError(
-        'The Firebase SDK could not be loaded. Check your internet connection and make sure *.gstatic.com or *.jsdelivr.net is not blocked.'
-      );
-      firebaseBootError = err;
-      firebaseBooting = false;
-      return;
-    }
-  }
-
-  firebaseConfig = getActiveFirebaseConfig();
-
-  if(!isFirebaseConfigUsable(firebaseConfig)){
-    firebaseBootError = new Error('Firebase configuration is missing or still uses placeholders.');
-    showFatalError(
-      'RandoMeet needs the Firebase Web App configuration for your project. ' +
-      'Open Firebase setup and paste the exact firebaseConfig snippet from Firebase Console.'
-    );
-    fillFirebaseSetupForm(
-      getStoredFirebaseConfig() || normalizeFirebaseConfig(EMBEDDED_FIREBASE_CONFIG)
-    );
-    openModal('firebaseSetupModal');
-    firebaseBooting = false;
-    return;
-  }
-
-  try{
-    if(!firebase.apps.length){
-      firebase.initializeApp(firebaseConfig);
-    }else{
-      firebase.app();
-    }
-
-    auth = firebase.auth();
-    db = firebase.database();
-
-    firebaseReady = true;
-
-    db.ref('.info/connected').on('value', snap=>{
-      const connected = snap.val() === true;
-      window.dispatchEvent(new CustomEvent('randomeet:firebase-connection', {
-        detail: { connected }
-      }));
-
-      if(!connected && auth.currentUser){
-        setStatus('connecting', 'Reconnecting to Firebase…');
-      }else if(connected && (mode === 'idle')){
-        setStatus('idle', 'Tap "Start" to find someone');
-      }
-    });
-
-    initApp();
-
-  }catch(err){
-    console.error('Firebase bootstrap failed:', err);
-    firebaseBootError = err;
-
-    let detail = err.message || 'Unknown Firebase initialization error.';
-    if(err.code === 'auth/api-key-not-valid' || /api.?key.*not valid/i.test(detail)){
-      detail = explainFirebaseAuthError(err);
-    }
-
-    showFatalError(detail + ' Current config: ' + getFirebaseConfigSummary(firebaseConfig));
-  }finally{
-    firebaseBooting = false;
-  }
 }
 
 /* Dynamically load a <script src> and resolve/reject on completion. */
@@ -1606,17 +1260,30 @@ function initApp(){
 const authScreen = document.getElementById('authScreen');
 const chatScreen = document.getElementById('chatScreen');
 
-auth.onAuthStateChanged(user=>{
+auth.onAuthStateChanged(async user=>{
   if(user){
     authScreen.classList.add('hidden');
     chatScreen.classList.remove('hidden');
     uid = user.uid;
-    initUserSession(user);
+
+    try{
+      await initUserSession(user);
+    }catch(err){
+      console.error('Session initialization failed:', err);
+      showToast('Could not load your profile. Please log in again.', 'err');
+      try{ await auth.signOut(); }catch(_){}
+    }
   } else {
     chatScreen.classList.add('hidden');
     authScreen.classList.remove('hidden');
-    fullStop();
+
+    try{ await fullStop(); }catch(err){
+      console.warn('Cleanup after logout failed:', err);
+    }
+
     detachOnlineCounter();
+    uid = null;
+    myProfile = {};
   }
 });
 
@@ -1652,7 +1319,7 @@ function ensureFirebaseAuthReady(){
   if(firebaseReady && auth) return true;
 
   showMsg(
-    'Firebase is not ready yet. Open Firebase setup and save a valid Web App configuration first.',
+    'Firebase is not ready. Check the configuration message above and reload the page.',
     'err'
   );
   return false;
@@ -2002,8 +1669,7 @@ document.getElementById('changePasswordBtn').addEventListener('click', async ()=
 
 document.getElementById('firebaseDiagnosticsBtn').addEventListener('click', async ()=>{
   if(!firebaseReady){
-    showToast('Firebase is not initialized.', 'err');
-    openFirebaseSetupModal();
+    showToast('Firebase is not initialized. Check the Firebase status message on the login screen.', 'err');
     return;
   }
 
@@ -2333,8 +1999,7 @@ window.addEventListener('randomeet:firebase-connection', e=>{
    ================================================================ */
 startBtn.addEventListener('click', async ()=>{
   if(!firebaseReady || !auth || !db){
-    showToast('Firebase is not ready. Open Firebase setup first.', 'err');
-    openFirebaseSetupModal();
+    showToast('Firebase is not ready. Check the Firebase status message on the login screen.', 'err');
     return;
   }
 
@@ -2457,6 +2122,8 @@ fullscreenBtn.addEventListener('click', ()=>{
    SECTION 17 — MATCHMAKING QUEUE
    ================================================================ */
 async function joinQueue(){
+  if(mode === 'searching' && queueKey) return;
+
   if(!uid || !auth || !auth.currentUser){
     throw new Error('You must be signed in before entering the queue.');
   }
@@ -2492,7 +2159,13 @@ async function joinQueue(){
       mode = 'connecting';
       setStatus('connecting', 'Connecting…');
       showPeerBadge();
-      enterCall(roomId, myRole);
+      try{
+        await enterCall(roomId, myRole);
+      }catch(err){
+        console.error('Call setup failed:', err);
+        showToast('Could not start the video call. Finding someone else…', 'err');
+        await skip().catch(()=>{});
+      }
     }
   });
 }
@@ -2542,14 +2215,23 @@ async function attemptMatchFrom(entries){
     return;
   }, async (error, committed)=>{
     if(error || !committed) return;
-    const roomRef = db.ref('rooms').push();
-    const roomId = roomRef.key;
-    await roomRef.set({
-      users: { [me.uid]: true, [candidate.uid]: true },
-      createdAt: firebase.database.ServerValue.TIMESTAMP
-    });
-    await db.ref('users/' + me.uid).update({ roomId, role: 'caller', status: 'in-call' });
-    await db.ref('users/' + candidate.uid).update({ roomId, role: 'callee', status: 'in-call' });
+
+    try{
+      const roomRef = db.ref('rooms').push();
+      const roomId = roomRef.key;
+
+      await roomRef.set({
+        users: { [me.uid]: true, [candidate.uid]: true },
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      });
+
+      await Promise.all([
+        db.ref('users/' + me.uid).update({ roomId, role: 'caller', status: 'in-call' }),
+        db.ref('users/' + candidate.uid).update({ roomId, role: 'callee', status: 'in-call' })
+      ]);
+    }catch(err){
+      console.error('Match creation failed:', err);
+    }
   });
 }
 
@@ -2662,7 +2344,15 @@ async function skip(){
 }
 
 async function fullStop(){
-  if(currentRoomId){ await db.ref('rooms/' + currentRoomId + '/ended').set(true); }
+  if(currentRoomId){
+    try{ await db.ref('rooms/' + currentRoomId + '/ended').set(true); }catch(_){}
+  }
+
+  if(db && queueListenerAttached){
+    try{ db.ref('queue').off('value', tryMatch); }catch(_){}
+    queueListenerAttached = false;
+  }
+
   teardownCall();
   await leaveQueue();
   if(uid){
