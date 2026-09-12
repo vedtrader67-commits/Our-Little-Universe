@@ -998,6 +998,12 @@ function getFirebaseConfigSummary(config){
   ].join(' | ');
 }
 
+function escapeHtml(str){
+  const div = document.createElement('div');
+  div.textContent = String(str ?? '');
+  return div.innerHTML;
+}
+
 function showFatalError(message){
   let old = document.getElementById('firebaseFatalBar');
   if(old) old.remove();
@@ -2529,11 +2535,6 @@ function renderChatMessage(msg){
   if(msg.from !== uid) playMessageSound();
 }
 
-function escapeHtml(str){
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-}
 
 function sendChatMessage(){
   const text = chatInput.value.trim();
