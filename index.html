@@ -371,6 +371,19 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
 }
 .blocked-row button{ width:auto; padding: 5px 10px; font-size: 0.75rem; }
 .empty-note{ color: var(--text-dim); font-size: 0.82rem; }
+.firebase-config-note{
+  font-size:0.76rem;
+  color:var(--text-dim);
+  line-height:1.45;
+  margin-top:6px;
+}
+#firebaseFatalBar code{
+  font-family:'IBM Plex Mono',monospace;
+  background:rgba(255,255,255,0.08);
+  padding:1px 4px;
+  border-radius:4px;
+}
+
 
 /* ---------------- Toasts ---------------- */
 #toastStack{
@@ -496,6 +509,7 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
     <div class="topbar-right">
       <span class="online-count" id="onlineCount"></span>
       <button class="icon-link" id="helpBtn" title="Help">❓</button>
+      <button class="icon-link" id="findUserBtn" title="Find user">🔎</button>
       <button class="icon-link" id="settingsBtn" title="Settings">⚙️</button>
       <div class="user-chip">
         <span class="avatar-badge" id="whoamiAvatar">🙂</span>
@@ -594,6 +608,14 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
     </div>
 
     <div class="field">
+      <label for="settingsPublicUid">Your public ID</label>
+      <div class="field-row">
+        <input type="text" id="settingsPublicUid" readonly />
+        <button type="button" class="btn btn-ghost btn-auto" id="copyPublicUidBtn">Copy</button>
+      </div>
+    </div>
+
+    <div class="field">
       <label for="settingsBio">Short bio</label>
       <textarea id="settingsBio" maxlength="140" placeholder="A sentence about you…"></textarea>
     </div>
@@ -629,6 +651,9 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
 
     <div class="field">
       <button type="button" class="btn btn-ghost" id="changePasswordBtn">Send password-reset email</button>
+    </div>
+    <div class="field">
+      <button type="button" class="btn btn-ghost" id="firebaseDiagnosticsBtn">Test Firebase connection</button>
     </div>
 
     <div class="modal-actions">
@@ -700,6 +725,7 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
     <h2 id="aboutTitle">About RandoMeet</h2>
     <p class="sub" style="margin-bottom:0;">
       RandoMeet connects you with a random person for a live video conversation.
+       <span class="mono" style="font-size:0.68rem;opacity:.55;">build 2026.09</span>
       No topics, no scripts — just say hello and see where it goes. Be kind, and
       remember there's a real person on the other side of the call.
     </p>
@@ -726,6 +752,94 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
   </div>
 </div>
 
+
+<!-- ================================================================
+     FIREBASE SETUP MODAL
+     This appears only when the embedded config is missing/invalid.
+     It also supports saving a browser-local config for GitHub Pages /
+     WebView deployments without editing the source immediately.
+     ================================================================ -->
+<div class="modal-overlay hidden" id="firebaseSetupModal">
+  <div class="modal" role="dialog" aria-labelledby="firebaseSetupTitle">
+    <button class="modal-close" data-close="firebaseSetupModal">✕</button>
+    <h2 id="firebaseSetupTitle">Firebase setup</h2>
+    <p class="sub">
+      RandoMeet cannot sign in until it has a valid Firebase Web App configuration.
+      Paste the configuration from Firebase Console → Project settings → Your apps → Web app.
+    </p>
+
+    <div id="firebaseSetupMessage" class="msg" role="alert"></div>
+
+    <div class="field">
+      <label for="cfgApiKey">API key</label>
+      <input type="text" id="cfgApiKey" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="field">
+      <label for="cfgAuthDomain">Auth domain</label>
+      <input type="text" id="cfgAuthDomain" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="field">
+      <label for="cfgDatabaseURL">Realtime Database URL</label>
+      <input type="text" id="cfgDatabaseURL" autocomplete="off" spellcheck="false"
+             placeholder="https://YOUR_PROJECT-default-rtdb.firebaseio.com" />
+    </div>
+
+    <div class="field">
+      <label for="cfgProjectId">Project ID</label>
+      <input type="text" id="cfgProjectId" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="field">
+      <label for="cfgStorageBucket">Storage bucket</label>
+      <input type="text" id="cfgStorageBucket" autocomplete="off" spellcheck="false" />
+    </div>
+
+    <div class="field-row">
+      <div class="field">
+        <label for="cfgSenderId">Messaging sender ID</label>
+        <input type="text" id="cfgSenderId" autocomplete="off" spellcheck="false" />
+      </div>
+      <div class="field">
+        <label for="cfgAppId">App ID</label>
+        <input type="text" id="cfgAppId" autocomplete="off" spellcheck="false" />
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="clearFirebaseConfigBtn">Clear saved config</button>
+      <button type="button" class="btn btn-primary" id="saveFirebaseConfigBtn">Save &amp; reload</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================
+     FIND USER MODAL
+     New feature: search the public UID directory from the same
+     Realtime Database used by the rest of RandoMeet.
+     ================================================================ -->
+<div class="modal-overlay hidden" id="findUserModal">
+  <div class="modal" role="dialog" aria-labelledby="findUserTitle">
+    <button class="modal-close" data-close="findUserModal">✕</button>
+    <h2 id="findUserTitle">Find a user</h2>
+    <p class="sub">Search by a user's public ID. Only authenticated users can search.</p>
+
+    <div class="field-row">
+      <div class="field" style="margin-bottom:0;">
+        <label for="publicUidSearch">Public ID</label>
+        <input type="text" id="publicUidSearch" maxlength="12"
+               placeholder="e.g. ABC123" autocomplete="off" spellcheck="false" />
+      </div>
+      <button type="button" class="btn btn-primary btn-auto" id="publicUidSearchBtn"
+              style="align-self:flex-end;">Search</button>
+    </div>
+
+    <div id="publicUidSearchStatus" class="msg" role="status" style="margin-top:14px;"></div>
+    <div id="publicUidResult" class="blocked-list"></div>
+  </div>
+</div>
+
 <div id="toastStack" aria-live="polite"></div>
 
 <!-- Firebase SDKs (compat build — plain <script> tags, no bundler needed) -->
@@ -740,7 +854,7 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
    Firebase Console → Project Settings → General → Your apps →
    Web app → SDK setup and configuration
    ================================================================ */
-const firebaseConfig = {
+const EMBEDDED_FIREBASE_CONFIG = {
   apiKey: "YOUR_API_KEY",
   authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
   databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
@@ -749,93 +863,348 @@ const firebaseConfig = {
   messagingSenderId: "YOUR_SENDER_ID",
   appId: "YOUR_APP_ID"
 };
-let auth, db, firebaseReady = false;
 
-/* Non-destructive error banner: it PREPENDS a message instead of wiping
-   document.body, so even in a total Firebase-load failure the real page
-   (and its styling/branding) still shows underneath — the page never
-   looks "broken" or blank, just clearly tells you what to fix. */
-function showFatalError(message){
-  const bar = document.createElement('div');
-  bar.style.cssText =
-    'position:sticky;top:0;z-index:9999;background:#2E1712;color:#FF9B7C;' +
-    'border-bottom:2px solid #FF5A36;padding:14px 20px;font-family:system-ui,sans-serif;' +
-    'font-size:0.88rem;line-height:1.5;';
-  bar.innerHTML = '<strong>RandoMeet couldn\'t connect to its backend.</strong><br>' + message;
-  document.body.prepend(bar);
+/*
+  Firebase configuration notes:
+  - Firebase Web API keys are identifiers, not database passwords.
+  - Do NOT replace your key with an API key from another project.
+  - If the key works in Firebase Console but GitHub Pages reports
+    auth/api-key-not-valid, check the API key restrictions in Google Cloud.
+  - GitHub Pages uses HTTPS, so authDomain must match the project and
+    the GitHub Pages domain must be permitted by the key restrictions.
+*/
+let firebaseConfig = null;
+let auth = null;
+let db = null;
+let firebaseReady = false;
+let firebaseBooting = false;
+let firebaseBootError = null;
+
+const FIREBASE_CONFIG_STORAGE_KEY = 'randomeet_firebase_config_v3';
+
+function isPlaceholder(value){
+  if(typeof value !== 'string') return true;
+  const v = value.trim();
+  if(!v) return true;
+  return [
+    'YOUR_API_KEY',
+    'YOUR_PROJECT_ID',
+    'YOUR_SENDER_ID',
+    'YOUR_APP_ID'
+  ].includes(v) || v.includes('YOUR_PROJECT_ID');
 }
 
-/* Dynamically load a <script src> and resolve/reject on completion —
-   used to try a second CDN mirror if the primary one is blocked. */
+function normalizeFirebaseConfig(raw){
+  if(!raw || typeof raw !== 'object') return null;
+
+  const config = {
+    apiKey: String(raw.apiKey || '').trim(),
+    authDomain: String(raw.authDomain || '').trim(),
+    databaseURL: String(raw.databaseURL || '').trim(),
+    projectId: String(raw.projectId || '').trim(),
+    storageBucket: String(raw.storageBucket || '').trim(),
+    messagingSenderId: String(raw.messagingSenderId || '').trim(),
+    appId: String(raw.appId || '').trim()
+  };
+
+  return config;
+}
+
+function isFirebaseConfigUsable(config){
+  if(!config) return false;
+
+  const required = [
+    'apiKey',
+    'authDomain',
+    'databaseURL',
+    'projectId',
+    'messagingSenderId',
+    'appId'
+  ];
+
+  return required.every(key => {
+    const value = config[key];
+    return typeof value === 'string' && value.length > 0 && !isPlaceholder(value);
+  });
+}
+
+function getStoredFirebaseConfig(){
+  try{
+    const stored = localStorage.getItem(FIREBASE_CONFIG_STORAGE_KEY);
+    if(!stored) return null;
+    return normalizeFirebaseConfig(JSON.parse(stored));
+  }catch(err){
+    console.warn('Could not read saved Firebase config:', err);
+    return null;
+  }
+}
+
+function getActiveFirebaseConfig(){
+  const stored = getStoredFirebaseConfig();
+  if(isFirebaseConfigUsable(stored)) return stored;
+
+  const embedded = normalizeFirebaseConfig(EMBEDDED_FIREBASE_CONFIG);
+  return isFirebaseConfigUsable(embedded) ? embedded : null;
+}
+
+function explainFirebaseAuthError(err){
+  const code = String((err && err.code) || '').toLowerCase();
+  const message = String((err && err.message) || '');
+
+  const exact = {
+    'auth/api-key-not-valid':
+      'Firebase rejected the Web API key. Use the Web API key from the SAME Firebase project as your Authentication and Realtime Database.',
+    'auth/invalid-api-key':
+      'Firebase rejected the Web API key. Copy the current Web app configuration from Firebase Console → Project settings → Your apps.',
+    'auth/operation-not-allowed':
+      'Email/password sign-in is disabled. Enable Authentication → Sign-in method → Email/Password.',
+    'auth/network-request-failed':
+      'Firebase could not reach the authentication server. Check your internet connection, GitHub Pages HTTPS, or network filtering.',
+    'auth/invalid-email':
+      'That email address is invalid.',
+    'auth/user-not-found':
+      'No account was found with that email.',
+    'auth/wrong-password':
+      'Incorrect password.',
+    'auth/invalid-credential':
+      'The email or password is incorrect.',
+    'auth/email-already-in-use':
+      'An account with this email already exists.',
+    'auth/weak-password':
+      'Password must meet Firebase password requirements.',
+    'auth/too-many-requests':
+      'Too many authentication attempts. Please wait and try again.',
+    'auth/requires-recent-login':
+      'For security, log out and log back in before doing that again.'
+  };
+
+  if(exact[code]) return exact[code];
+
+  if(message.toLowerCase().includes('api key not valid')){
+    return 'The Firebase API key is invalid or restricted for this website. Check the Firebase Web App config and Google Cloud API-key restrictions.';
+  }
+
+  return message || 'Firebase authentication failed. Please try again.';
+}
+
+function getFirebaseConfigSummary(config){
+  if(!config) return 'No Firebase configuration is currently available.';
+  return [
+    'projectId=' + (config.projectId || 'missing'),
+    'authDomain=' + (config.authDomain || 'missing'),
+    'databaseURL=' + (config.databaseURL || 'missing'),
+    'appId=' + (config.appId ? 'present' : 'missing'),
+    'apiKey=' + (config.apiKey ? 'present' : 'missing')
+  ].join(' | ');
+}
+
+function showFatalError(message){
+  let old = document.getElementById('firebaseFatalBar');
+  if(old) old.remove();
+
+  const bar = document.createElement('div');
+  bar.id = 'firebaseFatalBar';
+  bar.style.cssText =
+    'position:sticky;top:0;z-index:9999;background:#2E1712;color:#FFB09A;' +
+    'border-bottom:2px solid #FF5A36;padding:14px 20px;font-family:system-ui,sans-serif;' +
+    'font-size:0.88rem;line-height:1.55;';
+  bar.innerHTML =
+    '<strong>RandoMeet Firebase setup needs attention.</strong><br>' +
+    escapeHtml(message) +
+    ' <button id="openFirebaseSetupInline" style="margin-left:8px;padding:6px 10px;' +
+    'border-radius:6px;border:1px solid #FF5A36;background:transparent;color:#FFB09A;cursor:pointer;">' +
+    'Open Firebase setup</button>';
+  document.body.prepend(bar);
+
+  setTimeout(()=>{
+    const btn = document.getElementById('openFirebaseSetupInline');
+    if(btn) btn.addEventListener('click', ()=>openFirebaseSetupModal());
+  }, 0);
+}
+
+function setFirebaseSetupMessage(text, type){
+  const box = document.getElementById('firebaseSetupMessage');
+  if(!box) return;
+  box.textContent = text || '';
+  box.className = text ? ('msg show ' + (type || 'err')) : 'msg';
+}
+
+function fillFirebaseSetupForm(config){
+  const c = config || {};
+  document.getElementById('cfgApiKey').value = c.apiKey || '';
+  document.getElementById('cfgAuthDomain').value = c.authDomain || '';
+  document.getElementById('cfgDatabaseURL').value = c.databaseURL || '';
+  document.getElementById('cfgProjectId').value = c.projectId || '';
+  document.getElementById('cfgStorageBucket').value = c.storageBucket || '';
+  document.getElementById('cfgSenderId').value = c.messagingSenderId || '';
+  document.getElementById('cfgAppId').value = c.appId || '';
+}
+
+function readFirebaseSetupForm(){
+  return normalizeFirebaseConfig({
+    apiKey: document.getElementById('cfgApiKey').value.trim(),
+    authDomain: document.getElementById('cfgAuthDomain').value.trim(),
+    databaseURL: document.getElementById('cfgDatabaseURL').value.trim(),
+    projectId: document.getElementById('cfgProjectId').value.trim(),
+    storageBucket: document.getElementById('cfgStorageBucket').value.trim(),
+    messagingSenderId: document.getElementById('cfgSenderId').value.trim(),
+    appId: document.getElementById('cfgAppId').value.trim()
+  });
+}
+
+function openFirebaseSetupModal(){
+  fillFirebaseSetupForm(
+    getStoredFirebaseConfig() ||
+    normalizeFirebaseConfig(EMBEDDED_FIREBASE_CONFIG) ||
+    {}
+  );
+  setFirebaseSetupMessage(
+    'Paste the exact Web app configuration from Firebase Console. Do not invent or shorten any value.',
+    'ok'
+  );
+  openModal('firebaseSetupModal');
+}
+
+document.getElementById('saveFirebaseConfigBtn').addEventListener('click', async ()=>{
+  const config = readFirebaseSetupForm();
+
+  if(!isFirebaseConfigUsable(config)){
+    setFirebaseSetupMessage(
+      'Some Firebase fields are missing or still contain placeholder values such as YOUR_API_KEY or YOUR_PROJECT_ID.',
+      'err'
+    );
+    return;
+  }
+
+  try{
+    localStorage.setItem(FIREBASE_CONFIG_STORAGE_KEY, JSON.stringify(config));
+    setFirebaseSetupMessage('Configuration saved. Reloading the page…', 'ok');
+    setTimeout(()=>location.reload(), 350);
+  }catch(err){
+    setFirebaseSetupMessage('Could not save configuration in this browser: ' + err.message, 'err');
+  }
+});
+
+document.getElementById('clearFirebaseConfigBtn').addEventListener('click', ()=>{
+  try{
+    localStorage.removeItem(FIREBASE_CONFIG_STORAGE_KEY);
+    setFirebaseSetupMessage('Saved browser configuration cleared. Reload the page to use the embedded configuration.', 'ok');
+  }catch(err){
+    setFirebaseSetupMessage('Could not clear the saved configuration.', 'err');
+  }
+});
+
+async function verifyFirebaseConnection(){
+  if(!auth || !db) throw new Error('Firebase services are not initialized.');
+
+  // Lightweight checks that help distinguish a valid SDK/config from
+  // a Firestore/Realtime Database rule problem.
+  try{
+    await auth.currentUser?.getIdToken?.(true);
+  }catch(err){
+    if(auth.currentUser) throw err;
+  }
+
+  const connectedSnap = await db.ref('.info/connected').once('value');
+  return connectedSnap.val() === true;
+}
+
+async function bootstrapFirebase(){
+  if(firebaseBooting) return;
+  firebaseBooting = true;
+  firebaseBootError = null;
+
+  if(typeof firebase === 'undefined'){
+    try{
+      await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-app-compat.js');
+      await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-auth-compat.js');
+      await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-database-compat.js');
+    }catch(err){
+      showFatalError(
+        'The Firebase SDK could not be loaded. Check your internet connection and make sure *.gstatic.com or *.jsdelivr.net is not blocked.'
+      );
+      firebaseBootError = err;
+      firebaseBooting = false;
+      return;
+    }
+  }
+
+  firebaseConfig = getActiveFirebaseConfig();
+
+  if(!isFirebaseConfigUsable(firebaseConfig)){
+    firebaseBootError = new Error('Firebase configuration is missing or still uses placeholders.');
+    showFatalError(
+      'Your HTML still contains placeholder Firebase configuration values. ' +
+      'Open Firebase setup and paste the exact Web app configuration from Firebase Console.'
+    );
+    fillFirebaseSetupForm(
+      getStoredFirebaseConfig() || normalizeFirebaseConfig(EMBEDDED_FIREBASE_CONFIG)
+    );
+    openModal('firebaseSetupModal');
+    firebaseBooting = false;
+    return;
+  }
+
+  try{
+    if(!firebase.apps.length){
+      firebase.initializeApp(firebaseConfig);
+    }else{
+      firebase.app();
+    }
+
+    auth = firebase.auth();
+    db = firebase.database();
+
+    firebaseReady = true;
+
+    db.ref('.info/connected').on('value', snap=>{
+      const connected = snap.val() === true;
+      window.dispatchEvent(new CustomEvent('randomeet:firebase-connection', {
+        detail: { connected }
+      }));
+
+      if(!connected && auth.currentUser){
+        setStatus('connecting', 'Reconnecting to Firebase…');
+      }else if(connected && (mode === 'idle')){
+        setStatus('idle', 'Tap "Start" to find someone');
+      }
+    });
+
+    initApp();
+
+  }catch(err){
+    console.error('Firebase bootstrap failed:', err);
+    firebaseBootError = err;
+
+    let detail = err.message || 'Unknown Firebase initialization error.';
+    if(err.code === 'auth/api-key-not-valid' || /api.?key.*not valid/i.test(detail)){
+      detail = explainFirebaseAuthError(err);
+    }
+
+    showFatalError(detail + ' Current config: ' + getFirebaseConfigSummary(firebaseConfig));
+  }finally{
+    firebaseBooting = false;
+  }
+}
+
+/* Dynamically load a <script src> and resolve/reject on completion. */
 function loadScript(src){
   return new Promise((resolve, reject)=>{
+    const existing = Array.from(document.scripts).find(s => s.src === src);
+    if(existing){
+      if(typeof firebase !== 'undefined') return resolve(src);
+      existing.addEventListener('load', ()=>resolve(src), { once:true });
+      existing.addEventListener('error', ()=>reject(new Error('Failed to load ' + src)), { once:true });
+      return;
+    }
+
     const s = document.createElement('script');
     s.src = src;
+    s.async = true;
     s.onload = () => resolve(src);
     s.onerror = () => reject(new Error('Failed to load ' + src));
     document.head.appendChild(s);
   });
-}
-
-/* Runs once, after the page loads, to bring Firebase up and then start
-   the app. Wrapped in async/await so we can retry via a fallback CDN
-   before giving up — a single "typeof firebase === undefined" check
-   done synchronously at parse time would miss anything that only
-   resolves a moment later. */
-async function bootstrapFirebase(){
-  if (typeof firebase === 'undefined') {
-    // Primary CDN (www.gstatic.com) didn't load — try a mirror in case
-    // something in this specific network/browser is blocking that host.
-    const mirror = 'https://cdn.jsdelivr.net/npm/firebase@10.13.0/';
-    try {
-      await loadScript(mirror + 'firebase-app-compat.js');
-      await loadScript(mirror + 'firebase-auth-compat.js');
-      await loadScript(mirror + 'firebase-database-compat.js');
-    } catch (e) { /* fall through to the error message below */ }
-  }
-
-  if (typeof firebase === 'undefined') {
-    if (location.protocol === 'file:') {
-      showFatalError(
-        'You opened this file directly from your computer (the address bar starts with ' +
-        '<code>file://</code>), and Firebase cannot run from that. Instead: upload this ' +
-        'file to GitHub Pages, or run a tiny local server in this folder — for example ' +
-        '<code>python3 -m http.server</code> — then open the printed http://localhost ' +
-        'address in your browser.'
-      );
-    } else {
-      showFatalError(
-        'The Firebase SDK could not be loaded from either CDN it tried. Check your internet ' +
-        'connection, temporarily disable any ad-blocker/privacy extension for this page, and ' +
-        'confirm your network doesn\'t block *.gstatic.com or *.jsdelivr.net.'
-      );
-    }
-    return;
-  }
-
-  try {
-    firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db = firebase.database();
-    firebaseReady = true;
-  } catch (err) {
-    showFatalError(
-      'Firebase failed to initialize: ' + err.message + '. Double-check every value in the ' +
-      'firebaseConfig object near the top of the script against Firebase Console → Project ' +
-      'Settings → General → Your apps.'
-    );
-    return;
-  }
-
-  try {
-    initApp();
-  } catch (err) {
-    console.error(err);
-    showFatalError(
-      'The app hit an unexpected error while starting (' + err.message + '). ' +
-      'Open the browser console (F12) for the full technical details.'
-    );
-  }
 }
 
 /* ================================================================
@@ -864,6 +1233,184 @@ window.addEventListener('unhandledrejection', function(e){
   }
 });
 const INTEREST_OPTIONS = ['Music','Movies','Gaming','Sports','Travel','Books','Art','Tech','Fitness','Cooking','Anime','Nature'];
+
+/* ================================================================
+   EXTRA FEATURES — PUBLIC UID + USER SEARCH + DIAGNOSTICS
+   ================================================================ */
+
+function generatePublicUid(){
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let result = '';
+  const bytes = new Uint32Array(8);
+  crypto.getRandomValues(bytes);
+  for(let i = 0; i < 6; i++){
+    result += alphabet[bytes[i] % alphabet.length];
+  }
+  return result;
+}
+
+async function ensurePublicUid(profileSnapshot){
+  const profile = profileSnapshot || {};
+  if(typeof profile.publicUid === 'string' && profile.publicUid.trim().length >= 4){
+    return profile.publicUid.trim().toUpperCase();
+  }
+
+  // Try a few candidates. A transaction makes accidental overwrites much
+  // less likely when multiple clients initialize profiles at the same time.
+  for(let attempt = 0; attempt < 8; attempt++){
+    const candidate = generatePublicUid();
+    const existing = await db.ref('users')
+      .orderByChild('publicUid')
+      .equalTo(candidate)
+      .limitToFirst(1)
+      .once('value');
+
+    if(existing.exists()) continue;
+
+    try{
+      await db.ref('users/' + uid + '/publicUid').transaction(current=>{
+        return current || candidate;
+      });
+
+      const saved = await db.ref('users/' + uid + '/publicUid').once('value');
+      if(saved.val()) return String(saved.val()).toUpperCase();
+    }catch(err){
+      console.warn('Public UID generation attempt failed:', err);
+    }
+  }
+
+  throw new Error('Could not generate a public ID. Please try again.');
+}
+
+function setSearchStatus(text, type){
+  const box = document.getElementById('publicUidSearchStatus');
+  if(!box) return;
+  box.textContent = text || '';
+  box.className = text ? ('msg show ' + (type || '')) : 'msg';
+}
+
+function renderPublicUidResult(profile){
+  const wrap = document.getElementById('publicUidResult');
+  wrap.innerHTML = '';
+
+  if(!profile){
+    wrap.innerHTML = '<p class="empty-note">No user found with that public ID.</p>';
+    return;
+  }
+
+  const row = document.createElement('div');
+  row.className = 'blocked-row';
+
+  const info = document.createElement('div');
+  info.style.display = 'flex';
+  info.style.alignItems = 'center';
+  info.style.gap = '10px';
+
+  const avatar = document.createElement('span');
+  avatar.style.fontSize = '1.3rem';
+  avatar.textContent = profile.avatar || '🙂';
+
+  const text = document.createElement('div');
+  const name = document.createElement('strong');
+  name.textContent = profile.displayName || 'RandoMeet user';
+  const meta = document.createElement('div');
+  meta.className = 'empty-note';
+  meta.textContent = 'ID: ' + (profile.publicUid || '—');
+
+  text.appendChild(name);
+  text.appendChild(meta);
+  info.appendChild(avatar);
+  info.appendChild(text);
+
+  const copyBtn = document.createElement('button');
+  copyBtn.className = 'btn btn-ghost btn-sm';
+  copyBtn.textContent = 'Copy ID';
+  copyBtn.addEventListener('click', async ()=>{
+    try{
+      await navigator.clipboard.writeText(profile.publicUid || '');
+      showToast('Public ID copied', 'ok');
+    }catch(err){
+      showToast('Could not copy the ID', 'err');
+    }
+  });
+
+  row.appendChild(info);
+  row.appendChild(copyBtn);
+  wrap.appendChild(row);
+
+  if(profile.bio){
+    const bio = document.createElement('p');
+    bio.className = 'empty-note';
+    bio.style.marginTop = '10px';
+    bio.textContent = profile.bio;
+    wrap.appendChild(bio);
+  }
+}
+
+async function searchPublicUid(){
+  const input = document.getElementById('publicUidSearch');
+  const query = input.value.trim().toUpperCase();
+
+  setSearchStatus('', '');
+  document.getElementById('publicUidResult').innerHTML = '';
+
+  if(!auth || !auth.currentUser){
+    setSearchStatus('You must be signed in before searching.', 'err');
+    return;
+  }
+
+  if(query.length < 4){
+    setSearchStatus('Enter at least 4 characters of the public ID.', 'err');
+    return;
+  }
+
+  try{
+    setSearchStatus('Searching…', 'ok');
+
+    const snap = await db.ref('users')
+      .orderByChild('publicUid')
+      .equalTo(query)
+      .limitToFirst(1)
+      .once('value');
+
+    if(!snap.exists()){
+      setSearchStatus('No matching user was found.', 'err');
+      return;
+    }
+
+    let found = null;
+    snap.forEach(child=>{
+      if(!found) found = child.val();
+    });
+
+    setSearchStatus('User found.', 'ok');
+    renderPublicUidResult(found);
+  }catch(err){
+    console.error('Public UID search failed:', err);
+    setSearchStatus(explainFirebaseAuthError(err), 'err');
+  }
+}
+
+document.getElementById('findUserBtn').addEventListener('click', ()=>{
+  if(!auth || !auth.currentUser){
+    showToast('Log in first to search for users.', 'err');
+    return;
+  }
+  document.getElementById('publicUidSearch').value = '';
+  setSearchStatus('', '');
+  document.getElementById('publicUidResult').innerHTML = '';
+  openModal('findUserModal');
+  setTimeout(()=>document.getElementById('publicUidSearch').focus(), 50);
+});
+
+document.getElementById('publicUidSearchBtn').addEventListener('click', searchPublicUid);
+document.getElementById('publicUidSearch').addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    searchPublicUid();
+  }
+});
+
 
 /* ================================================================
    SECTION 2 — TOAST NOTIFICATIONS
@@ -989,6 +1536,9 @@ function friendlyError(err){
     'auth/weak-password': 'Password should be at least 6 characters.',
     'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
     'auth/requires-recent-login': 'Please log out and back in, then try this again.',
+    'auth/api-key-not-valid': 'Firebase rejected the API key. Use the Web API key from the same Firebase project.',
+    'auth/invalid-api-key': 'Firebase rejected the API key. Check Project Settings → Your apps → Web app.',
+    'auth/network-request-failed': 'Firebase could not reach the server. Check your internet connection and GitHub Pages domain.',
   };
   return map[err.code] || err.message || 'Something went wrong. Please try again.';
 }
@@ -1012,10 +1562,36 @@ document.getElementById('signupForm').addEventListener('submit', async (e)=>{
   const password = document.getElementById('signupPassword').value;
   const btn = document.getElementById('signupBtn');
   hideMsg(); setLoading(btn, true, 'Create account');
+  if(!document.getElementById('signupAge').checked){
+    showMsg('You must confirm that you are 18 or older to create an account.', 'err');
+    setLoading(btn, false, 'Create account');
+    return;
+  }
+
+  if(name.length < 2){
+    showMsg('Display name must contain at least 2 characters.', 'err');
+    setLoading(btn, false, 'Create account');
+    return;
+  }
+
   try{
     const cred = await auth.createUserWithEmailAndPassword(email, password);
     await cred.user.updateProfile({ displayName: name });
+
+    let publicUid = generatePublicUid();
+    try{
+      const collision = await db.ref('users')
+        .orderByChild('publicUid')
+        .equalTo(publicUid)
+        .limitToFirst(1)
+        .once('value');
+      if(collision.exists()) publicUid = generatePublicUid();
+    }catch(searchErr){
+      console.warn('Public UID collision check skipped:', searchErr);
+    }
+
     await db.ref('users/' + cred.user.uid).set({
+      publicUid,
       displayName: name,
       email: email,
       avatar: AVATAR_OPTIONS[0],
@@ -1025,10 +1601,17 @@ document.getElementById('signupForm').addEventListener('submit', async (e)=>{
       theme: 'dark',
       status: 'offline',
       blocked: {},
+      roomId: null,
+      role: null,
       createdAt: firebase.database.ServerValue.TIMESTAMP
     });
-  }catch(err){ showMsg(friendlyError(err), 'err'); }
-  finally{ setLoading(btn, false, 'Create account'); }
+
+    showMsg('Account created. Your public ID is ' + publicUid + '.', 'ok');
+  }catch(err){
+    showMsg(friendlyError(err), 'err');
+  }finally{
+    setLoading(btn, false, 'Create account');
+  }
 });
 
 document.getElementById('forgotForm').addEventListener('submit', async (e)=>{
@@ -1055,16 +1638,48 @@ let uid = null;
 let myProfile = {};
 
 async function initUserSession(user){
-  document.getElementById('whoami').textContent = user.displayName || user.email;
-  db.ref('users/' + uid).onDisconnect().update({ status: 'offline', roomId: null });
+  try{
+    document.getElementById('whoami').textContent = user.displayName || user.email || 'User';
 
-  const snap = await db.ref('users/' + uid).once('value');
-  myProfile = snap.val() || {};
-  applyTheme(myProfile.theme || 'dark');
-  document.getElementById('whoamiAvatar').textContent = myProfile.avatar || '🙂';
-  await db.ref('users/' + uid).update({ status: 'idle' });
+    db.ref('users/' + uid).onDisconnect().update({
+      status: 'offline',
+      roomId: null,
+      role: null
+    });
 
-  attachOnlineCounter();
+    const snap = await db.ref('users/' + uid).once('value');
+    myProfile = snap.val() || {};
+
+    if(typeof myProfile.publicUid !== 'string' || myProfile.publicUid.trim().length < 4){
+      const repairedPublicUid = generatePublicUid();
+      await db.ref('users/' + uid + '/publicUid').transaction(current=>{
+        return current || repairedPublicUid;
+      });
+      const publicUidSnap = await db.ref('users/' + uid + '/publicUid').once('value');
+      myProfile.publicUid = String(publicUidSnap.val() || repairedPublicUid).toUpperCase();
+    }else{
+      myProfile.publicUid = myProfile.publicUid.toUpperCase();
+    }
+
+    applyTheme(myProfile.theme || 'dark');
+    document.getElementById('whoamiAvatar').textContent = myProfile.avatar || '🙂';
+
+    if(!myProfile.displayName && user.displayName){
+      myProfile.displayName = user.displayName;
+    }
+
+    await db.ref('users/' + uid).update({
+      status: 'idle',
+      publicUid: myProfile.publicUid,
+      email: user.email || myProfile.email || ''
+    });
+
+    attachOnlineCounter();
+  }catch(err){
+    console.error('initUserSession failed:', err);
+    showToast('Could not load your profile: ' + (err.message || 'Unknown error'), 'err');
+    setStatus('connecting', 'Profile sync failed');
+  }
 }
 
 function buildAvatarGrid(){
@@ -1103,6 +1718,7 @@ document.getElementById('settingsBtn').addEventListener('click', async ()=>{
   const snap = await db.ref('users/' + uid).once('value');
   myProfile = snap.val() || {};
   document.getElementById('settingsName').value = myProfile.displayName || '';
+  document.getElementById('settingsPublicUid').value = myProfile.publicUid || '';
   document.getElementById('settingsBio').value = myProfile.bio || '';
   document.getElementById('settingsGender').value = myProfile.gender || 'unspecified';
   document.getElementById('themeSwitch').checked = (myProfile.theme || 'dark') === 'dark';
@@ -1116,6 +1732,21 @@ document.getElementById('settingsBtn').addEventListener('click', async ()=>{
   });
 
   openModal('settingsModal');
+});
+
+
+document.getElementById('copyPublicUidBtn').addEventListener('click', async ()=>{
+  const value = document.getElementById('settingsPublicUid').value;
+  if(!value){
+    showToast('Your public ID is not available yet.', 'err');
+    return;
+  }
+  try{
+    await navigator.clipboard.writeText(value);
+    showToast('Public ID copied', 'ok');
+  }catch(err){
+    showToast('Could not copy your public ID.', 'err');
+  }
 });
 
 document.getElementById('themeSwitch').addEventListener('change', (e)=>{
@@ -1153,6 +1784,27 @@ document.getElementById('changePasswordBtn').addEventListener('click', async ()=
     await auth.sendPasswordResetEmail(auth.currentUser.email);
     showToast('Password reset email sent', 'ok');
   }catch(err){ showToast(friendlyError(err), 'err'); }
+});
+
+document.getElementById('firebaseDiagnosticsBtn').addEventListener('click', async ()=>{
+  if(!firebaseReady){
+    showToast('Firebase is not initialized.', 'err');
+    openFirebaseSetupModal();
+    return;
+  }
+
+  try{
+    const connected = await verifyFirebaseConnection();
+    showToast(
+      connected
+        ? 'Firebase is connected and your current session is valid.'
+        : 'Firebase SDK is initialized, but Realtime Database is currently offline.',
+      connected ? 'ok' : 'err'
+    );
+  }catch(err){
+    console.error('Firebase diagnostics:', err);
+    showToast('Firebase diagnostic failed: ' + explainFirebaseAuthError(err), 'err');
+  }
 });
 
 document.getElementById('deleteAccountBtn').addEventListener('click', async ()=>{
@@ -1222,16 +1874,28 @@ document.getElementById('reportBtn').addEventListener('click', ()=>{
 document.getElementById('submitReportBtn').addEventListener('click', async ()=>{
   const chosen = document.querySelector('input[name="reportReason"]:checked');
   if(!chosen){ showToast('Please select a reason', 'err'); return; }
-  await db.ref('reports/' + db.ref().push().key).set({
-    reportedRoom: currentRoomId,
-    reportedUser: currentPeerUid || null,
-    reportedBy: uid,
-    reason: chosen.value,
-    ts: firebase.database.ServerValue.TIMESTAMP
-  });
-  closeModal('reportModal');
-  showToast('Report submitted — skipping', 'ok');
-  skip();
+
+  if(!uid || !auth.currentUser){
+    showToast('You must be logged in to submit a report.', 'err');
+    return;
+  }
+
+  try{
+    const reportRef = db.ref('reports').push();
+    await reportRef.set({
+      reportedRoom: currentRoomId || null,
+      reportedUser: currentPeerUid || null,
+      reportedBy: uid,
+      reason: chosen.value,
+      ts: firebase.database.ServerValue.TIMESTAMP
+    });
+    closeModal('reportModal');
+    showToast('Report submitted — skipping', 'ok');
+    await skip();
+  }catch(err){
+    console.error('Report failed:', err);
+    showToast('Report could not be submitted: ' + err.message, 'err');
+  }
 });
 
 /* ================================================================
@@ -1255,7 +1919,10 @@ function attachOnlineCounter(){
   });
 }
 function detachOnlineCounter(){
-  if(onlineCounterRef){ onlineCounterRef.off('value'); onlineCounterRef = null; }
+  if(onlineCounterRef){
+    onlineCounterRef.off();
+    onlineCounterRef = null;
+  }
 }
 
 /* ================================================================
@@ -1377,24 +2044,144 @@ function stopCallTimer(){
 }
 
 /* ================================================================
+   SECTION 15B — RELIABILITY HELPERS
+   ================================================================ */
+
+function mediaErrorMessage(err){
+  const name = String((err && err.name) || '').toLowerCase();
+
+  if(name === 'notallowederror' || name === 'securityerror'){
+    return 'Camera/microphone permission was denied. Allow camera and microphone for this site, then try Start again.';
+  }
+  if(name === 'notfounderror'){
+    return 'No camera or microphone was found on this device.';
+  }
+  if(name === 'notreadableerror'){
+    return 'The camera or microphone is already being used by another app.';
+  }
+  if(name === 'overconstrainederror'){
+    return 'This device cannot satisfy the requested camera settings.';
+  }
+
+  return 'Camera/microphone could not start. Check browser permissions and try again.';
+}
+
+async function getMediaStream(){
+  if(!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    throw new Error('Camera and microphone access is not available in this browser.');
+  }
+
+  // Prefer a flexible request so mobile WebViews do not fail because they
+  // cannot satisfy an over-specific resolution.
+  return navigator.mediaDevices.getUserMedia({
+    video: {
+      width: { ideal: 1280, max: 1920 },
+      height: { ideal: 720, max: 1080 },
+      facingMode: usingFrontCamera ? 'user' : 'environment'
+    },
+    audio: {
+      echoCancellation: true,
+      noiseSuppression: true,
+      autoGainControl: true
+    }
+  });
+}
+
+function resetMediaButtons(){
+  micBtn.classList.remove('off');
+  camBtn.classList.remove('off');
+  micBtn.title = 'Mute microphone';
+  camBtn.title = 'Turn camera off';
+}
+
+window.addEventListener('online', ()=>{
+  showToast('Internet connection restored', 'ok');
+  if(auth && auth.currentUser){
+    setStatus(mode === 'in-call' ? 'live' : 'idle', mode === 'in-call' ? "You're connected" : 'Tap "Start" to find someone');
+  }
+});
+
+window.addEventListener('offline', ()=>{
+  showToast('Internet connection lost', 'err');
+  if(mode === 'in-call'){
+    setStatus('connecting', 'Internet connection lost');
+  }
+});
+
+window.addEventListener('randomeet:firebase-connection', e=>{
+  if(e.detail && e.detail.connected && mode === 'searching'){
+    setStatus('searching', 'Looking for someone…');
+  }
+});
+
+/* ================================================================
    SECTION 16 — START / NEXT / STOP BUTTON HANDLERS
    ================================================================ */
 startBtn.addEventListener('click', async ()=>{
-  try{
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    localVideo.srcObject = localStream;
-  }catch(err){
-    showToast('Camera/microphone access is required to use RandoMeet.', 'err');
+  if(!firebaseReady || !auth || !db){
+    showToast('Firebase is not ready. Open Firebase setup first.', 'err');
+    openFirebaseSetupModal();
     return;
   }
-  mode = 'searching';
-  setButtons();
-  setStatus('searching', 'Looking for someone…');
-  await joinQueue();
+
+  if(!auth.currentUser){
+    showToast('Please log in first.', 'err');
+    return;
+  }
+
+  if(!navigator.onLine){
+    showToast('You are offline. Connect to the internet and try again.', 'err');
+    return;
+  }
+
+  try{
+    // Refreshing the token here catches a surprisingly common case where
+    // a restored browser session exists but the auth token has expired.
+    await auth.currentUser.getIdToken(true);
+
+    if(!localStream){
+      localStream = await getMediaStream();
+      localVideo.srcObject = localStream;
+      resetMediaButtons();
+    }
+
+    mode = 'searching';
+    setButtons();
+    setStatus('searching', 'Looking for someone…');
+    await joinQueue();
+  }catch(err){
+    console.error('Start failed:', err);
+
+    if(err && String(err.code).startsWith('auth/')){
+      showToast(explainFirebaseAuthError(err), 'err');
+      return;
+    }
+
+    if(err && (
+      String(err.name || '').toLowerCase().includes('error') ||
+      String(err.message || '').toLowerCase().includes('camera') ||
+      String(err.message || '').toLowerCase().includes('microphone')
+    )){
+      showToast(mediaErrorMessage(err), 'err');
+      return;
+    }
+
+    showToast('Could not start matchmaking: ' + (err.message || 'Unknown error'), 'err');
+  }
 });
 
-nextBtn.addEventListener('click', ()=> skip());
-stopBtn.addEventListener('click', ()=> fullStop());
+nextBtn.addEventListener('click', ()=> {
+  skip().catch(err=>{
+    console.error('Skip failed:', err);
+    showToast('Could not move to the next person: ' + err.message, 'err');
+  });
+});
+stopBtn.addEventListener('click', ()=> {
+  fullStop().catch(err=>{
+    console.error('Stop failed:', err);
+    showToast('Could not stop cleanly: ' + err.message, 'err');
+  });
+});
 
 micBtn.addEventListener('click', ()=>{
   if(!localStream) return;
@@ -1456,6 +2243,16 @@ fullscreenBtn.addEventListener('click', ()=>{
    SECTION 17 — MATCHMAKING QUEUE
    ================================================================ */
 async function joinQueue(){
+  if(!uid || !auth || !auth.currentUser){
+    throw new Error('You must be signed in before entering the queue.');
+  }
+
+  if(!firebaseReady || !db){
+    throw new Error('Firebase database is not ready.');
+  }
+
+  // Prevent duplicate queue listeners/entries when a user reconnects.
+  db.ref('users/' + uid + '/roomId').off();
   const ref = db.ref('queue').push({ uid, ts: firebase.database.ServerValue.TIMESTAMP });
   queueKey = ref.key;
   db.ref('queue/' + queueKey).onDisconnect().remove();
@@ -1660,6 +2457,10 @@ async function fullStop(){
   }
   if(localStream){ localStream.getTracks().forEach(t => t.stop()); localStream = null; }
   localVideo.srcObject = null;
+  resetMediaButtons();
+  viewsSwapped = false;
+  localVideo.removeAttribute('style');
+  remoteVideo.removeAttribute('style');
   mode = 'idle';
   setButtons();
   setStatus('idle', 'Tap "Start" to find someone');
