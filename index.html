@@ -443,6 +443,12 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
 
       <div id="msg" class="msg" role="alert"></div>
       <div id="firebaseConfigStatus" class="msg" role="status"></div>
+      <div id="verificationTools" class="msg" style="display:none;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:space-between;">
+          <span id="verificationStatusText">Email verification is pending.</span>
+          <button type="button" class="btn btn-ghost btn-sm" id="resendVerificationBtn" style="width:auto;">Resend verification</button>
+        </div>
+      </div>
 
       <!-- LOGIN -->
       <section id="pane-login" class="pane active">
@@ -1168,6 +1174,8 @@ async function bootstrapFirebase(){
     }
 
     auth = firebase.auth();
+    auth.useDeviceLanguage();
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
     db = createFirestoreAdapter();
     firebaseReady = true;
 
@@ -1524,13 +1532,21 @@ auth.onAuthStateChanged(async user=>{
     authScreen.classList.add('hidden');
     chatScreen.classList.remove('hidden');
     uid = user.uid;
+    const verificationTools = document.getElementById('verificationTools');
+    if(verificationTools){
+      verificationTools.style.display = user.emailVerified ? 'none' : 'block';
+      const text = document.getElementById('verificationStatusText');
+      if(text) text.textContent = user.emailVerified ? 'Email verified.' : 'Please verify your email address.';
+    }
 
     try{
+      await ensureUserProfile(user);
       await initUserSession(user);
     }catch(err){
       console.error('Session initialization failed:', err);
-      showToast('Could not load your profile. Please log in again.', 'err');
-      try{ await auth.signOut(); }catch(_){}
+      // Keep the Firebase Auth session alive. A Firestore profile/rules problem
+      // must not silently turn a successful login into a logout/reload loop.
+      showToast('Login succeeded, but your profile needs attention: ' + (err.message || 'Firestore error'), 'err');
     }
   } else {
     chatScreen.classList.add('hidden');
@@ -1613,6 +1629,71 @@ function friendlyError(err){
   return map[err.code] || err.message || 'Something went wrong. Please try again.';
 }
 
+async function ensureUserProfile(user){
+  if(!user || !db) throw new Error('Missing Firebase session.');
+  const profileRef = db.ref('users/' + user.uid);
+  const snap = await profileRef.once('value');
+  let profile = snap.val() || {};
+
+  if(!profile.publicUid){
+    profile.publicUid = generatePublicUid();
+  }
+  if(!profile.displayName){
+    profile.displayName = user.displayName || user.email?.split('@')[0] || 'User';
+  }
+  if(!profile.email){ profile.email = user.email || ''; }
+
+  const base = {
+    publicUid: String(profile.publicUid).toUpperCase(),
+    displayName: String(profile.displayName).slice(0,24),
+    email: profile.email,
+    avatar: profile.avatar || AVATAR_OPTIONS[0],
+    bio: profile.bio || '',
+    gender: profile.gender || 'unspecified',
+    interests: profile.interests || {},
+    theme: profile.theme || 'dark',
+    status: profile.status || 'offline',
+    blocked: profile.blocked || {},
+    roomId: profile.roomId ?? null,
+    role: profile.role ?? null,
+    createdAt: profile.createdAt || firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  if(!snap.exists()){
+    await profileRef.set(base);
+    profile = base;
+  }else{
+    const patch = {};
+    ['publicUid','displayName','email','avatar','bio','gender','interests','theme','status','blocked','roomId','role'].forEach(k=>{
+      if(base[k] !== undefined && profile[k] === undefined) patch[k] = base[k];
+    });
+    if(Object.keys(patch).length) await profileRef.update(patch);
+    profile = {...profile, ...patch};
+  }
+  return profile;
+}
+
+async function sendVerificationEmail(user, quiet=false){
+  if(!user) return false;
+  try{
+    await user.sendEmailVerification();
+    if(!quiet) showMsg('Verification email sent. Check your inbox and spam folder, then return and log in again.', 'ok');
+    return true;
+  }catch(err){
+    console.error('Verification email failed:', err);
+    if(!quiet) showMsg(friendlyError(err), 'err');
+    return false;
+  }
+}
+
+document.getElementById('resendVerificationBtn').addEventListener('click', async ()=>{
+  if(!auth?.currentUser){
+    showMsg('Log in first, then resend the verification email.', 'err');
+    return;
+  }
+  await sendVerificationEmail(auth.currentUser, false);
+});
+
 document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   if(!ensureFirebaseAuthReady()) return;
@@ -1635,7 +1716,15 @@ document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   setLoading(btn, true, 'Log in');
 
   try{
-    await auth.signInWithEmailAndPassword(email, password);
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+    const result = await auth.signInWithEmailAndPassword(email, password);
+    await result.user.reload();
+    // Firebase Auth automatically persists this session in supported browsers.
+    // Do not use location.reload(); the auth-state listener handles the UI transition.
+    if(!result.user.emailVerified){
+      showMsg('Login successful, but your email is not verified yet. We sent a verification option below. You can continue, but verify your email for account recovery.', 'ok');
+      await sendVerificationEmail(result.user, true);
+    }
   }catch(err){
     console.error('Login failed:', err);
     showMsg(friendlyError(err), 'err');
@@ -1730,7 +1819,8 @@ document.getElementById('signupForm').addEventListener('submit', async (e)=>{
       return;
     }
 
-    showMsg('Account created successfully. Your public ID is ' + publicUid + '.', 'ok');
+    await sendVerificationEmail(cred.user, true);
+    showMsg('Account created successfully. Your public ID is ' + publicUid + '. A verification email has been sent to ' + email + '.', 'ok');
   }catch(err){
     console.error('Signup failed:', err);
     showMsg(friendlyError(err), 'err');
@@ -1789,6 +1879,10 @@ async function initUserSession(user){
 
     const snap = await db.ref('users/' + uid).once('value');
     myProfile = snap.val() || {};
+
+    if(!snap.exists()) {
+      myProfile = await ensureUserProfile(user);
+    }
 
     if(typeof myProfile.publicUid !== 'string' || myProfile.publicUid.trim().length < 4){
       const repairedPublicUid = generatePublicUid();
@@ -1937,7 +2031,7 @@ document.getElementById('firebaseDiagnosticsBtn').addEventListener('click', asyn
     showToast(
       connected
         ? 'Firebase is connected and your current session is valid.'
-        : 'Firebase SDK is initialized, but Realtime Database is currently offline.',
+        : 'Firebase SDK is initialized, but Firestore is currently unavailable.',
       connected ? 'ok' : 'err'
     );
   }catch(err){
