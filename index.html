@@ -893,26 +893,45 @@ function isPlaceholder(value){
 }
 
 function parseFirebaseConfigText(text){
-  const source = String(text || '').trim();
+  let source = String(text || '').trim();
   if(!source) return null;
 
-  // Accept JSON, JS object syntax, or the exact "const firebaseConfig = {...};"
-  // snippet shown by Firebase Console. No eval() is used.
+  // Users often paste the entire Firebase Console block, including comments
+  // or a trailing semicolon. Strip only harmless wrappers; never eval().
+  source = source
+    .replace(/^\uFEFF/, '')
+    .replace(/^\s*```(?:javascript|js|json)?\s*/i, '')
+    .replace(/\s*```\s*$/i, '')
+    .trim();
+
   let body = source
     .replace(/^\s*(?:const|let|var)\s+firebaseConfig\s*=\s*/i, '')
+    .replace(/^\s*firebaseConfig\s*=\s*/i, '')
     .replace(/;\s*$/, '')
     .trim();
 
+  // JSON with double-quoted keys/values.
   try{
-    return normalizeFirebaseConfig(JSON.parse(body));
+    const parsed = JSON.parse(body);
+    return normalizeFirebaseConfig(parsed);
   }catch(_){}
 
   if(body.startsWith('{') && body.endsWith('}')){
     const raw = {};
-    const re = /(?:["']?)(apiKey|authDomain|databaseURL|projectId|storageBucket|messagingSenderId|appId)(?:["']?)\s*:\s*["']([^"']*)["']/g;
+
+    // Handles the formats Firebase commonly displays:
+    // apiKey: "..."
+    // apiKey: '...'
+    // "apiKey": "..."
+    const re = /['"]?(apiKey|authDomain|databaseURL|projectId|storageBucket|messagingSenderId|appId)['"]?\s*:\s*(['"])(.*?)\2/gs;
     let match;
-    while((match = re.exec(body))) raw[match[1]] = match[2];
-    if(Object.keys(raw).length) return normalizeFirebaseConfig(raw);
+    while((match = re.exec(body))){
+      raw[match[1]] = match[3];
+    }
+
+    if(Object.keys(raw).length){
+      return normalizeFirebaseConfig(raw);
+    }
   }
 
   return null;
@@ -946,10 +965,39 @@ function isFirebaseConfigUsable(config){
     'appId'
   ];
 
-  return required.every(key => {
+  if(!required.every(key => {
     const value = config[key];
     return typeof value === 'string' && value.length > 0 && !isPlaceholder(value);
-  });
+  })) return false;
+
+  if(!/^AIza[0-9A-Za-z_-]+$/.test(config.apiKey)) return false;
+  if(!/^[a-z0-9-]+\.firebaseapp\.com$/i.test(config.authDomain)) return false;
+  if(!/^https?:\/\/.+/i.test(config.databaseURL)) return false;
+  if(!/^[a-z0-9-]+$/i.test(config.projectId)) return false;
+  if(!/^1:\d+:.+$/i.test(config.appId)) return false;
+
+  return true;
+}
+
+function migrateLegacyFirebaseConfig(){
+  const keys = [
+    'randomeet_firebase_config_v2',
+    'randomeet_firebase_config_v1',
+    'firebaseConfig'
+  ];
+
+  for(const key of keys){
+    try{
+      const raw = localStorage.getItem(key);
+      if(!raw) continue;
+      const parsed = normalizeFirebaseConfig(JSON.parse(raw));
+      if(isFirebaseConfigUsable(parsed)){
+        localStorage.setItem(FIREBASE_CONFIG_STORAGE_KEY, JSON.stringify(parsed));
+        return parsed;
+      }
+    }catch(_){}
+  }
+  return null;
 }
 
 function getStoredFirebaseConfig(){
@@ -966,6 +1014,9 @@ function getStoredFirebaseConfig(){
 function getActiveFirebaseConfig(){
   const stored = getStoredFirebaseConfig();
   if(isFirebaseConfigUsable(stored)) return stored;
+
+  const migrated = migrateLegacyFirebaseConfig();
+  if(isFirebaseConfigUsable(migrated)) return migrated;
 
   const embedded = normalizeFirebaseConfig(EMBEDDED_FIREBASE_CONFIG);
   return isFirebaseConfigUsable(embedded) ? embedded : null;
@@ -1104,7 +1155,7 @@ function openFirebaseSetupModal(){
     {}
   );
   setFirebaseSetupMessage(
-    'Paste the exact Web app configuration from Firebase Console. Do not invent or shorten any value.',
+    'Paste the REAL values from Firebase Console. The sample values in the grey box are only examples and will be rejected.',
     'ok'
   );
   openModal('firebaseSetupModal');
@@ -1597,14 +1648,36 @@ function showMsg(text, type){ msgBox.textContent = text; msgBox.className = 'msg
 function hideMsg(){ msgBox.className = 'msg'; }
 function setLoading(btn, loading, label){ btn.disabled = loading; btn.textContent = loading ? 'Please wait…' : label; }
 
+function ensureFirebaseAuthReady(){
+  if(firebaseReady && auth) return true;
+
+  showMsg(
+    'Firebase is not ready yet. Open Firebase setup and save a valid Web App configuration first.',
+    'err'
+  );
+  return false;
+}
+
+function normalizeLoginEmail(value){
+  return String(value || '').trim().toLowerCase();
+}
+
 function friendlyError(err){
   const map = {
     'auth/invalid-email': 'That email address looks invalid.',
     'auth/user-not-found': 'No account found with that email.',
     'auth/wrong-password': 'Incorrect password.',
     'auth/invalid-credential': 'Incorrect email or password.',
+    'auth/user-disabled': 'This account has been disabled.',
+    'auth/missing-password': 'Enter your password.',
+    'auth/invalid-login-credentials': 'Incorrect email or password.',
     'auth/email-already-in-use': 'An account already exists with that email.',
     'auth/weak-password': 'Password should be at least 6 characters.',
+    'auth/operation-not-allowed': 'Email/password login is not enabled. In Firebase Console open Authentication → Sign-in method → Email/Password and enable it.',
+    'auth/email-already-in-use': 'An account already exists with that email.',
+    'auth/quota-exceeded': 'Firebase authentication quota has been exceeded. Check your Firebase project billing/usage.',
+    'auth/user-token-expired': 'Your login session expired. Please log in again.',
+    'auth/network-request-failed': 'Firebase could not reach the server. Check your internet connection and try again.',
     'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
     'auth/requires-recent-login': 'Please log out and back in, then try this again.',
     'auth/api-key-not-valid': 'Firebase rejected the API key. Use the Web API key from the same Firebase project.',
@@ -1616,69 +1689,124 @@ function friendlyError(err){
 
 document.getElementById('loginForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const email = document.getElementById('loginEmail').value.trim();
+  if(!ensureFirebaseAuthReady()) return;
+
+  const email = normalizeLoginEmail(document.getElementById('loginEmail').value);
   const password = document.getElementById('loginPassword').value;
   const btn = document.getElementById('loginBtn');
-  hideMsg(); setLoading(btn, true, 'Log in');
+
+  hideMsg();
+
+  if(!email){
+    showMsg('Enter your email address.', 'err');
+    return;
+  }
+  if(!password){
+    showMsg('Enter your password.', 'err');
+    return;
+  }
+
+  setLoading(btn, true, 'Log in');
+
   try{
     await auth.signInWithEmailAndPassword(email, password);
-  }catch(err){ showMsg(friendlyError(err), 'err'); }
-  finally{ setLoading(btn, false, 'Log in'); }
+  }catch(err){
+    console.error('Login failed:', err);
+    showMsg(friendlyError(err), 'err');
+  }finally{
+    setLoading(btn, false, 'Log in');
+  }
 });
 
 document.getElementById('signupForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
+  if(!ensureFirebaseAuthReady()) return;
+
   const name = document.getElementById('signupName').value.trim();
-  const email = document.getElementById('signupEmail').value.trim();
+  const email = normalizeLoginEmail(document.getElementById('signupEmail').value);
   const password = document.getElementById('signupPassword').value;
   const btn = document.getElementById('signupBtn');
-  hideMsg(); setLoading(btn, true, 'Create account');
+
+  hideMsg();
+
   if(!document.getElementById('signupAge').checked){
     showMsg('You must confirm that you are 18 or older to create an account.', 'err');
-    setLoading(btn, false, 'Create account');
+    return;
+  }
+  if(name.length < 2){
+    showMsg('Display name must contain at least 2 characters.', 'err');
+    return;
+  }
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    showMsg('Enter a valid email address.', 'err');
+    return;
+  }
+  if(password.length < 6){
+    showMsg('Password must be at least 6 characters.', 'err');
     return;
   }
 
-  if(name.length < 2){
-    showMsg('Display name must contain at least 2 characters.', 'err');
-    setLoading(btn, false, 'Create account');
-    return;
-  }
+  setLoading(btn, true, 'Create account');
 
   try{
     const cred = await auth.createUserWithEmailAndPassword(email, password);
-    await cred.user.updateProfile({ displayName: name });
-
-    let publicUid = generatePublicUid();
     try{
-      const collision = await db.ref('users')
-        .orderByChild('publicUid')
-        .equalTo(publicUid)
-        .limitToFirst(1)
-        .once('value');
-      if(collision.exists()) publicUid = generatePublicUid();
-    }catch(searchErr){
-      console.warn('Public UID collision check skipped:', searchErr);
+      await cred.user.updateProfile({displayName: name});
+    }catch(profileErr){
+      console.warn('Profile display-name update failed:', profileErr);
     }
 
-    await db.ref('users/' + cred.user.uid).set({
-      publicUid,
-      displayName: name,
-      email: email,
-      avatar: AVATAR_OPTIONS[0],
-      bio: '',
-      gender: 'unspecified',
-      interests: {},
-      theme: 'dark',
-      status: 'offline',
-      blocked: {},
-      roomId: null,
-      role: null,
-      createdAt: firebase.database.ServerValue.TIMESTAMP
-    });
+    let publicUid = generatePublicUid();
 
-    showMsg('Account created. Your public ID is ' + publicUid + '.', 'ok');
+    // Retry the collision check a few times without making signup fail just
+    // because a rare generated public ID is already in use.
+    for(let attempt = 0; attempt < 3; attempt++){
+      try{
+        const collision = await db.ref('users')
+          .orderByChild('publicUid')
+          .equalTo(publicUid)
+          .limitToFirst(1)
+          .once('value');
+
+        if(!collision.exists()) break;
+        publicUid = generatePublicUid();
+      }catch(searchErr){
+        console.warn('Public UID collision check skipped:', searchErr);
+        break;
+      }
+    }
+
+    try{
+      await db.ref('users/' + cred.user.uid).set({
+        publicUid,
+        displayName: name,
+        email,
+        avatar: AVATAR_OPTIONS[0],
+        bio: '',
+        gender: 'unspecified',
+        interests: {},
+        theme: 'dark',
+        status: 'offline',
+        blocked: {},
+        roomId: null,
+        role: null,
+        createdAt: firebase.database.ServerValue.TIMESTAMP
+      });
+    }catch(dbErr){
+      console.error('Profile creation failed:', dbErr);
+      showMsg(
+        'Your login account was created, but the RandoMeet profile could not be saved. ' +
+        (dbErr.code === 'PERMISSION_DENIED'
+          ? 'Check Realtime Database Rules for authenticated users.'
+          : friendlyError(dbErr)),
+        'err'
+      );
+      return;
+    }
+
+    showMsg('Account created successfully. Your public ID is ' + publicUid + '.', 'ok');
   }catch(err){
+    console.error('Signup failed:', err);
     showMsg(friendlyError(err), 'err');
   }finally{
     setLoading(btn, false, 'Create account');
@@ -1687,14 +1815,29 @@ document.getElementById('signupForm').addEventListener('submit', async (e)=>{
 
 document.getElementById('forgotForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
-  const email = document.getElementById('forgotEmail').value.trim();
+  if(!ensureFirebaseAuthReady()) return;
+
+  const email = normalizeLoginEmail(document.getElementById('forgotEmail').value);
   const btn = document.getElementById('forgotBtn');
-  hideMsg(); setLoading(btn, true, 'Send reset link');
+
+  hideMsg();
+
+  if(!email){
+    showMsg('Enter the email address used for your RandoMeet account.', 'err');
+    return;
+  }
+
+  setLoading(btn, true, 'Send reset link');
+
   try{
     await auth.sendPasswordResetEmail(email);
-    showMsg('Reset link sent. Check your inbox (and spam folder).', 'ok');
-  }catch(err){ showMsg(friendlyError(err), 'err'); }
-  finally{ setLoading(btn, false, 'Send reset link'); }
+    showMsg('Password reset email sent. Check your inbox and spam folder.', 'ok');
+  }catch(err){
+    console.error('Password reset failed:', err);
+    showMsg(friendlyError(err), 'err');
+  }finally{
+    setLoading(btn, false, 'Send reset link');
+  }
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async ()=>{
