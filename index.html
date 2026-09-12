@@ -755,69 +755,64 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
 
 <!-- ================================================================
      FIREBASE SETUP MODAL
-     This appears only when the embedded config is missing/invalid.
-     It also supports saving a browser-local config for GitHub Pages /
-     WebView deployments without editing the source immediately.
+     The app cannot invent a Firebase project's Web App credentials.
+     This form accepts the complete firebaseConfig object copied from
+     Firebase Console, so users do not have to manually split values.
      ================================================================ -->
 <div class="modal-overlay hidden" id="firebaseSetupModal">
   <div class="modal" role="dialog" aria-labelledby="firebaseSetupTitle">
     <button class="modal-close" data-close="firebaseSetupModal">✕</button>
     <h2 id="firebaseSetupTitle">Firebase setup</h2>
     <p class="sub">
-      RandoMeet cannot sign in until it has a valid Firebase Web App configuration.
-      Paste the configuration from Firebase Console → Project settings → Your apps → Web app.
+      Paste the complete <b>firebaseConfig</b> from Firebase Console →
+      Project settings → General → Your apps → Web app → SDK setup and configuration.
     </p>
 
     <div id="firebaseSetupMessage" class="msg" role="alert"></div>
 
     <div class="field">
-      <label for="cfgApiKey">API key</label>
-      <input type="text" id="cfgApiKey" autocomplete="off" spellcheck="false" />
+      <label for="firebaseConfigPaste">Firebase Web App configuration</label>
+      <textarea id="firebaseConfigPaste" rows="13" spellcheck="false"
+        autocomplete="off"
+        placeholder='const firebaseConfig = {
+  apiKey: "AIza...",
+  authDomain: "your-project.firebaseapp.com",
+  databaseURL: "https://your-project-default-rtdb.firebaseio.com",
+  projectId: "your-project",
+  storageBucket: "your-project.firebasestorage.app",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
+};'></textarea>
     </div>
 
-    <div class="field">
-      <label for="cfgAuthDomain">Auth domain</label>
-      <input type="text" id="cfgAuthDomain" autocomplete="off" spellcheck="false" />
-    </div>
+    <p class="sub" style="font-size:.82rem;margin-top:-4px;">
+      You can paste either the whole <code>const firebaseConfig = { ... }</code>
+      snippet or only the JSON/object contents. Do not paste passwords,
+      service-account private keys, or other secrets.
+    </p>
 
-    <div class="field">
-      <label for="cfgDatabaseURL">Realtime Database URL</label>
-      <input type="text" id="cfgDatabaseURL" autocomplete="off" spellcheck="false"
-             placeholder="https://YOUR_PROJECT-default-rtdb.firebaseio.com" />
-    </div>
-
-    <div class="field">
-      <label for="cfgProjectId">Project ID</label>
-      <input type="text" id="cfgProjectId" autocomplete="off" spellcheck="false" />
-    </div>
-
-    <div class="field">
-      <label for="cfgStorageBucket">Storage bucket</label>
-      <input type="text" id="cfgStorageBucket" autocomplete="off" spellcheck="false" />
-    </div>
-
-    <div class="field-row">
-      <div class="field">
-        <label for="cfgSenderId">Messaging sender ID</label>
-        <input type="text" id="cfgSenderId" autocomplete="off" spellcheck="false" />
+    <details style="margin:12px 0;">
+      <summary style="cursor:pointer;font-weight:700;">Or edit individual fields</summary>
+      <div style="margin-top:12px;">
+        <div class="field"><label for="cfgApiKey">API key</label><input type="text" id="cfgApiKey" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="cfgAuthDomain">Auth domain</label><input type="text" id="cfgAuthDomain" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="cfgDatabaseURL">Realtime Database URL</label><input type="text" id="cfgDatabaseURL" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="cfgProjectId">Project ID</label><input type="text" id="cfgProjectId" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="cfgStorageBucket">Storage bucket</label><input type="text" id="cfgStorageBucket" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="cfgSenderId">Messaging sender ID</label><input type="text" id="cfgSenderId" autocomplete="off" spellcheck="false"></div>
+        <div class="field"><label for="cfgAppId">App ID</label><input type="text" id="cfgAppId" autocomplete="off" spellcheck="false"></div>
       </div>
-      <div class="field">
-        <label for="cfgAppId">App ID</label>
-        <input type="text" id="cfgAppId" autocomplete="off" spellcheck="false" />
-      </div>
-    </div>
+    </details>
 
     <div class="modal-actions">
       <button type="button" class="btn btn-ghost" id="clearFirebaseConfigBtn">Clear saved config</button>
-      <button type="button" class="btn btn-primary" id="saveFirebaseConfigBtn">Save &amp; reload</button>
+      <button type="button" class="btn btn-primary" id="saveFirebaseConfigBtn">Validate &amp; save</button>
     </div>
   </div>
 </div>
 
 <!-- ================================================================
      FIND USER MODAL
-     New feature: search the public UID directory from the same
-     Realtime Database used by the rest of RandoMeet.
      ================================================================ -->
 <div class="modal-overlay hidden" id="findUserModal">
   <div class="modal" role="dialog" aria-labelledby="findUserTitle">
@@ -855,13 +850,13 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
    Web app → SDK setup and configuration
    ================================================================ */
 const EMBEDDED_FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: "",
+  appId: ""
 };
 
 /*
@@ -890,8 +885,37 @@ function isPlaceholder(value){
     'YOUR_API_KEY',
     'YOUR_PROJECT_ID',
     'YOUR_SENDER_ID',
-    'YOUR_APP_ID'
-  ].includes(v) || v.includes('YOUR_PROJECT_ID');
+    'YOUR_APP_ID',
+    'YOUR_FIREBASE_API_KEY',
+    'REPLACE_ME',
+    'CHANGE_ME'
+  ].includes(v) || /YOUR_|REPLACE_ME|CHANGE_ME|example\.com/i.test(v);
+}
+
+function parseFirebaseConfigText(text){
+  const source = String(text || '').trim();
+  if(!source) return null;
+
+  // Accept JSON, JS object syntax, or the exact "const firebaseConfig = {...};"
+  // snippet shown by Firebase Console. No eval() is used.
+  let body = source
+    .replace(/^\s*(?:const|let|var)\s+firebaseConfig\s*=\s*/i, '')
+    .replace(/;\s*$/, '')
+    .trim();
+
+  try{
+    return normalizeFirebaseConfig(JSON.parse(body));
+  }catch(_){}
+
+  if(body.startsWith('{') && body.endsWith('}')){
+    const raw = {};
+    const re = /(?:["']?)(apiKey|authDomain|databaseURL|projectId|storageBucket|messagingSenderId|appId)(?:["']?)\s*:\s*["']([^"']*)["']/g;
+    let match;
+    while((match = re.exec(body))) raw[match[1]] = match[2];
+    if(Object.keys(raw).length) return normalizeFirebaseConfig(raw);
+  }
+
+  return null;
 }
 
 function normalizeFirebaseConfig(raw){
@@ -1037,24 +1061,39 @@ function setFirebaseSetupMessage(text, type){
 
 function fillFirebaseSetupForm(config){
   const c = config || {};
-  document.getElementById('cfgApiKey').value = c.apiKey || '';
-  document.getElementById('cfgAuthDomain').value = c.authDomain || '';
-  document.getElementById('cfgDatabaseURL').value = c.databaseURL || '';
-  document.getElementById('cfgProjectId').value = c.projectId || '';
-  document.getElementById('cfgStorageBucket').value = c.storageBucket || '';
-  document.getElementById('cfgSenderId').value = c.messagingSenderId || '';
-  document.getElementById('cfgAppId').value = c.appId || '';
+  const textarea = document.getElementById('firebaseConfigPaste');
+  if(textarea){
+    textarea.value = isFirebaseConfigUsable(c)
+      ? JSON.stringify(c, null, 2)
+      : '';
+  }
+
+  const set = (id, value) => {
+    const el = document.getElementById(id);
+    if(el) el.value = value || '';
+  };
+  set('cfgApiKey', c.apiKey);
+  set('cfgAuthDomain', c.authDomain);
+  set('cfgDatabaseURL', c.databaseURL);
+  set('cfgProjectId', c.projectId);
+  set('cfgStorageBucket', c.storageBucket);
+  set('cfgSenderId', c.messagingSenderId);
+  set('cfgAppId', c.appId);
 }
 
 function readFirebaseSetupForm(){
+  const pasted = document.getElementById('firebaseConfigPaste')?.value || '';
+  const parsed = parseFirebaseConfigText(pasted);
+  if(parsed) return parsed;
+
   return normalizeFirebaseConfig({
-    apiKey: document.getElementById('cfgApiKey').value.trim(),
-    authDomain: document.getElementById('cfgAuthDomain').value.trim(),
-    databaseURL: document.getElementById('cfgDatabaseURL').value.trim(),
-    projectId: document.getElementById('cfgProjectId').value.trim(),
-    storageBucket: document.getElementById('cfgStorageBucket').value.trim(),
-    messagingSenderId: document.getElementById('cfgSenderId').value.trim(),
-    appId: document.getElementById('cfgAppId').value.trim()
+    apiKey: document.getElementById('cfgApiKey')?.value.trim(),
+    authDomain: document.getElementById('cfgAuthDomain')?.value.trim(),
+    databaseURL: document.getElementById('cfgDatabaseURL')?.value.trim(),
+    projectId: document.getElementById('cfgProjectId')?.value.trim(),
+    storageBucket: document.getElementById('cfgStorageBucket')?.value.trim(),
+    messagingSenderId: document.getElementById('cfgSenderId')?.value.trim(),
+    appId: document.getElementById('cfgAppId')?.value.trim()
   });
 }
 
@@ -1072,20 +1111,30 @@ function openFirebaseSetupModal(){
 }
 
 document.getElementById('saveFirebaseConfigBtn').addEventListener('click', async ()=>{
-  const config = readFirebaseSetupForm();
+  const pasted = document.getElementById('firebaseConfigPaste')?.value || '';
+  let config = parseFirebaseConfigText(pasted);
+
+  // If the pasted format was not parseable, fall back to individual fields.
+  if(!config) config = readFirebaseSetupForm();
 
   if(!isFirebaseConfigUsable(config)){
     setFirebaseSetupMessage(
-      'Some Firebase fields are missing or still contain placeholder values such as YOUR_API_KEY or YOUR_PROJECT_ID.',
+      'The configuration could not be validated. Paste the complete Firebase Web App config exactly as shown in Firebase Console. Do not use YOUR_API_KEY, YOUR_PROJECT_ID, or example values.',
       'err'
     );
     return;
   }
 
+  // Realtime Database is mandatory for this RandoMeet build.
+  if(!/^https?:\/\//i.test(config.databaseURL)){
+    setFirebaseSetupMessage('Realtime Database URL must start with http:// or https://.', 'err');
+    return;
+  }
+
   try{
     localStorage.setItem(FIREBASE_CONFIG_STORAGE_KEY, JSON.stringify(config));
-    setFirebaseSetupMessage('Configuration saved. Reloading the page…', 'ok');
-    setTimeout(()=>location.reload(), 350);
+    setFirebaseSetupMessage('Valid configuration saved. Reloading RandoMeet…', 'ok');
+    setTimeout(()=>location.reload(), 450);
   }catch(err){
     setFirebaseSetupMessage('Could not save configuration in this browser: ' + err.message, 'err');
   }
@@ -1099,6 +1148,22 @@ document.getElementById('clearFirebaseConfigBtn').addEventListener('click', ()=>
     setFirebaseSetupMessage('Could not clear the saved configuration.', 'err');
   }
 });
+
+function getFirebaseProjectHost(config){
+  if(!config) return '';
+  return String(config.authDomain || '').replace(/^https?:\/\//i,'').split('/')[0];
+}
+
+function describeFirebaseConfig(config){
+  if(!config) return 'No configuration';
+  const checks = [];
+  checks.push(config.apiKey ? 'API key present' : 'API key missing');
+  checks.push(config.projectId ? 'project ID present' : 'project ID missing');
+  checks.push(config.authDomain ? 'auth domain present' : 'auth domain missing');
+  checks.push(config.databaseURL ? 'database URL present' : 'database URL missing');
+  checks.push(config.appId ? 'app ID present' : 'app ID missing');
+  return checks.join(' • ');
+}
 
 async function verifyFirebaseConnection(){
   if(!auth || !db) throw new Error('Firebase services are not initialized.');
@@ -1140,8 +1205,8 @@ async function bootstrapFirebase(){
   if(!isFirebaseConfigUsable(firebaseConfig)){
     firebaseBootError = new Error('Firebase configuration is missing or still uses placeholders.');
     showFatalError(
-      'Your HTML still contains placeholder Firebase configuration values. ' +
-      'Open Firebase setup and paste the exact Web app configuration from Firebase Console.'
+      'RandoMeet needs the Firebase Web App configuration for your project. ' +
+      'Open Firebase setup and paste the exact firebaseConfig snippet from Firebase Console.'
     );
     fillFirebaseSetupForm(
       getStoredFirebaseConfig() || normalizeFirebaseConfig(EMBEDDED_FIREBASE_CONFIG)
