@@ -770,7 +770,7 @@ video{ width:100%; height:100%; object-fit: cover; background:#050607; }
 <!-- Firebase SDKs (compat build — plain <script> tags, no bundler needed) -->
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 
 <script>
 /* ================================================================
@@ -804,7 +804,6 @@ function firebaseConfigIsReady(config){
   const required = [
     'apiKey',
     'authDomain',
-    'databaseURL',
     'projectId',
     'messagingSenderId',
     'appId'
@@ -816,7 +815,6 @@ function firebaseConfigIsReady(config){
 
   if(/^YOUR_|^REPLACE_|^CHANGE_ME|example\.com/i.test(config.apiKey)) return false;
   if(/YOUR_|REPLACE_|CHANGE_ME|example\.com/i.test(config.authDomain)) return false;
-  if(/YOUR_|REPLACE_|CHANGE_ME|example\.com/i.test(config.databaseURL)) return false;
   if(/YOUR_|REPLACE_|CHANGE_ME|example\.com/i.test(config.projectId)) return false;
   if(/YOUR_|REPLACE_|CHANGE_ME|example\.com/i.test(config.appId)) return false;
 
@@ -871,6 +869,271 @@ function explainFirebaseError(err){
   return map[code] || message || 'Firebase request failed. Please try again.';
 }
 
+
+/* ================================================================
+   FIRESTORE ADAPTER
+   The UI was originally written against the Realtime Database API.
+   This compatibility layer maps those calls onto Cloud Firestore so
+   the app can use Firestore Security Rules (rules_version = '2')
+   without rebuilding the entire UI layer.
+   ================================================================ */
+function createFirestoreAdapter(){
+  const fs = firebase.firestore();
+  const listeners = new Map();
+  const disconnectOps = new Map();
+
+  // Keep the old timestamp expression used by the UI working.
+  firebase.database = firebase.database || {};
+  firebase.database.ServerValue = firebase.database.ServerValue || {};
+  firebase.database.ServerValue.TIMESTAMP = firebase.firestore.FieldValue.serverTimestamp();
+
+  function pathParts(path){
+    return String(path || '').split('/').filter(Boolean);
+  }
+  function clone(v){
+    if(v === undefined || v === null) return v;
+    try { return JSON.parse(JSON.stringify(v)); } catch(_) { return v; }
+  }
+  function getNested(obj, parts){
+    let cur=obj;
+    for(const part of parts){
+      if(cur == null) return undefined;
+      cur=cur[part];
+    }
+    return cur;
+  }
+  function setNested(obj, parts, value){
+    if(!parts.length) return value;
+    let cur=obj;
+    for(let i=0;i<parts.length-1;i++){
+      const k=parts[i];
+      if(!cur[k] || typeof cur[k] !== 'object') cur[k]={};
+      cur=cur[k];
+    }
+    cur[parts[parts.length-1]]=value;
+    return obj;
+  }
+  function deleteNested(obj, parts){
+    if(!parts.length) return obj;
+    let cur=obj;
+    for(let i=0;i<parts.length-1;i++){
+      if(!cur || typeof cur!=='object') return obj;
+      cur=cur[parts[i]];
+    }
+    if(cur && typeof cur==='object') delete cur[parts[parts.length-1]];
+    return obj;
+  }
+
+  class Snap{
+    constructor(key,value,exists=true){ this.key=key; this._value=value; this._exists=exists; }
+    val(){ return clone(this._value); }
+    exists(){ return this._exists; }
+    forEach(fn){
+      if(!this._exists || this._value==null || typeof this._value!=='object') return false;
+      for(const [k,v] of Object.entries(this._value)){
+        if(fn(new Snap(k,v,true)) === true) return true;
+      }
+      return false;
+    }
+  }
+  class DocSnap extends Snap{
+    constructor(doc){ super(doc.id, doc.exists ? doc.data() : undefined, doc.exists); this.doc=doc; }
+  }
+  class QuerySnap{
+    constructor(docs){
+      this.docs=docs;
+      this.size=docs.length;
+    }
+    exists(){ return this.docs.length>0; }
+    val(){
+      const out={};
+      for(const d of this.docs) out[d.id]=d.data();
+      return out;
+    }
+    forEach(fn){ for(const d of this.docs){ if(fn(new DocSnap(d))===true) return true; } return false; }
+  }
+
+  function locate(path){
+    const p=pathParts(path);
+    if(p.length===0) return {kind:'root',parts:p};
+    if(p.length===1) return {kind:'collection',collection:p[0],parts:p};
+    if(p.length===2) return {kind:'doc',collection:p[0],id:p[1],parts:p};
+    // Collection/document/subcollection[/document]...
+    if(p.length % 2 === 1){
+      let ref=fs.collection(p[0]).doc(p[1]);
+      for(let i=2;i<p.length;i+=2) ref=ref.collection(p[i]);
+      return {kind:'collection',ref,collection:p[p.length-1],parts:p};
+    }
+    let ref=fs.collection(p[0]).doc(p[1]);
+    for(let i=2;i<p.length;i+=2) ref=ref.collection(p[i]).doc(p[i+1]);
+    return {kind:'doc',ref,collection:p[p.length-2],id:p[p.length-1],parts:p};
+  }
+
+  function makeQuery(info, opts){
+    if(info.kind==='collection'){
+      let q=info.ref || fs.collection(info.collection);
+      if(opts.orderByChild) q=q.orderBy(opts.orderByChild, opts.orderDir || 'asc');
+      if(opts.equalTo !== undefined) q=q.where(opts.orderByChild, '==', opts.equalTo);
+      if(opts.limitToFirst) q=q.limit(opts.limitToFirst);
+      return q;
+    }
+    return null;
+  }
+
+  function ref(path){
+    return new Ref(String(path||'').replace(/^\/|\/$/g,''));
+  }
+
+  class Ref{
+    constructor(path){ this.path=path; this.key=pathParts(path).slice(-1)[0] || null; this._opts={}; }
+    child(name){ return new Ref(this.path + '/' + String(name).replace(/^\//,'').replace(/\/$/,'')); }
+    push(data){
+      const info=locate(this.path);
+      if(info.kind!=='collection') throw new Error('push() requires a collection path');
+      const doc=info.ref ? info.ref.doc() : fs.collection(info.collection).doc();
+      const r=new Ref(doc.path);
+      if(data !== undefined) r.set(data);
+      return r;
+    }
+    orderByChild(field){ const r=new Ref(this.path); r._opts={...this._opts,orderByChild:field}; return r; }
+    equalTo(value){ const r=new Ref(this.path); r._opts={...this._opts,equalTo:value}; return r; }
+    limitToFirst(n){ const r=new Ref(this.path); r._opts={...this._opts,limitToFirst:n}; return r; }
+    async once(event){
+      if(this.path==='.info/connected') return new Snap('connected',true,true);
+      const info=locate(this.path);
+      if(info.kind==='doc'){
+        const d=await info.ref.get();
+        const nested=info.parts.length>2 ? getNested(d.data()||{}, info.parts.slice(2)) : undefined;
+        if(info.parts.length>2) return new Snap(info.id,nested,nested!==undefined);
+        return new DocSnap(d);
+      }
+      if(info.kind==='collection'){
+        const q=makeQuery(info,this._opts);
+        const qs=await q.get();
+        return new QuerySnap(qs.docs);
+      }
+      return new Snap(null,null,false);
+    }
+    on(event, callback){
+      if(this.path==='.info/connected'){
+        callback(new Snap('connected',true,true));
+        const token=()=>{};
+        this._remember(event,callback,token);
+        return callback;
+      }
+      const info=locate(this.path);
+      let unsub;
+      if(info.kind==='doc'){
+        unsub=info.ref.onSnapshot(d=>{
+          if(info.parts.length>2){
+            const nested=getNested(d.data()||{},info.parts.slice(2));
+            callback(new Snap(info.id,nested,nested!==undefined));
+          }else callback(new DocSnap(d));
+        },err=>console.error('Firestore listener:',err));
+      }else if(info.kind==='collection'){
+        const q=makeQuery(info,this._opts);
+        if(event==='child_added'){
+          unsub=q.onSnapshot(qs=>{
+            qs.docChanges().filter(c=>c.type==='added').forEach(c=>callback(new DocSnap(c.doc)));
+          },err=>console.error('Firestore listener:',err));
+        }else{
+          unsub=q.onSnapshot(qs=>callback(new QuerySnap(qs.docs)),err=>console.error('Firestore listener:',err));
+        }
+      }
+      this._remember(event,callback,unsub);
+      return callback;
+    }
+    _remember(event,callback,unsub){
+      const k=this.path+'|'+event+'|'+String(callback);
+      listeners.set(k,{unsub,event,callback,path:this.path});
+    }
+    off(event,callback){
+      for(const [k,v] of listeners){
+        if(v.path===this.path && (!event || v.event===event) && (!callback || v.callback===callback)){
+          try{ if(typeof v.unsub==='function') v.unsub(); }catch(_){}
+          listeners.delete(k);
+        }
+      }
+    }
+    onDisconnect(){
+      const target=this;
+      return {
+        update(data){ disconnectOps.set(target.path,{type:'update',data}); return Promise.resolve(); },
+        remove(){ disconnectOps.set(target.path,{type:'remove'}); return Promise.resolve(); },
+        cancel(){ disconnectOps.delete(target.path); return Promise.resolve(); }
+      };
+    }
+    async set(value){
+      if(this.path==='.info/connected') return;
+      const info=locate(this.path);
+      if(info.kind!=='doc') throw new Error('set() requires a document or nested document field');
+      if(info.parts.length===2) return info.ref.set(value);
+      const d=await info.ref.get();
+      const data=clone(d.data()||{});
+      setNested(data,info.parts.slice(2),value);
+      return info.ref.set(data);
+    }
+    async update(data){
+      const info=locate(this.path);
+      if(info.kind!=='doc') throw new Error('update() requires a document path');
+      if(info.parts.length===2) return info.ref.update(data);
+      return info.ref.update({[info.parts[info.parts.length-1]]: data});
+    }
+    async remove(){
+      const info=locate(this.path);
+      if(info.kind!=='doc') throw new Error('remove() requires a document or nested field');
+      if(info.parts.length===2) return info.ref.delete();
+      const field=info.parts.slice(2).join('.');
+      return info.ref.update({[field]: firebase.firestore.FieldValue.delete()});
+    }
+    async transaction(updateFn, completion){
+      const info=locate(this.path);
+      try{
+        if(this.path==='queue'){
+          const result=await fs.runTransaction(async tx=>{
+            const qs=await fs.collection('queue').get();
+            const current={}; qs.forEach(d=>current[d.id]=d.data());
+            const proposed=updateFn(clone(current));
+            if(proposed===undefined) return {committed:false};
+            const before=Object.keys(current);
+            const after=Object.keys(proposed||{});
+            for(const k of before){ if(!(k in (proposed||{}))) tx.delete(fs.collection('queue').doc(k)); }
+            for(const k of after){ tx.set(fs.collection('queue').doc(k),proposed[k],{merge:true}); }
+            return {committed:true};
+          });
+          if(completion) completion(null,!!result.committed);
+          return {committed:!!result.committed,snapshot:null};
+        }
+        if(info.kind!=='doc') throw new Error('transaction() requires a document or queue collection');
+        const result=await fs.runTransaction(async tx=>{
+          const d=await tx.get(info.ref);
+          const current=info.parts.length>2 ? getNested(d.data()||{},info.parts.slice(2)) : (d.exists?d.data():null);
+          const proposed=updateFn(clone(current));
+          if(proposed===undefined) return {committed:false};
+          if(info.parts.length===2) tx.set(info.ref,proposed);
+          else tx.update(info.ref,{[info.parts.slice(2).join('.')]:proposed});
+          return {committed:true};
+        });
+        if(completion) completion(null,!!result.committed);
+        return {committed:!!result.committed,snapshot:null};
+      }catch(err){ if(completion) completion(err,false); throw err; }
+    }
+  }
+
+  // Best-effort page-exit cleanup. Firestore has no RTDB-style onDisconnect.
+  window.addEventListener('pagehide',()=>{
+    // Writes are intentionally fire-and-forget here; normal call cleanup is handled by fullStop().
+    for(const [path,op] of disconnectOps){
+      try{
+        const r=ref(path);
+        if(op.type==='remove') r.remove(); else r.update(op.data);
+      }catch(_){}
+    }
+  });
+
+  return { ref };
+}
+
 async function bootstrapFirebase(){
   if(firebaseBooting) return;
   firebaseBooting = true;
@@ -881,7 +1144,7 @@ async function bootstrapFirebase(){
       try{
         await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-app-compat.js');
         await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-auth-compat.js');
-        await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-database-compat.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-firestore-compat.js');
       }catch(loadErr){
         throw new Error(
           'The Firebase SDK could not be loaded. Check the internet connection and make sure the CDN is reachable.'
@@ -909,7 +1172,7 @@ async function bootstrapFirebase(){
     }
 
     auth = firebase.auth();
-    db = firebase.database();
+    db = createFirestoreAdapter();
     firebaseReady = true;
 
     const authButtons = [
