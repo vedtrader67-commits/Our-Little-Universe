@@ -2035,6 +2035,9 @@ input,textarea{caret-color:var(--pink-dark);}
 
     const firebaseApp = initializeApp(firebaseConfig);
     const auth = getAuth(firebaseApp);
+    // Expose only the Firebase Auth instance needed by the non-module Alix layer.
+    // This does not expose credentials or secrets.
+    window.__OUR_UNIVERSE_AUTH__ = auth;
     const db = getFirestore(firebaseApp);
 
     // Non-secret Firebase diagnostics for clearer Firestore error messages.
@@ -4534,6 +4537,10 @@ input,textarea{caret-color:var(--pink-dark);}
 
 
     /* AI TRADING LAB + ALIX */
+    // This layer runs in the non-module script below Firebase. Keep its dependencies local
+    // so it never relies on module-scoped variables such as `$` or `auth`.
+    const $ = id => document.getElementById(id);
+    const getTradingAuth = () => window.__OUR_UNIVERSE_AUTH__ || null;
     const TRADING_API_BASE = "https://backed-0szz.onrender.com";
     const TRADING_DATA_ENDPOINT = `${TRADING_API_BASE}/api/market-data`;
     const TRADING_AI_ENDPOINT = `${TRADING_API_BASE}/api/trading-analysis`;
@@ -4580,7 +4587,8 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     async function tradingAuthHeaders() {
-      const user = auth.currentUser;
+      const auth = getTradingAuth();
+      const user = auth?.currentUser;
       if (!user) throw new Error("Please sign in first.");
       return { "Content-Type": "application/json", "Authorization": `Bearer ${await user.getIdToken()}` };
     }
@@ -4599,7 +4607,8 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     async function analyzeTradingSetup() {
-      if (!auth.currentUser) {
+      const auth = getTradingAuth();
+      if (!auth?.currentUser) {
         $("tradingStatus").textContent = "Please sign in first. Your existing login system was not changed.";
         tradingSetResult("SKIP", "Authentication is required before AI analysis.");
         return;
@@ -4654,7 +4663,8 @@ input,textarea{caret-color:var(--pink-dark);}
       const input = $("alixInput");
       const message = input.value.trim();
       if (!message) return;
-      if (!auth.currentUser) { addAlixMessage("Please sign in first so I can securely connect your session.", "ai"); return; }
+      const auth = getTradingAuth();
+      if (!auth?.currentUser) { addAlixMessage("Please sign in first so I can securely connect your session.", "ai"); return; }
       addAlixMessage(message, "user");
       input.value = "";
       $("alixSendBtn").disabled = true;
