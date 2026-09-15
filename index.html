@@ -973,6 +973,18 @@
   .indicator-row:last-child { border-bottom:0; }
   .indicator-value { font-weight:700; text-align:right; }
   @media (max-width:520px) { .trading-grid { grid-template-columns:1fr; } }
+
+    /* ALIX + AUTO MARKET ANALYSIS */
+    .alix-launch-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+    .alix-launch-btn{flex:1;min-width:150px}
+    .trading-live-note{font-size:12px;color:#8c7480;margin-top:7px;line-height:1.45}
+    .alix-overlay{position:fixed;inset:0;z-index:10050;background:rgba(45,29,39,.38);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);display:none;align-items:flex-end;justify-content:center;padding:12px}
+    .alix-overlay.open{display:flex}
+    .alix-panel{width:min(100%,430px);height:min(78dvh,680px);background:rgba(255,250,252,.98);border:1px solid rgba(255,255,255,.9);border-radius:24px;box-shadow:0 24px 70px rgba(70,35,52,.22);display:flex;flex-direction:column;overflow:hidden}
+    .alix-head{padding:14px 16px;border-bottom:1px solid #f0dfe7;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .alix-title{font-weight:900;font-size:18px;color:#5b3548}.alix-sub{font-size:11px;color:#967985;margin-top:2px}.alix-close{border:0;background:#fff0f6;color:#9d426d;border-radius:50%;width:34px;height:34px;font-size:20px}
+    .alix-messages{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:9px}.alix-msg{max-width:86%;padding:10px 12px;border-radius:16px;font-size:13px;line-height:1.45;white-space:pre-wrap;word-break:break-word}.alix-msg.ai{align-self:flex-start;background:#fff0f6;color:#573748;border-bottom-left-radius:5px}.alix-msg.user{align-self:flex-end;background:#dc6e9d;color:#fff;border-bottom-right-radius:5px}
+    .alix-composer{display:flex;gap:8px;padding:10px;border-top:1px solid #f0dfe7;background:#fffafd}.alix-input{flex:1;min-height:42px;max-height:110px;resize:none;border:1px solid #ead5df;border-radius:14px;padding:10px 12px;outline:none;background:#fff}.alix-send{width:46px;border:0;border-radius:14px;background:#dc6e9d;color:#fff;font-weight:800}.alix-send:disabled{opacity:.55}
 </style>
 
 <style id="final-performance-overrides">
@@ -1918,93 +1930,25 @@ input,textarea{caret-color:var(--pink-dark);}
       <section id="tradingScreen" class="screen">
         <div class="container trading-shell">
           <div class="trading-card glass">
-            <div class="trading-title-row">
-              <div>
-                <div class="eyebrow">AI market analysis</div>
-                <h2 style="font-size:26px">Trading Lab</h2>
-              </div>
-              <span id="tradingConnectionBadge" class="trading-badge">AI not connected</span>
-            </div>
-            <p class="trading-help">Analyze normal market data with your indicators. This panel is analysis-only and does not place trades.</p>
+            <div class="trading-title-row"><div><div class="eyebrow">AI market analysis</div><h2 style="font-size:26px">Trading Lab</h2></div><span id="tradingConnectionBadge" class="trading-badge">AI not connected</span></div>
+            <p class="trading-help">Select a normal market pair and timeframe. Alix automatically gets recent candles and calculates the indicators before analysis.</p>
+            <div class="alix-launch-row"><button id="openAlixBtn" class="primary-btn alix-launch-btn" type="button">💬 Chat with Alix</button></div>
           </div>
-
           <div class="trading-card glass">
             <div class="trading-grid">
-              <div class="trading-field">
-                <label for="tradingAsset">Asset</label>
-                <input id="tradingAsset" value="EUR/USD" maxlength="30" autocomplete="off">
-              </div>
-              <div class="trading-field">
-                <label for="tradingTimeframe">Timeframe</label>
-                <select id="tradingTimeframe">
-                  <option value="1m" selected>1 minute</option>
-                  <option value="30s">30 seconds</option>
-                  <option value="5m">5 minutes</option>
-                </select>
-              </div>
+              <div class="trading-field"><label for="tradingAsset">Pair</label><select id="tradingAsset"><option value="EUR/USD" selected>EUR/USD</option><option value="GBP/USD">GBP/USD</option><option value="USD/JPY">USD/JPY</option><option value="USD/CHF">USD/CHF</option><option value="AUD/USD">AUD/USD</option><option value="USD/CAD">USD/CAD</option><option value="NZD/USD">NZD/USD</option><option value="EUR/JPY">EUR/JPY</option><option value="GBP/JPY">GBP/JPY</option><option value="EUR/GBP">EUR/GBP</option></select></div>
+              <div class="trading-field"><label for="tradingTimeframe">Timeframe</label><select id="tradingTimeframe"><option value="1m" selected>1 minute</option><option value="5m">5 minutes</option><option value="15m">15 minutes</option><option value="30m">30 minutes</option><option value="1h">1 hour</option><option value="4h">4 hours</option><option value="1d">1 day</option></select></div>
             </div>
-            <div style="height:10px"></div>
-            <div class="trading-grid">
-              <div class="trading-field">
-                <label for="tradingEma9">EMA 9</label>
-                <input id="tradingEma9" inputmode="decimal" placeholder="e.g. 1.08240">
-              </div>
-              <div class="trading-field">
-                <label for="tradingEma21">EMA 21</label>
-                <input id="tradingEma21" inputmode="decimal" placeholder="e.g. 1.08210">
-              </div>
-              <div class="trading-field">
-                <label for="tradingRsi">RSI</label>
-                <input id="tradingRsi" inputmode="decimal" placeholder="0–100">
-              </div>
-              <div class="trading-field">
-                <label for="tradingMacd">MACD</label>
-                <input id="tradingMacd" inputmode="decimal" placeholder="value">
-              </div>
-              <div class="trading-field">
-                <label for="tradingAdx">ADX</label>
-                <input id="tradingAdx" inputmode="decimal" placeholder="value">
-              </div>
-              <div class="trading-field">
-                <label for="tradingAtr">ATR</label>
-                <input id="tradingAtr" inputmode="decimal" placeholder="value">
-              </div>
-            </div>
-            <div style="height:10px"></div>
-            <div class="trading-field">
-              <label for="tradingCandles">Recent OHLC candles (JSON)</label>
-              <textarea id="tradingCandles" rows="6" spellcheck="false" placeholder='[{"time":1750000000,"open":1.0821,"high":1.0825,"low":1.0819,"close":1.0824}]'></textarea>
-            </div>
-            <div style="height:10px"></div>
-            <div class="trading-actions">
-              <button id="tradingAnalyzeBtn" class="primary-btn" type="button">Analyze with AI</button>
-              <button id="tradingClearBtn" class="btn" type="button">Clear</button>
-            </div>
+            <div class="alix-launch-row"><button id="tradingAnalyzeBtn" class="primary-btn alix-launch-btn" type="button">Analyze current market</button><button id="tradingClearBtn" class="btn" type="button">Reset</button></div>
             <div id="tradingStatus" class="trading-status" aria-live="polite" style="margin-top:10px">Sign in first. Your existing authentication remains unchanged.</div>
+            <div class="trading-live-note">Automatic analysis uses a live market-data provider. It does not read the Pocket Option chart itself and it never places trades.</div>
           </div>
-
-          <div class="trading-card glass">
-            <div class="eyebrow">AI result</div>
-            <div id="tradingResult" class="trading-result" style="margin-top:10px">
-              <div>
-                <div id="tradingSignal" class="trading-signal skip">WAITING</div>
-                <div id="tradingReason" class="trading-status">No analysis yet.</div>
-              </div>
-            </div>
-          </div>
-
-          <div class="trading-card glass">
-            <div class="eyebrow">Indicator snapshot</div>
-            <div id="tradingIndicators" class="indicator-list" style="margin-top:8px">
-              <div class="indicator-row"><span>EMA trend</span><span class="indicator-value">—</span></div>
-              <div class="indicator-row"><span>RSI</span><span class="indicator-value">—</span></div>
-              <div class="indicator-row"><span>MACD</span><span class="indicator-value">—</span></div>
-              <div class="indicator-row"><span>ADX</span><span class="indicator-value">—</span></div>
-              <div class="indicator-row"><span>ATR</span><span class="indicator-value">—</span></div>
-            </div>
-          </div>
+          <div class="trading-card glass"><div class="eyebrow">AI result</div><div id="tradingResult" class="trading-result" style="margin-top:10px"><div><div id="tradingSignal" class="trading-signal skip">WAITING</div><div id="tradingReason" class="trading-status">Choose a pair and timeframe, then analyze.</div></div></div><div id="tradingWarnings" class="trading-status" style="margin-top:9px"></div></div>
+          <div class="trading-card glass"><div class="eyebrow">Automatic indicator snapshot</div><div id="tradingIndicators" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Market data</span><span class="indicator-value">Waiting</span></div></div></div>
+          <div class="trading-card glass"><div class="eyebrow">Data source</div><div id="tradingDataInfo" class="trading-status" style="margin-top:8px">No market data loaded yet.</div></div>
         </div>
       </section>
+      <div id="alixOverlay" class="alix-overlay" aria-hidden="true"><div class="alix-panel" role="dialog" aria-modal="true" aria-label="Chat with Alix"><div class="alix-head"><div><div class="alix-title">✨ Alix</div><div class="alix-sub">Live AI trading assistant</div></div><button id="closeAlixBtn" class="alix-close" type="button" aria-label="Close Alix">×</button></div><div id="alixMessages" class="alix-messages"><div class="alix-msg ai">Hey! I'm Alix. Ask me about the current setup, indicators, market structure, or why an analysis returned CALL, PUT, or SKIP.</div></div><form id="alixForm" class="alix-composer"><textarea id="alixInput" class="alix-input" rows="1" maxlength="2000" placeholder="Ask Alix anything about the market…"></textarea><button id="alixSendBtn" class="alix-send" type="submit">➤</button></form></div></div>
 
 <nav class="bottom-nav">
       <div class="nav-inner" style="grid-template-columns:repeat(7,1fr);width:min(100%,720px)">
@@ -4589,152 +4533,166 @@ input,textarea{caret-color:var(--pink-dark);}
     })();
 
 
-    /* ============================================================
-       AI TRADING LAB
-       ------------------------------------------------------------
-       The browser never stores an OpenAI secret key. The analysis
-       request goes to the server endpoint below. Deploy that endpoint
-       separately and have it call the OpenAI API with its secret key.
-       ============================================================ */
-    const TRADING_AI_ENDPOINT = "https://backed-0szz.onrender.com/api/trading-analysis";
-
-    function tradingNumber(id) {
-      const value = Number($(id)?.value);
-      return Number.isFinite(value) ? value : null;
-    }
+    /* AI TRADING LAB + ALIX */
+    const TRADING_API_BASE = "https://backed-0szz.onrender.com";
+    const TRADING_DATA_ENDPOINT = `${TRADING_API_BASE}/api/market-data`;
+    const TRADING_AI_ENDPOINT = `${TRADING_API_BASE}/api/trading-analysis`;
+    const ALIX_CHAT_ENDPOINT = `${TRADING_API_BASE}/api/alix-chat`;
+    let latestTradingMarket = null;
+    let latestTradingResult = null;
+    let alixHistory = [];
 
     function tradingSetResult(signal, reason) {
       const signalEl = $("tradingSignal");
       const reasonEl = $("tradingReason");
       const normalized = String(signal || "WAITING").toUpperCase();
       signalEl.textContent = normalized;
-      signalEl.className = "trading-signal " + (
-        normalized === "CALL" ? "call" :
-        normalized === "PUT" ? "put" :
-        "skip"
-      );
+      signalEl.className = "trading-signal " + (normalized === "CALL" ? "call" : normalized === "PUT" ? "put" : "skip");
       reasonEl.textContent = reason || "No analysis yet.";
     }
 
-    function tradingUpdateSnapshot() {
-      const ema9 = tradingNumber("tradingEma9");
-      const ema21 = tradingNumber("tradingEma21");
-      const rsi = tradingNumber("tradingRsi");
-      const macd = tradingNumber("tradingMacd");
-      const adx = tradingNumber("tradingAdx");
-      const atr = tradingNumber("tradingAtr");
-      const trend = ema9 === null || ema21 === null
-        ? "—"
-        : ema9 > ema21 ? "Bullish" : ema9 < ema21 ? "Bearish" : "Flat";
-      const values = [trend, rsi ?? "—", macd ?? "—", adx ?? "—", atr ?? "—"];
-      $("tradingIndicators").innerHTML = values.map((value, index) => {
-        const labels = ["EMA trend", "RSI", "MACD", "ADX", "ATR"];
-        return `<div class="indicator-row"><span>${labels[index]}</span><span class="indicator-value">${escapeText(value)}</span></div>`;
-      }).join("");
+    function formatIndicator(value, digits = 5) {
+      if (value === null || value === undefined || !Number.isFinite(Number(value))) return "—";
+      return Number(value).toFixed(digits).replace(/0+$/, "").replace(/\.$/, "");
     }
 
-    function tradingReadCandles() {
-      const raw = $("tradingCandles").value.trim();
-      if (!raw) return [];
-      const parsed = JSON.parse(raw);
-      if (!Array.isArray(parsed)) throw new Error("Candles must be a JSON array.");
-      return parsed.slice(-100).map((candle, index) => ({
-        time: candle?.time ?? index,
-        open: Number(candle?.open),
-        high: Number(candle?.high),
-        low: Number(candle?.low),
-        close: Number(candle?.close)
-      })).filter(candle =>
-        [candle.open, candle.high, candle.low, candle.close].every(Number.isFinite)
-      );
+    function tradingUpdateSnapshot(indicators = latestTradingMarket?.indicators) {
+      if (!indicators) {
+        $("tradingIndicators").innerHTML = '<div class="indicator-row"><span>Market data</span><span class="indicator-value">Waiting</span></div>';
+        return;
+      }
+      const rows = [
+        ["EMA 9 / EMA 21", `${formatIndicator(indicators.ema9)} / ${formatIndicator(indicators.ema21)}`],
+        ["EMA 50", formatIndicator(indicators.ema50)],
+        ["RSI 14", formatIndicator(indicators.rsi14, 2)],
+        ["MACD", `${formatIndicator(indicators.macd, 6)} (${indicators.macdTrend || "—"})`],
+        ["ADX 14", formatIndicator(indicators.adx14, 2)],
+        ["ATR 14", formatIndicator(indicators.atr14)],
+        ["Stochastic", `${formatIndicator(indicators.stochK, 2)} / ${formatIndicator(indicators.stochD, 2)}`],
+        ["Bollinger", `${formatIndicator(indicators.bbLower)} — ${formatIndicator(indicators.bbUpper)}`],
+        ["CCI 20", formatIndicator(indicators.cci20, 2)],
+        ["Williams %R", formatIndicator(indicators.williamsR, 2)],
+        ["ROC 12", formatIndicator(indicators.roc12, 2) + "%"],
+        ["Support / Resistance", `${formatIndicator(indicators.support)} / ${formatIndicator(indicators.resistance)}`],
+        ["Candle pattern", indicators.candlePattern || "—"]
+      ];
+      $("tradingIndicators").innerHTML = rows.map(([label, value]) => `<div class="indicator-row"><span>${escapeText(label)}</span><span class="indicator-value">${escapeText(value)}</span></div>`).join("");
+    }
+
+    async function tradingAuthHeaders() {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Please sign in first.");
+      return { "Content-Type": "application/json", "Authorization": `Bearer ${await user.getIdToken()}` };
+    }
+
+    async function loadAutomaticMarketData() {
+      const response = await fetch(TRADING_DATA_ENDPOINT, {
+        method: "POST",
+        headers: await tradingAuthHeaders(),
+        credentials: "include",
+        body: JSON.stringify({ asset: $("tradingAsset").value, timeframe: $("tradingTimeframe").value })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || `Market-data server returned HTTP ${response.status}.`);
+      if (!Array.isArray(data.candles) || !data.candles.length) throw new Error("No market candles were returned.");
+      return data;
     }
 
     async function analyzeTradingSetup() {
-      const user = auth.currentUser;
-      if (!user) {
+      if (!auth.currentUser) {
         $("tradingStatus").textContent = "Please sign in first. Your existing login system was not changed.";
         tradingSetResult("SKIP", "Authentication is required before AI analysis.");
         return;
       }
-
-      let candles;
-      try {
-        candles = tradingReadCandles();
-      } catch (error) {
-        $("tradingStatus").textContent = error.message || "Invalid candle JSON.";
-        tradingSetResult("SKIP", "Fix the candle data before requesting analysis.");
-        return;
-      }
-
-      if (!candles.length) {
-        $("tradingStatus").textContent = "Add recent OHLC candles first.";
-        tradingSetResult("SKIP", "No candle data was supplied.");
-        return;
-      }
-
       const button = $("tradingAnalyzeBtn");
       button.disabled = true;
-      $("tradingConnectionBadge").textContent = "AI connecting…";
-      $("tradingStatus").textContent = "Sending the supplied market data to your secure AI backend…";
-      tradingSetResult("ANALYZING", "Please wait.");
-
-      const payload = {
-        asset: $("tradingAsset").value.trim(),
-        timeframe: $("tradingTimeframe").value,
-        indicators: {
-          ema9: tradingNumber("tradingEma9"),
-          ema21: tradingNumber("tradingEma21"),
-          rsi: tradingNumber("tradingRsi"),
-          macd: tradingNumber("tradingMacd"),
-          adx: tradingNumber("tradingAdx"),
-          atr: tradingNumber("tradingAtr")
-        },
-        candles
-      };
-
+      $("tradingConnectionBadge").textContent = "Loading market…";
+      $("tradingStatus").textContent = "Getting fresh market candles and calculating indicators…";
+      tradingSetResult("ANALYZING", "Alix is checking the current setup…");
+      $("tradingWarnings").textContent = "";
       try {
-        const idToken = await user.getIdToken();
+        const market = await loadAutomaticMarketData();
+        latestTradingMarket = market;
+        tradingUpdateSnapshot(market.indicators);
+        $("tradingDataInfo").textContent = `${market.asset} • ${market.timeframeLabel} • ${market.candles.length} candles • source: ${market.source || "market data provider"}`;
         const response = await fetch(TRADING_AI_ENDPOINT, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${idToken}`
-          },
+          headers: await tradingAuthHeaders(),
           credentials: "include",
-          body: JSON.stringify(payload)
+          body: JSON.stringify(market)
         });
         const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(data?.error || `AI server returned HTTP ${response.status}.`);
-        }
+        if (!response.ok) throw new Error(data?.error || `AI server returned HTTP ${response.status}.`);
+        latestTradingResult = data;
         const signal = String(data?.signal || "SKIP").toUpperCase();
-        const allowed = ["CALL", "PUT", "SKIP"];
-        const finalSignal = allowed.includes(signal) ? signal : "SKIP";
+        const finalSignal = ["CALL", "PUT", "SKIP"].includes(signal) ? signal : "SKIP";
         tradingSetResult(finalSignal, data?.reason || "The AI returned no explanation.");
-        $("tradingStatus").textContent = "Analysis received. This result is informational and does not place a trade.";
+        $("tradingWarnings").textContent = Array.isArray(data?.warnings) && data.warnings.length ? "Warnings: " + data.warnings.join(" • ") : "";
+        $("tradingStatus").textContent = `Analysis received • confidence ${Number(data?.confidence || 0)}% • informational only.`;
         $("tradingConnectionBadge").textContent = "AI connected";
       } catch (error) {
         console.error("Trading AI error:", error);
         $("tradingConnectionBadge").textContent = "AI not connected";
         $("tradingStatus").textContent = error?.message || "Could not reach the AI backend.";
-        tradingSetResult("SKIP", "No AI result was accepted because the analysis service was unavailable.");
+        tradingSetResult("SKIP", "No AI result was accepted because the market-data or AI service was unavailable.");
       } finally {
         button.disabled = false;
       }
     }
 
+    function addAlixMessage(text, who) {
+      const el = document.createElement("div");
+      el.className = `alix-msg ${who}`;
+      el.textContent = text;
+      $("alixMessages").appendChild(el);
+      $("alixMessages").scrollTop = $("alixMessages").scrollHeight;
+    }
+    function openAlix() { $("alixOverlay").classList.add("open"); $("alixOverlay").setAttribute("aria-hidden", "false"); setTimeout(() => $("alixInput")?.focus(), 60); }
+    function closeAlix() { $("alixOverlay").classList.remove("open"); $("alixOverlay").setAttribute("aria-hidden", "true"); }
+
+    async function sendAlixMessage() {
+      const input = $("alixInput");
+      const message = input.value.trim();
+      if (!message) return;
+      if (!auth.currentUser) { addAlixMessage("Please sign in first so I can securely connect your session.", "ai"); return; }
+      addAlixMessage(message, "user");
+      input.value = "";
+      $("alixSendBtn").disabled = true;
+      try {
+        const response = await fetch(ALIX_CHAT_ENDPOINT, {
+          method: "POST",
+          headers: await tradingAuthHeaders(),
+          credentials: "include",
+          body: JSON.stringify({
+            message,
+            history: alixHistory.slice(-12),
+            market: latestTradingMarket ? { asset: latestTradingMarket.asset, timeframe: latestTradingMarket.timeframeLabel, indicators: latestTradingMarket.indicators, latestCandle: latestTradingMarket.candles?.at(-1) || null } : null,
+            lastAnalysis: latestTradingResult || null
+          })
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data?.error || `Alix returned HTTP ${response.status}.`);
+        const reply = String(data?.reply || "I couldn't generate a response.");
+        addAlixMessage(reply, "ai");
+        alixHistory.push({ role: "user", content: message }, { role: "assistant", content: reply });
+        alixHistory = alixHistory.slice(-12);
+      } catch (error) { addAlixMessage(error?.message || "I couldn't reach Alix right now.", "ai"); }
+      finally { $("alixSendBtn").disabled = false; input.focus(); }
+    }
+
     $("tradingAnalyzeBtn")?.addEventListener("click", analyzeTradingSetup);
-    ["tradingEma9", "tradingEma21", "tradingRsi", "tradingMacd", "tradingAdx", "tradingAtr"]
-      .forEach(id => $(id)?.addEventListener("input", tradingUpdateSnapshot));
+    $("openAlixBtn")?.addEventListener("click", openAlix);
+    $("closeAlixBtn")?.addEventListener("click", closeAlix);
+    $("alixOverlay")?.addEventListener("click", event => { if (event.target === $("alixOverlay")) closeAlix(); });
+    $("alixForm")?.addEventListener("submit", event => { event.preventDefault(); sendAlixMessage(); });
+    $("alixInput")?.addEventListener("keydown", event => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); sendAlixMessage(); } });
     $("tradingClearBtn")?.addEventListener("click", () => {
-      ["tradingEma9", "tradingEma21", "tradingRsi", "tradingMacd", "tradingAdx", "tradingAtr", "tradingCandles"]
-        .forEach(id => { if ($(id)) $(id).value = ""; });
-      tradingUpdateSnapshot();
-      tradingSetResult("WAITING", "No analysis yet.");
-      $("tradingStatus").textContent = "Ready for new market data.";
+      latestTradingMarket = null; latestTradingResult = null; tradingUpdateSnapshot();
+      $("tradingWarnings").textContent = ""; $("tradingDataInfo").textContent = "No market data loaded yet.";
+      tradingSetResult("WAITING", "Choose a pair and timeframe, then analyze."); $("tradingStatus").textContent = "Ready for new market data.";
+      $("tradingConnectionBadge").textContent = "AI not connected";
     });
     tradingUpdateSnapshot();
-
 </script>
 <!--
   MAINTAINABILITY NOTES — THE LINES BELOW DOCUMENT THE POLISH LAYER.
