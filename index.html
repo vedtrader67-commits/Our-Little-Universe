@@ -1915,7 +1915,7 @@ input,textarea{caret-color:var(--pink-dark);}
 
     <!-- NAVIGATION -->
     
-      <section id="tradingScreen" class="screen hidden">
+      <section id="tradingScreen" class="screen">
         <div class="container trading-shell">
           <div class="trading-card glass">
             <div class="trading-title-row">
@@ -2493,7 +2493,7 @@ input,textarea{caret-color:var(--pink-dark);}
         startAppListeners();
       } catch (error) {
         console.error("Auth/profile bootstrap failed:", error);
-        toast(`Could not load your profile (${error?.code || "unknown-error"}).`);
+        toast(error?.code === "permission-denied" ? "Profile access denied by Firestore. Publish the rules to project our-universe-8229c and make sure this account is signed in." : `Could not load your profile (${error?.code || "unknown-error"}).`);
       }
     });
 
@@ -3525,7 +3525,7 @@ input,textarea{caret-color:var(--pink-dark);}
         if (nearBottom || snapshot.empty) requestAnimationFrame(scrollMessagesToBottom);
       }, error => {
         console.error(error);
-        toast("Chat could not be loaded. Check Firestore rules/indexes.");
+        toast(error?.code === "permission-denied" ? "Chat access denied by Firestore. Make sure the published rules belong to project our-universe-8229c and that you are signed in." : "Chat could not be loaded. Check Firestore rules/indexes.");
       });
     }
 
@@ -4693,9 +4693,13 @@ input,textarea{caret-color:var(--pink-dark);}
       };
 
       try {
+        const idToken = await user.getIdToken();
         const response = await fetch(TRADING_AI_ENDPOINT, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${idToken}`
+          },
           credentials: "include",
           body: JSON.stringify(payload)
         });
