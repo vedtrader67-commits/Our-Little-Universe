@@ -956,7 +956,13 @@
   .trading-shell { display:grid; gap:14px; padding-bottom:24px; }
   .trading-card { padding:18px; border-radius:24px; }
   .trading-title-row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
-  .trading-badge { font-size:11px; padding:6px 9px; border-radius:999px; background:rgba(120,120,120,.12); }
+  .trading-badge { font-size:11px; padding:6px 9px; border-radius:999px; background:rgba(120,120,120,.12); display:inline-flex; align-items:center; gap:6px; transition:background .2s ease,color .2s ease,box-shadow .2s ease; }
+  .trading-badge::before { content:""; width:7px; height:7px; border-radius:50%; background:#8b7f86; box-shadow:0 0 0 3px rgba(139,127,134,.10); }
+  .trading-badge.connected { color:#177245; background:rgba(34,170,93,.10); box-shadow:0 0 0 1px rgba(34,170,93,.10); }
+  .trading-badge.connected::before { background:#20b968; box-shadow:0 0 0 3px rgba(32,185,104,.14),0 0 10px rgba(32,185,104,.42); animation:aiConnectedPulse 1.8s ease-in-out infinite; }
+  .trading-badge.error { color:#a64555; background:rgba(190,65,86,.09); }
+  .trading-badge.error::before { background:#c94d63; }
+  @keyframes aiConnectedPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.65;transform:scale(.82)} }
   .trading-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
   .trading-field label { display:block; font-size:11px; opacity:.7; margin-bottom:6px; }
   .trading-field input, .trading-field select, .trading-field textarea { width:100%; box-sizing:border-box; }
@@ -1930,7 +1936,7 @@ input,textarea{caret-color:var(--pink-dark);}
       <section id="tradingScreen" class="screen">
         <div class="container trading-shell">
           <div class="trading-card glass">
-            <div class="trading-title-row"><div><div class="eyebrow">AI market analysis</div><h2 style="font-size:26px">Trading Lab</h2></div><span id="tradingConnectionBadge" class="trading-badge">AI not connected</span></div>
+            <div class="trading-title-row"><div><div class="eyebrow">AI market analysis</div><h2 style="font-size:26px">Trading Lab</h2></div><span id="tradingConnectionBadge" class="trading-badge" aria-live="polite">AI not connected</span></div>
             <p class="trading-help">Select a normal market pair and timeframe. Alix automatically gets recent candles and calculates the indicators before analysis.</p>
             <div class="alix-launch-row"><button id="openAlixBtn" class="primary-btn alix-launch-btn" type="button">💬 Chat with Alix</button></div>
           </div>
@@ -4548,12 +4554,38 @@ input,textarea{caret-color:var(--pink-dark);}
       return String(value ?? "");
     }
     const TRADING_API_BASE = "https://backed-0szz.onrender.com";
+    const TRADING_HEALTH_ENDPOINT = `${TRADING_API_BASE}/health`;
     const TRADING_DATA_ENDPOINT = `${TRADING_API_BASE}/api/market-data`;
     const TRADING_AI_ENDPOINT = `${TRADING_API_BASE}/api/trading-analysis`;
     const ALIX_CHAT_ENDPOINT = `${TRADING_API_BASE}/api/alix-chat`;
     let latestTradingMarket = null;
     let latestTradingResult = null;
     let alixHistory = [];
+
+    function setTradingConnectionState(state, text) {
+      const badge = $("tradingConnectionBadge");
+      if (!badge) return;
+      badge.classList.remove("connected", "error");
+      badge.textContent = text;
+      if (state === "connected") badge.classList.add("connected");
+      if (state === "error") badge.classList.add("error");
+    }
+
+    async function checkAIConnection() {
+      try {
+        const response = await fetch(TRADING_HEALTH_ENDPOINT, { method: "GET", cache: "no-store" });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || data?.ok !== true || data?.geminiConfigured !== true) {
+          throw new Error("AI backend is not ready.");
+        }
+        setTradingConnectionState("connected", "AI connected");
+        return true;
+      } catch (error) {
+        console.warn("AI health check failed:", error);
+        setTradingConnectionState("error", "AI not connected");
+        return false;
+      }
+    }
 
     function tradingSetResult(signal, reason) {
       const signalEl = $("tradingSignal");
@@ -4620,7 +4652,7 @@ input,textarea{caret-color:var(--pink-dark);}
       }
       const button = $("tradingAnalyzeBtn");
       button.disabled = true;
-      $("tradingConnectionBadge").textContent = "Loading market…";
+      setTradingConnectionState("", "Connecting…");
       $("tradingStatus").textContent = "Getting fresh market candles and calculating indicators…";
       tradingSetResult("ANALYZING", "Alix is checking the current setup…");
       $("tradingWarnings").textContent = "";
@@ -4642,10 +4674,10 @@ input,textarea{caret-color:var(--pink-dark);}
         tradingSetResult(finalSignal, data?.reason || "The AI returned no explanation.");
         $("tradingWarnings").textContent = Array.isArray(data?.warnings) && data.warnings.length ? "Warnings: " + data.warnings.join(" • ") : "";
         $("tradingStatus").textContent = `Analysis received • confidence ${Number(data?.confidence || 0)}% • informational only.`;
-        $("tradingConnectionBadge").textContent = "AI connected";
+        setTradingConnectionState("connected", "AI connected");
       } catch (error) {
         console.error("Trading AI error:", error);
-        $("tradingConnectionBadge").textContent = "AI not connected";
+        setTradingConnectionState("error", "AI not connected");
         $("tradingStatus").textContent = error?.message || "Could not reach the AI backend.";
         tradingSetResult("SKIP", "No AI result was accepted because the market-data or AI service was unavailable.");
       } finally {
@@ -4686,6 +4718,7 @@ input,textarea{caret-color:var(--pink-dark);}
         const data = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(data?.error || `Alix returned HTTP ${response.status}.`);
         const reply = String(data?.reply || "I couldn't generate a response.");
+        setTradingConnectionState("connected", "AI connected");
         addAlixMessage(reply, "ai");
         alixHistory.push({ role: "user", content: message }, { role: "assistant", content: reply });
         alixHistory = alixHistory.slice(-12);
@@ -4703,9 +4736,11 @@ input,textarea{caret-color:var(--pink-dark);}
       latestTradingMarket = null; latestTradingResult = null; tradingUpdateSnapshot();
       $("tradingWarnings").textContent = ""; $("tradingDataInfo").textContent = "No market data loaded yet.";
       tradingSetResult("WAITING", "Choose a pair and timeframe, then analyze."); $("tradingStatus").textContent = "Ready for new market data.";
-      $("tradingConnectionBadge").textContent = "AI not connected";
+      setTradingConnectionState("", "Checking AI…");
+      checkAIConnection();
     });
     tradingUpdateSnapshot();
+    checkAIConnection();
 </script>
 <!--
   MAINTAINABILITY NOTES — THE LINES BELOW DOCUMENT THE POLISH LAYER.
