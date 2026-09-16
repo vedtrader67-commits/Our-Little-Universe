@@ -972,6 +972,7 @@
   .indicator-row { display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid rgba(120,120,120,.12); font-size:13px; }
   .indicator-row:last-child { border-bottom:0; }
   .indicator-value { font-weight:700; text-align:right; }
+  .learning-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.learning-stat{padding:10px 11px;border:1px solid rgba(120,120,120,.12);border-radius:16px;background:rgba(120,120,120,.06)}.learning-stat span{display:block;font-size:10px;opacity:.65}.learning-stat strong{display:block;margin-top:4px;font-size:14px}.learning-strategy-input{width:100%;box-sizing:border-box;min-height:160px;resize:vertical;border:1px solid rgba(120,120,120,.18);border-radius:18px;padding:12px;background:rgba(255,255,255,.72);line-height:1.5}.alix-learning-plan{white-space:pre-wrap;font-size:12px;line-height:1.55;opacity:.86;padding:12px;border-radius:16px;background:rgba(120,120,120,.06)}@media (max-width:520px){.learning-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.learning-strategy-input{min-height:140px;}}
   @media (max-width:520px) { .trading-grid { grid-template-columns:1fr; } }
 
     /* ALIX + AUTO MARKET ANALYSIS */
@@ -996,7 +997,7 @@
   .audio-progress { cursor: pointer; }
   .audio-player { max-width: min(100%, 320px); }
   .audio-main { min-width: 0; }
-  .nav-inner { grid-template-columns: repeat(7, minmax(0,1fr)); }
+  .nav-inner { grid-template-columns: repeat(8, minmax(0,1fr)); }
   @media (max-width: 520px) {
     .nav-label { font-size: 7px; }
     .nav-icon { font-size: 14px; }
@@ -1012,7 +1013,7 @@
   .login-card { width:min(100%,430px); max-width:430px; }
   #loginScreen { width:100%; max-width:430px; margin:0 auto; padding-left:14px; padding-right:14px; }
   .bottom-nav { width:100%; max-width:430px; left:50%; right:auto; transform:translateX(-50%); }
-  .nav-inner { width:100% !important; max-width:430px; grid-template-columns:repeat(7,minmax(0,1fr)) !important; }
+  .nav-inner { width:100% !important; max-width:430px; grid-template-columns:repeat(8,minmax(0,1fr)) !important; }
   .hero-card { padding:20px 16px; }
   .counter-card { padding:18px 12px; }
   .stats { gap:7px; }
@@ -1933,25 +1934,7 @@ input,textarea{caret-color:var(--pink-dark);}
             <div class="trading-title-row"><div><div class="eyebrow">AI market analysis</div><h2 style="font-size:26px">Trading Lab</h2></div><span id="tradingConnectionBadge" class="trading-badge">AI not connected</span></div>
             <p class="trading-help">Select a normal market pair and timeframe. Alix automatically gets recent candles and calculates the indicators before analysis.</p>
             <div class="alix-launch-row"><button id="openAlixBtn" class="primary-btn alix-launch-btn" type="button">💬 Chat with Alix</button></div>
-            <div class="alix-learning-launch"><button id="openAlixLearningBtn" class="btn" type="button">🧠 Alix Learning & Strategy Lab</button></div>
-            <div id="alixLearningPanel" class="alix-learning-panel">
-              <div class="eyebrow">Alix Learning & Strategy Lab</div>
-              <div class="trading-status" style="margin:6px 0 10px">Saved to your account. Your strategy notes and Alix's strategy plan stay available after reopening the website.</div>
-              <div class="alix-learning-grid">
-                <input id="alixStrategyName" class="text-input" maxlength="100" placeholder="Strategy name">
-                <textarea id="alixStrategyRules" placeholder="Build your rules here: timeframe, entry, confirmation, invalidation, no-trade conditions, indicators…"></textarea>
-                <textarea id="alixStrategyNotes" placeholder="Notes, ideas, observations and things you want Alix to learn about your strategy…"></textarea>
-              </div>
-              <div class="alix-learning-actions">
-                <button id="saveAlixStrategyBtn" class="primary-btn" type="button">Save strategy</button>
-                <button id="refineAlixStrategyBtn" class="btn" type="button">Ask Alix to refine</button>
-                <button id="loadAlixStrategyBtn" class="btn" type="button">Reload saved</button>
-              </div>
-              <div id="alixStrategyStatus" class="trading-status" style="margin-top:8px">Waiting…</div>
-              <div id="alixStrategyPlan" class="alix-learning-plan" style="margin-top:8px">No strategy plan yet.</div>
-            </div>
-          </div>
-          <div class="trading-card glass">
+            <div class="trading-status" style="margin-top:8px">Automatic learning runs in the separate Learning tab. It learns from completed analysis outcomes and your saved strategy.</div>
             <div class="trading-grid">
               <div class="trading-field"><label for="tradingAsset">Pair</label><select id="tradingAsset"><option value="EUR/USD" selected>EUR/USD</option><option value="GBP/USD">GBP/USD</option><option value="USD/JPY">USD/JPY</option><option value="USD/CHF">USD/CHF</option><option value="AUD/USD">AUD/USD</option><option value="USD/CAD">USD/CAD</option><option value="NZD/USD">NZD/USD</option><option value="EUR/JPY">EUR/JPY</option><option value="GBP/JPY">GBP/JPY</option><option value="EUR/GBP">EUR/GBP</option><option value="AUD/JPY">AUD/JPY</option><option value="AUD/NZD">AUD/NZD</option><option value="AUD/CAD">AUD/CAD</option><option value="AUD/CHF">AUD/CHF</option><option value="CAD/JPY">CAD/JPY</option><option value="CHF/JPY">CHF/JPY</option><option value="EUR/AUD">EUR/AUD</option><option value="EUR/CAD">EUR/CAD</option><option value="EUR/CHF">EUR/CHF</option><option value="EUR/NZD">EUR/NZD</option><option value="GBP/AUD">GBP/AUD</option><option value="GBP/CAD">GBP/CAD</option><option value="GBP/CHF">GBP/CHF</option><option value="GBP/NZD">GBP/NZD</option><option value="NZD/JPY">NZD/JPY</option><option value="NZD/CAD">NZD/CAD</option><option value="NZD/CHF">NZD/CHF</option><option value="USD/SGD">USD/SGD</option><option value="USD/HKD">USD/HKD</option><option value="USD/NOK">USD/NOK</option><option value="USD/SEK">USD/SEK</option><option value="USD/MXN">USD/MXN</option><option value="USD/ZAR">USD/ZAR</option></select></div>
               <div class="trading-field"><label for="tradingTimeframe">Timeframe</label><select id="tradingTimeframe"><option value="1m" selected>1 minute</option><option value="5m">5 minutes</option><option value="15m">15 minutes</option><option value="30m">30 minutes</option><option value="1h">1 hour</option><option value="4h">4 hours</option><option value="1d">1 day</option></select></div>
@@ -1963,13 +1946,32 @@ input,textarea{caret-color:var(--pink-dark);}
           <div class="trading-card glass"><div class="eyebrow">AI result</div><div id="tradingResult" class="trading-result" style="margin-top:10px"><div><div id="tradingSignal" class="trading-signal skip">WAITING</div><div id="tradingReason" class="trading-status">Choose a pair and timeframe, then analyze.</div></div></div><div id="tradingWarnings" class="trading-status" style="margin-top:9px"></div></div>
           <div class="trading-card glass"><div class="eyebrow">Automatic indicator snapshot</div><div id="tradingIndicators" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Market data</span><span class="indicator-value">Waiting</span></div></div></div>
           <div class="trading-card glass"><div class="eyebrow">Advanced strategy engine</div><div id="tradingStrategyInfo" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Strategy layer</span><span class="indicator-value">Waiting</span></div></div><div class="trading-status" style="margin-top:9px;font-size:11px;line-height:1.5">Bollinger 5/2 • Fractal 2 • RSI 5 • Stochastic 5/3/3 SMA • 80/20 re-entry • trend and candle confirmation. These are analytical signals, not guarantees.</div></div>
-          <div class="trading-card glass"><div class="eyebrow">Adaptive learning dashboard</div><div id="tradingLearningInfo" class="trading-status" style="margin-top:8px">Alix learns from completed analysis outcomes for each pair and timeframe.</div><div class="row wrap" style="margin-top:10px"><button id="tradingLearningRefreshBtn" class="btn" type="button">Refresh learning</button></div><div id="tradingLearningDetails" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Learning status</span><span class="indicator-value">Waiting</span></div></div></div><div class="trading-card glass"><div class="eyebrow">Data source</div><div id="tradingDataInfo" class="trading-status" style="margin-top:8px">No market data loaded yet.</div></div>
+          <div class="trading-card glass"><div class="eyebrow">Data source</div><div id="tradingDataInfo" class="trading-status" style="margin-top:8px">No market data loaded yet.</div></div>
+        </div>
+      </section>
+      <section id="learningScreen" class="screen">
+        <div class="container trading-shell">
+          <div class="trading-card glass">
+            <div class="trading-title-row"><div><div class="eyebrow">automatic learning</div><h2 style="font-size:26px">Alix Learning</h2></div><span id="learningConnectionBadge" class="trading-badge">AI not connected</span></div>
+            <p class="trading-help">Everything here runs automatically. Alix evaluates past analyses, learns pair/timeframe signal weights, and uses your saved strategy in future Trading Lab signals.</p>
+            <div class="learning-status-grid"><div class="learning-stat"><span>Pair</span><strong id="learningPairLabel">EUR/JPY</strong></div><div class="learning-stat"><span>Timeframe</span><strong id="learningTimeframeLabel">1m</strong></div><div class="learning-stat"><span>Analyses</span><strong id="learningAnalysesCount">0</strong></div><div class="learning-stat"><span>Evaluated</span><strong id="learningEvaluatedCount">0</strong></div></div>
+          </div>
+          <div class="trading-card glass">
+            <div class="eyebrow">Teach Alix your strategy</div>
+            <p class="trading-help">Just type your strategy naturally. You do not need to create rules manually. Alix saves your text, builds a strategy plan, and uses it when generating future signals.</p>
+            <textarea id="learningStrategyText" class="learning-strategy-input" rows="8" maxlength="12000" placeholder="Example: On 1 minute, I prefer bullish signals when Stochastic 5/3/3 crosses up after re-entering above 20, price reacts from the lower Bollinger 5/2 band, and the candle confirms the move. Avoid entries when the higher trend is strongly bearish…"></textarea>
+            <div class="alix-learning-actions" style="margin-top:10px"><button id="saveLearningStrategyBtn" class="primary-btn" type="button">Save & teach Alix</button><button id="reloadLearningStrategyBtn" class="btn" type="button">Reload</button></div>
+            <div id="learningStrategyStatus" class="trading-status" style="margin-top:8px">Waiting…</div>
+          </div>
+          <div class="trading-card glass"><div class="eyebrow">Alix's saved strategy plan</div><div id="learningStrategyPlan" class="alix-learning-plan" style="margin-top:8px">No strategy plan yet.</div></div>
+          <div class="trading-card glass"><div class="eyebrow">Automatic learning progress</div><div id="learningProgressDetails" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Learning status</span><span class="indicator-value">Waiting</span></div></div></div>
+          <div class="trading-card glass"><div class="eyebrow">Learned strategy weights</div><div id="learningWeightsDetails" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Weights</span><span class="indicator-value">Starting weights</span></div></div></div>
         </div>
       </section>
       <div id="alixOverlay" class="alix-overlay" aria-hidden="true"><div class="alix-panel" role="dialog" aria-modal="true" aria-label="Chat with Alix"><div class="alix-head"><div><div class="alix-title">✨ Alix</div><div class="alix-sub">Live AI trading assistant</div></div><button id="closeAlixBtn" class="alix-close" type="button" aria-label="Close Alix">×</button></div><div id="alixMessages" class="alix-messages"><div class="alix-msg ai">Hey! I'm Alix. Ask me about the current setup, indicators, market structure, or why an analysis returned CALL, PUT, or SKIP.</div></div><form id="alixForm" class="alix-composer"><textarea id="alixInput" class="alix-input" rows="1" maxlength="2000" placeholder="Ask Alix anything about the market…"></textarea><button id="alixSendBtn" class="alix-send" type="submit">➤</button></form></div></div>
 
 <nav class="bottom-nav">
-      <div class="nav-inner" style="grid-template-columns:repeat(7,1fr);width:min(100%,720px)">
+      <div class="nav-inner" style="grid-template-columns:repeat(8,1fr);width:min(100%,720px)">
         <button class="nav-btn active" data-screen="homeScreen" type="button"><span class="nav-icon">⌂</span><span class="nav-label">Home</span></button>
         <button class="nav-btn" data-screen="discoverScreen" type="button"><span class="nav-icon">⌕</span><span class="nav-label">Discover</span></button>
         <button class="nav-btn" data-screen="requestsScreen" type="button"><span class="nav-icon">♡</span><span class="nav-label">Requests</span></button>
@@ -1977,6 +1979,7 @@ input,textarea{caret-color:var(--pink-dark);}
         <button class="nav-btn" data-screen="privateScreen" type="button"><span class="nav-icon">🔒</span><span class="nav-label">Private</span></button>
         <button class="nav-btn" data-screen="profileScreen" type="button"><span class="nav-icon">●</span><span class="nav-label">Profile</span></button>
         <button class="nav-btn" data-screen="tradingScreen" type="button"><span class="nav-icon">↗</span><span class="nav-label">Trading</span></button>
+        <button class="nav-btn" data-screen="learningScreen" type="button"><span class="nav-icon">🧠</span><span class="nav-label">Learning</span></button>
       </div>
     </nav>
   </main>
@@ -2387,6 +2390,7 @@ input,textarea{caret-color:var(--pink-dark);}
       if (id === "privateScreen") loadPrivateSpace();
       if (id === "memoriesScreen") startPrivateMemories();
       if (id === "profileScreen") loadProfileScreen();
+      if (id === "learningScreen") refreshLearningScreen();
     }
 
     document.querySelectorAll(".nav-btn").forEach(button => {
@@ -4638,41 +4642,27 @@ input,textarea{caret-color:var(--pink-dark);}
       el.innerHTML = rows.map(([label,value]) => `<div class="indicator-row"><span>${escapeText(label)}</span><span class="indicator-value">${escapeText(value)}</span></div>`).join("");
     }
 
-    async function refreshTradingLearning() {
-      const auth=getTradingAuth();
-      if(!auth?.currentUser) return;
-      try {
-        const asset=encodeURIComponent($("tradingAsset").value);
-        const timeframe=encodeURIComponent($("tradingTimeframe").value);
-        const response=await fetch(`${TRADING_API_BASE}/api/trading-learning?asset=${asset}&timeframe=${timeframe}`,{headers:await tradingAuthHeaders()});
-        const data=await response.json().catch(()=>({}));
-        if(!response.ok) throw new Error(data?.error || `Learning server returned HTTP ${response.status}.`);
-        const evaluated=Number(data.evaluated||0), wins=Number(data.wins||0), losses=Number(data.losses||0), ties=Number(data.ties||0);
-        const accuracy=(wins+losses)>0 ? ((wins/(wins+losses))*100).toFixed(1)+"%" : "Waiting for evaluated outcomes";
-        $("tradingLearningInfo").textContent=`${data.asset} • ${data.timeframe} • ${Number(data.total||0)} analyses recorded • ${evaluated} evaluated • ${wins} wins • ${losses} losses • ${ties} ties • ${Number(data.pending||0)} pending`;
-        const w=data.weights||{};
-        const weightText=Object.entries(w).map(([k,v])=>`${k}:${Number(v).toFixed(2)}`).join(" • ");
-        $("tradingLearningDetails").innerHTML=[
-          ["Current directional accuracy",accuracy],
-          ["Learning horizon",`${Number(data.horizonBars||3)} candles`],
-          ["Pending evaluations",String(data.pending||0)],
-          ["Adaptive weights",weightText || "Starting weights"]
-        ].map(([label,value])=>`<div class="indicator-row"><span>${escapeText(label)}</span><span class="indicator-value">${escapeText(value)}</span></div>`).join("");
-      } catch(error) {
-        $("tradingLearningInfo").textContent="Learning service is not available yet.";
-        $("tradingLearningDetails").innerHTML=`<div class="indicator-row"><span>Learning status</span><span class="indicator-value">${escapeText(error?.message||"Unavailable")}</span></div>`;
-      }
+    function selectedLearningPair(){return $("tradingAsset")?.value||"EUR/JPY";}
+    function selectedLearningTimeframe(){return $("tradingTimeframe")?.value||"1m";}
+    async function refreshTradingLearning(){
+      const auth=getTradingAuth(); if(!auth?.currentUser)return;
+      try{const r=await fetch(`${TRADING_API_BASE}/api/trading-learning?asset=${encodeURIComponent(selectedLearningPair())}&timeframe=${encodeURIComponent(selectedLearningTimeframe())}`,{headers:await tradingAuthHeaders(),cache:"no-store"});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`Learning server returned HTTP ${r.status}.`);const ev=Number(d.evaluated||0),w=Number(d.wins||0),l=Number(d.losses||0),t=Number(d.ties||0);const acc=w+l?((w/(w+l))*100).toFixed(1)+"%":"Waiting for evaluated outcomes";$("learningPairLabel")&&($("learningPairLabel").textContent=d.asset||selectedLearningPair());$("learningTimeframeLabel")&&($("learningTimeframeLabel").textContent=d.timeframe||selectedLearningTimeframe());$("learningAnalysesCount")&&($("learningAnalysesCount").textContent=String(d.total||0));$("learningEvaluatedCount")&&($("learningEvaluatedCount").textContent=String(ev));$("learningProgressDetails")&&($("learningProgressDetails").innerHTML=[["Directional accuracy",acc],["Evaluated outcomes",String(ev)],["Wins / Losses / Ties",`${w} / ${l} / ${t}`],["Pending evaluations",String(d.pending||0)],["Learning horizon",`${Number(d.horizonBars||3)} candles`],["Last update",d.lastUpdated?"Updated":"Waiting for first update"]].map(([a,v])=>`<div class="indicator-row"><span>${escapeText(a)}</span><span class="indicator-value">${escapeText(v)}</span></div>`).join(""));const weights=d.weights||{};$("learningWeightsDetails")&&($("learningWeightsDetails").innerHTML=Object.entries(weights).map(([k,v])=>`<div class="indicator-row"><span>${escapeText(k)}</span><span class="indicator-value">${Number(v).toFixed(2)}</span></div>`).join("")||'<div class="indicator-row"><span>Weights</span><span class="indicator-value">Starting weights</span></div>');}
+      catch(error){$("learningProgressDetails")&&($("learningProgressDetails").innerHTML=`<div class="indicator-row"><span>Learning status</span><span class="indicator-value">${escapeText(error?.message||"Unavailable")}</span></div>`);}
     }
-
+    async function loadLearningWorkspace(){const auth=getTradingAuth();if(!auth?.currentUser)return;try{const r=await fetch(ALIX_LEARNING_ENDPOINT,{headers:await tradingAuthHeaders(),cache:"no-store"});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`Learning workspace HTTP ${r.status}`);$("learningStrategyText")&&($("learningStrategyText").value=d.strategyText||d.rules||d.notes||"");$("learningStrategyPlan")&&($("learningStrategyPlan").textContent=d.strategyPlan||"No strategy plan yet.");$("learningStrategyStatus")&&($("learningStrategyStatus").textContent=d.updatedMs?"Saved strategy loaded.":"No saved strategy yet.");}catch(error){$("learningStrategyStatus")&&($("learningStrategyStatus").textContent=error.message||"Could not load learning workspace.");}}
+    async function saveLearningStrategy(){const text=$("learningStrategyText")?.value.trim();if(!text){$("learningStrategyStatus").textContent="Tell Alix your strategy first.";return;}try{$("saveLearningStrategyBtn").disabled=true;$("learningStrategyStatus").textContent="Saving your strategy and teaching Alix…";const r=await fetch(ALIX_LEARNING_ENDPOINT,{method:"POST",headers:await tradingAuthHeaders(),body:JSON.stringify({strategyText:text})});const d=await r.json().catch(()=>({}));if(!r.ok)throw new Error(d.error||`Save failed (HTTP ${r.status})`);const refine=await fetch(ALIX_STRATEGY_ENDPOINT,{method:"POST",headers:await tradingAuthHeaders(),body:JSON.stringify({request:text,current:{strategyText:text}})});const plan=await refine.json().catch(()=>({}));if(refine.ok)$("learningStrategyPlan").textContent=plan.strategy||"Strategy saved.";$("learningStrategyStatus").textContent=refine.ok?"Saved and added to Alix's trading strategy memory.":"Saved. Alix will use it in future signals.";}catch(error){$("learningStrategyStatus").textContent=error.message||"Could not save strategy.";}finally{$("saveLearningStrategyBtn").disabled=false;}}
+    async function refreshLearningScreen(){await loadLearningWorkspace();await refreshTradingLearning();await checkTradingHealth();}
     async function checkTradingHealth() {
       try {
         const response=await fetch(`${TRADING_API_BASE}/health`,{cache:"no-store"});
         const data=await response.json().catch(()=>({}));
         const connected=Boolean(response.ok&&data.ok&&data.marketDataConfigured&&data.geminiConfigured);
         $("tradingConnectionBadge").textContent=connected?"AI connected":"AI not connected";
+        if($("learningConnectionBadge")) $("learningConnectionBadge").textContent=connected?"AI connected":"AI not connected";
         return connected;
       } catch(_) {
         $("tradingConnectionBadge").textContent="AI not connected";
+        if($("learningConnectionBadge")) $("learningConnectionBadge").textContent="AI not connected";
         return false;
       }
     }
@@ -4819,10 +4809,9 @@ input,textarea{caret-color:var(--pink-dark);}
 
     $("tradingAnalyzeBtn")?.addEventListener("click", analyzeTradingSetup);
     $("openAlixBtn")?.addEventListener("click", openAlix);
-    $("openAlixLearningBtn")?.addEventListener("click", ()=>{ $("alixLearningPanel")?.classList.toggle("open"); loadAlixLearningState(); });
-    $("saveAlixStrategyBtn")?.addEventListener("click", saveAlixLearningState);
-    $("refineAlixStrategyBtn")?.addEventListener("click", refineAlixStrategy);
-    $("loadAlixStrategyBtn")?.addEventListener("click", loadAlixLearningState);
+    $("saveLearningStrategyBtn")?.addEventListener("click",saveLearningStrategy);
+    $("reloadLearningStrategyBtn")?.addEventListener("click",refreshLearningScreen);
+    $("learningStrategyText")?.addEventListener("input",()=>{if($("learningStrategyStatus"))$("learningStrategyStatus").textContent="Unsaved strategy changes.";});
     $("closeAlixBtn")?.addEventListener("click", closeAlix);
     $("alixOverlay")?.addEventListener("click", event => { if (event.target === $("alixOverlay")) closeAlix(); });
     $("alixForm")?.addEventListener("submit", event => { event.preventDefault(); sendAlixMessage(); });
@@ -4842,8 +4831,8 @@ input,textarea{caret-color:var(--pink-dark);}
     tradingUpdateStrategyInfo();
     checkTradingHealth();
     loadAlixHistory();
-    loadAlixLearningState();
-    setInterval(() => { if (document.visibilityState === "visible") { refreshTradingLearning(); checkTradingHealth(); } }, 30000);
+    refreshLearningScreen();
+    setInterval(() => { if (document.visibilityState === "visible") { refreshLearningScreen(); } }, 30000);
 </script>
 <!--
   MAINTAINABILITY NOTES — THE LINES BELOW DOCUMENT THE POLISH LAYER.
