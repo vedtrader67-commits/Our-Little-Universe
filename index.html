@@ -1933,6 +1933,23 @@ input,textarea{caret-color:var(--pink-dark);}
             <div class="trading-title-row"><div><div class="eyebrow">AI market analysis</div><h2 style="font-size:26px">Trading Lab</h2></div><span id="tradingConnectionBadge" class="trading-badge">AI not connected</span></div>
             <p class="trading-help">Select a normal market pair and timeframe. Alix automatically gets recent candles and calculates the indicators before analysis.</p>
             <div class="alix-launch-row"><button id="openAlixBtn" class="primary-btn alix-launch-btn" type="button">💬 Chat with Alix</button></div>
+            <div class="alix-learning-launch"><button id="openAlixLearningBtn" class="btn" type="button">🧠 Alix Learning & Strategy Lab</button></div>
+            <div id="alixLearningPanel" class="alix-learning-panel">
+              <div class="eyebrow">Alix Learning & Strategy Lab</div>
+              <div class="trading-status" style="margin:6px 0 10px">Saved to your account. Your strategy notes and Alix's strategy plan stay available after reopening the website.</div>
+              <div class="alix-learning-grid">
+                <input id="alixStrategyName" class="text-input" maxlength="100" placeholder="Strategy name">
+                <textarea id="alixStrategyRules" placeholder="Build your rules here: timeframe, entry, confirmation, invalidation, no-trade conditions, indicators…"></textarea>
+                <textarea id="alixStrategyNotes" placeholder="Notes, ideas, observations and things you want Alix to learn about your strategy…"></textarea>
+              </div>
+              <div class="alix-learning-actions">
+                <button id="saveAlixStrategyBtn" class="primary-btn" type="button">Save strategy</button>
+                <button id="refineAlixStrategyBtn" class="btn" type="button">Ask Alix to refine</button>
+                <button id="loadAlixStrategyBtn" class="btn" type="button">Reload saved</button>
+              </div>
+              <div id="alixStrategyStatus" class="trading-status" style="margin-top:8px">Waiting…</div>
+              <div id="alixStrategyPlan" class="alix-learning-plan" style="margin-top:8px">No strategy plan yet.</div>
+            </div>
           </div>
           <div class="trading-card glass">
             <div class="trading-grid">
@@ -4552,6 +4569,9 @@ input,textarea{caret-color:var(--pink-dark);}
     const TRADING_DATA_ENDPOINT = `${TRADING_API_BASE}/api/market-data`;
     const TRADING_AI_ENDPOINT = `${TRADING_API_BASE}/api/trading-analysis`;
     const ALIX_CHAT_ENDPOINT = `${TRADING_API_BASE}/api/alix-chat`;
+    const ALIX_CHAT_HISTORY_ENDPOINT = `${TRADING_API_BASE}/api/alix-chat/history`;
+    const ALIX_LEARNING_ENDPOINT = `${TRADING_API_BASE}/api/alix-learning/state`;
+    const ALIX_STRATEGY_ENDPOINT = `${TRADING_API_BASE}/api/alix-strategy`;
     let latestTradingMarket = null;
     let latestTradingResult = null;
     let alixHistory = [];
@@ -4639,6 +4659,7 @@ input,textarea{caret-color:var(--pink-dark);}
           ["Adaptive weights",weightText || "Starting weights"]
         ].map(([label,value])=>`<div class="indicator-row"><span>${escapeText(label)}</span><span class="indicator-value">${escapeText(value)}</span></div>`).join("");
       } catch(error) {
+        $("tradingLearningInfo").textContent="Learning service is not available yet.";
         $("tradingLearningDetails").innerHTML=`<div class="indicator-row"><span>Learning status</span><span class="indicator-value">${escapeText(error?.message||"Unavailable")}</span></div>`;
       }
     }
@@ -4715,9 +4736,10 @@ input,textarea{caret-color:var(--pink-dark);}
         $("tradingConnectionBadge").textContent = "AI connected";
       } catch (error) {
         console.error("Trading AI error:", error);
-        $("tradingConnectionBadge").textContent = "AI not connected";
+        const healthy = await checkTradingHealth();
+        $("tradingConnectionBadge").textContent = healthy ? "AI connected • analysis error" : "AI not connected";
         $("tradingStatus").textContent = error?.message || "Could not reach the AI backend.";
-        tradingSetResult("SKIP", "No AI result was accepted because the market-data or AI service was unavailable.");
+        tradingSetResult("ERROR", healthy ? "The AI service is connected, but this analysis request failed. Try Analyze again." : "The AI service could not be reached.");
       } finally {
         button.disabled = false;
       }
@@ -4730,6 +4752,38 @@ input,textarea{caret-color:var(--pink-dark);}
       $("alixMessages").appendChild(el);
       $("alixMessages").scrollTop = $("alixMessages").scrollHeight;
     }
+    async function loadAlixHistory() {
+      const auth=getTradingAuth(); if(!auth?.currentUser) return;
+      try {
+        const response=await fetch(`${ALIX_CHAT_HISTORY_ENDPOINT}?limit=80`,{headers:await tradingAuthHeaders(),cache:"no-store"});
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error(data?.error||`Chat history HTTP ${response.status}`);
+        alixHistory=[];
+        $("alixMessages").innerHTML="";
+        for(const item of (Array.isArray(data.messages)?data.messages:[])){
+          const who=item.role==="assistant"?"ai":"user"; addAlixMessage(String(item.content||""),who); alixHistory.push({role:item.role==="assistant"?"assistant":"user",content:String(item.content||"")});
+        }
+        alixHistory=alixHistory.slice(-12);
+        if(!alixHistory.length) addAlixMessage("Hey! I'm Alix. Ask me about the current setup, indicators, market structure, or your saved strategy.","ai");
+      } catch(error) {
+        if(!$("alixMessages").children.length) addAlixMessage("Chat history could not be loaded yet. New messages will still work.","ai");
+      }
+    }
+
+    async function loadAlixLearningState() {
+      const auth=getTradingAuth(); if(!auth?.currentUser) return;
+      try {
+        const r=await fetch(ALIX_LEARNING_ENDPOINT,{headers:await tradingAuthHeaders(),cache:"no-store"}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||"Could not load saved strategy.");
+        $("alixStrategyName").value=d.strategyName||"My Alix Strategy"; $("alixStrategyRules").value=d.rules||""; $("alixStrategyNotes").value=d.notes||""; $("alixStrategyPlan").textContent=d.strategyPlan||"No strategy plan yet."; $("alixStrategyStatus").textContent="Saved strategy loaded.";
+      } catch(error){ $("alixStrategyStatus").textContent=error.message||"Could not load saved strategy."; }
+    }
+    async function saveAlixLearningState(){
+      try { const r=await fetch(ALIX_LEARNING_ENDPOINT,{method:"POST",headers:await tradingAuthHeaders(),body:JSON.stringify({strategyName:$("alixStrategyName").value,rules:$("alixStrategyRules").value,notes:$("alixStrategyNotes").value})}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||`Save failed (HTTP ${r.status})`); $("alixStrategyStatus").textContent="Strategy saved successfully."; } catch(error){ $("alixStrategyStatus").textContent=error.message||"Could not save strategy."; }
+    }
+    async function refineAlixStrategy(){
+      try { $("refineAlixStrategyBtn").disabled=true; $("alixStrategyStatus").textContent="Alix is building a strategy plan…"; const r=await fetch(ALIX_STRATEGY_ENDPOINT,{method:"POST",headers:await tradingAuthHeaders(),body:JSON.stringify({request:$("alixStrategyNotes").value||"Refine this strategy using my rules and current notes.",current:{strategyName:$("alixStrategyName").value,rules:$("alixStrategyRules").value,notes:$("alixStrategyNotes").value}})}); const d=await r.json().catch(()=>({})); if(!r.ok) throw new Error(d.error||`Strategy builder failed (HTTP ${r.status})`); $("alixStrategyPlan").textContent=d.strategy||"No plan returned."; $("alixStrategyStatus").textContent="Alix updated the strategy plan and saved it."; } catch(error){ $("alixStrategyStatus").textContent=error.message||"Could not build strategy."; } finally { $("refineAlixStrategyBtn").disabled=false; }
+    }
+
     function openAlix() { $("alixOverlay").classList.add("open"); $("alixOverlay").setAttribute("aria-hidden", "false"); setTimeout(() => $("alixInput")?.focus(), 60); }
     function closeAlix() { $("alixOverlay").classList.remove("open"); $("alixOverlay").setAttribute("aria-hidden", "true"); }
 
@@ -4765,6 +4819,10 @@ input,textarea{caret-color:var(--pink-dark);}
 
     $("tradingAnalyzeBtn")?.addEventListener("click", analyzeTradingSetup);
     $("openAlixBtn")?.addEventListener("click", openAlix);
+    $("openAlixLearningBtn")?.addEventListener("click", ()=>{ $("alixLearningPanel")?.classList.toggle("open"); loadAlixLearningState(); });
+    $("saveAlixStrategyBtn")?.addEventListener("click", saveAlixLearningState);
+    $("refineAlixStrategyBtn")?.addEventListener("click", refineAlixStrategy);
+    $("loadAlixStrategyBtn")?.addEventListener("click", loadAlixLearningState);
     $("closeAlixBtn")?.addEventListener("click", closeAlix);
     $("alixOverlay")?.addEventListener("click", event => { if (event.target === $("alixOverlay")) closeAlix(); });
     $("alixForm")?.addEventListener("submit", event => { event.preventDefault(); sendAlixMessage(); });
@@ -4783,7 +4841,9 @@ input,textarea{caret-color:var(--pink-dark);}
     tradingUpdateSnapshot();
     tradingUpdateStrategyInfo();
     checkTradingHealth();
-    setInterval(() => { if (document.visibilityState === "visible") refreshTradingLearning(); }, 30000);
+    loadAlixHistory();
+    loadAlixLearningState();
+    setInterval(() => { if (document.visibilityState === "visible") { refreshTradingLearning(); checkTradingHealth(); } }, 30000);
 </script>
 <!--
   MAINTAINABILITY NOTES — THE LINES BELOW DOCUMENT THE POLISH LAYER.
