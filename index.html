@@ -972,7 +972,7 @@
   .indicator-row { display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid rgba(120,120,120,.12); font-size:13px; }
   .indicator-row:last-child { border-bottom:0; }
   .indicator-value { font-weight:700; text-align:right; }
-  .learning-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.learning-stat{padding:10px 11px;border:1px solid rgba(120,120,120,.12);border-radius:16px;background:rgba(120,120,120,.06)}.learning-stat span{display:block;font-size:10px;opacity:.65}.learning-stat strong{display:block;margin-top:4px;font-size:14px}.learning-strategy-input{width:100%;box-sizing:border-box;min-height:160px;resize:vertical;border:1px solid rgba(120,120,120,.18);border-radius:18px;padding:12px;background:rgba(255,255,255,.72);line-height:1.5}.alix-learning-plan{white-space:pre-wrap;font-size:12px;line-height:1.55;opacity:.86;padding:12px;border-radius:16px;background:rgba(120,120,120,.06)}@media (max-width:520px){.learning-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.learning-strategy-input{min-height:140px;}}
+  .learning-status-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}.scanner-results{display:grid;gap:8px;margin-top:10px}.scanner-row{display:grid;grid-template-columns:1.2fr .8fr .8fr .8fr;gap:8px;align-items:center;padding:11px;border:1px solid rgba(120,120,120,.12);border-radius:15px;background:rgba(120,120,120,.05)}.scanner-pair{font-weight:800}.scanner-signal{font-weight:900;text-align:center;border-radius:10px;padding:6px}.scanner-signal.call{background:rgba(50,180,110,.14);color:#16834d}.scanner-signal.put{background:rgba(220,80,100,.14);color:#b62d48}.scanner-signal.skip{background:rgba(120,120,120,.10);color:#777}.scanner-confidence{text-align:right;font-weight:800}.scanner-meta{font-size:10px;opacity:.66}.scanner-empty{padding:12px;text-align:center;opacity:.7}.scanner-running{animation:pulse 1.2s infinite}@keyframes pulse{50%{opacity:.45}}@media(max-width:560px){.scanner-row{grid-template-columns:1fr .75fr .75fr}.scanner-meta{grid-column:1/-1}}.learning-stat{padding:10px 11px;border:1px solid rgba(120,120,120,.12);border-radius:16px;background:rgba(120,120,120,.06)}.learning-stat span{display:block;font-size:10px;opacity:.65}.learning-stat strong{display:block;margin-top:4px;font-size:14px}.learning-strategy-input{width:100%;box-sizing:border-box;min-height:160px;resize:vertical;border:1px solid rgba(120,120,120,.18);border-radius:18px;padding:12px;background:rgba(255,255,255,.72);line-height:1.5}.alix-learning-plan{white-space:pre-wrap;font-size:12px;line-height:1.55;opacity:.86;padding:12px;border-radius:16px;background:rgba(120,120,120,.06)}@media (max-width:520px){.learning-status-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.learning-strategy-input{min-height:140px;}}
   @media (max-width:520px) { .trading-grid { grid-template-columns:1fr; } }
 
     /* ALIX + AUTO MARKET ANALYSIS */
@@ -1932,7 +1932,7 @@ input,textarea{caret-color:var(--pink-dark);}
         <div class="container trading-shell">
           <div class="trading-card glass">
             <div class="trading-title-row"><div><div class="eyebrow">AI market analysis</div><h2 style="font-size:26px">Trading Lab</h2></div><span id="tradingConnectionBadge" class="trading-badge">AI not connected</span></div>
-            <p class="trading-help">Select a normal market pair and timeframe. Alix automatically gets recent candles and calculates the indicators before analysis.</p>
+            <p class="trading-help">Select a normal market pair and timeframe. Alix automatically gets recent candles, calculates your full indicator set, and combines all signals instead of requiring one indicator to cross a specific level.</p>
             <div class="alix-launch-row"><button id="openAlixBtn" class="primary-btn alix-launch-btn" type="button">💬 Chat with Alix</button></div>
             <div class="trading-status" style="margin-top:8px">Automatic learning runs in the separate Learning tab. It learns from completed analysis outcomes and your saved strategy.</div>
             <div class="trading-grid">
@@ -1942,6 +1942,16 @@ input,textarea{caret-color:var(--pink-dark);}
             <div class="alix-launch-row"><button id="tradingAnalyzeBtn" class="primary-btn alix-launch-btn" type="button">Analyze current market</button><button id="tradingClearBtn" class="btn" type="button">Reset</button></div>
             <div id="tradingStatus" class="trading-status" aria-live="polite" style="margin-top:10px">Sign in first. Your existing authentication remains unchanged.</div>
             <div class="trading-live-note">Automatic analysis uses a live market-data provider. It does not read the Pocket Option chart itself and it never places trades.</div>
+          </div>
+          <div class="trading-card glass">
+            <div class="trading-title-row"><div><div class="eyebrow">multi-pair scanner</div><h3 style="font-size:20px;margin:4px 0">Scan all pairs</h3></div><span id="scannerStatus" class="trading-badge">Ready</span></div>
+            <p class="trading-help">Choose one timeframe. Alix analyzes all supported pairs together and shows the strongest CALL/PUT setups first.</p>
+            <div class="trading-grid">
+              <div class="trading-field"><label for="scannerTimeframe">Scanner timeframe</label><select id="scannerTimeframe"><option value="1m" selected>1 minute</option><option value="5m">5 minutes</option><option value="15m">15 minutes</option><option value="30m">30 minutes</option><option value="1h">1 hour</option><option value="4h">4 hours</option><option value="1d">1 day</option></select></div>
+              <div class="trading-field"><label for="scannerMinConfidence">Minimum confidence</label><select id="scannerMinConfidence"><option value="50">50%</option><option value="60" selected>60%</option><option value="70">70%</option><option value="80">80%</option></select></div>
+            </div>
+            <div class="alix-launch-row" style="margin-top:10px"><button id="scanAllPairsBtn" class="primary-btn alix-launch-btn" type="button">🔎 Analyze all pairs</button></div>
+            <div id="scannerResults" class="scanner-results"><div class="scanner-empty">Choose a timeframe and run the scanner.</div></div>
           </div>
           <div class="trading-card glass"><div class="eyebrow">AI result</div><div id="tradingResult" class="trading-result" style="margin-top:10px"><div><div id="tradingSignal" class="trading-signal skip">WAITING</div><div id="tradingReason" class="trading-status">Choose a pair and timeframe, then analyze.</div></div></div><div id="tradingWarnings" class="trading-status" style="margin-top:9px"></div></div>
           <div class="trading-card glass"><div class="eyebrow">Automatic indicator snapshot</div><div id="tradingIndicators" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Market data</span><span class="indicator-value">Waiting</span></div></div></div>
@@ -4674,6 +4684,31 @@ input,textarea{caret-color:var(--pink-dark);}
       return { "Content-Type": "application/json", "Authorization": `Bearer ${await user.getIdToken()}` };
     }
 
+    const TRADING_SCAN_ENDPOINT = `${TRADING_API_BASE}/api/trading-scan`;
+
+    function renderScannerResults(results, minConfidence){
+      const box=$('scannerResults'); if(!box) return;
+      const rows=(Array.isArray(results)?results:[]).filter(r=>r.signal==='CALL'||r.signal==='PUT').filter(r=>Number(r.confidence||0)>=minConfidence);
+      if(!rows.length){
+        box.innerHTML='<div class="scanner-empty">No CALL/PUT setup currently clears the selected confidence level. This does not mean every pair is untradeable.</div>';
+        return;
+      }
+      box.innerHTML=rows.map(r=>`<div class="scanner-row"><div><div class="scanner-pair">${escapeText(r.asset)}</div><div class="scanner-meta">${escapeText(r.trend||'—')} • ${escapeText(r.setup||'—')}</div></div><div class="scanner-signal ${r.signal==='CALL'?'call':'put'}">${escapeText(r.signal)}</div><div class="scanner-confidence">${Number(r.confidence||0).toFixed(1)}%</div><div class="scanner-meta">${escapeText(r.reason||'Confluence setup')}</div></div>`).join('');
+    }
+
+    async function scanAllPairs(){
+      const auth=getTradingAuth(); if(!auth?.currentUser){$('scannerStatus').textContent='Sign in first.'; return;}
+      const btn=$('scanAllPairsBtn'); btn.disabled=true; $('scannerStatus').textContent='Scanning…'; $('scannerResults').innerHTML='<div class="scanner-empty scanner-running">Analyzing all supported pairs…</div>';
+      try{
+        const response=await fetch(TRADING_SCAN_ENDPOINT,{method:'POST',headers:await tradingAuthHeaders(),body:JSON.stringify({timeframe:$('scannerTimeframe').value})});
+        const data=await response.json().catch(()=>({})); if(!response.ok) throw new Error(data.error||`Scanner returned HTTP ${response.status}.`);
+        const min=Number($('scannerMinConfidence').value||60); renderScannerResults(data.results,min);
+        const good=(data.results||[]).filter(r=>(r.signal==='CALL'||r.signal==='PUT')&&Number(r.confidence||0)>=min).length;
+        $('scannerStatus').textContent=`${data.pairsAnalyzed||0} pairs checked • ${good} qualifying setup${good===1?'':'s'}`;
+      }catch(e){$('scannerStatus').textContent='Scanner error'; $('scannerResults').innerHTML=`<div class="scanner-empty">${escapeText(e?.message||'Could not scan pairs.')}</div>`;}
+      finally{btn.disabled=false;}
+    }
+
     async function loadAutomaticMarketData() {
       const response = await fetch(TRADING_DATA_ENDPOINT, {
         method: "POST",
@@ -4715,7 +4750,7 @@ input,textarea{caret-color:var(--pink-dark);}
         latestTradingResult = data;
         const signal = String(data?.signal || "SKIP").toUpperCase();
         const finalSignal = ["CALL", "PUT", "SKIP"].includes(signal) ? signal : "SKIP";
-        tradingSetResult(finalSignal, data?.reason || "The AI returned no explanation.");
+        tradingSetResult(finalSignal, `${data?.reason || "The AI returned no explanation."} • Confidence ${Number(data?.confidence || 0).toFixed(1)}%`);
         $("tradingWarnings").textContent = Array.isArray(data?.warnings) && data.warnings.length ? "Warnings: " + data.warnings.join(" • ") : "";
         if (data?.learning) {
           $("tradingLearningInfo").textContent = `Adaptive model • ${Number(data.learning.total||0)} analyses • ${Number(data.learning.evaluated||0)} evaluated • ${Number(data.learning.wins||0)} wins • ${Number(data.learning.losses||0)} losses • learned weights update from observed outcomes.`;
@@ -4808,6 +4843,9 @@ input,textarea{caret-color:var(--pink-dark);}
     }
 
     $("tradingAnalyzeBtn")?.addEventListener("click", analyzeTradingSetup);
+    $("scanAllPairsBtn")?.addEventListener("click", scanAllPairs);
+    $("scannerMinConfidence")?.addEventListener("change",()=>scanAllPairs());
+    $("scannerTimeframe")?.addEventListener("change",()=>{ if(document.visibilityState === "visible") scanAllPairs(); });
     $("openAlixBtn")?.addEventListener("click", openAlix);
     $("saveLearningStrategyBtn")?.addEventListener("click",saveLearningStrategy);
     $("reloadLearningStrategyBtn")?.addEventListener("click",refreshLearningScreen);
