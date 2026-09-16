@@ -4564,6 +4564,19 @@ input,textarea{caret-color:var(--pink-dark);}
       reasonEl.textContent = reason || "No analysis yet.";
     }
 
+    async function checkTradingAIHealth() {
+      try {
+        const response = await fetch(`${TRADING_API_BASE}/health`, { method: "GET", cache: "no-store" });
+        const data = await response.json().catch(() => ({}));
+        const connected = response.ok && data?.ok === true && data?.geminiConfigured === true && data?.marketDataConfigured === true;
+        $("tradingConnectionBadge").textContent = connected ? "AI connected" : "AI not connected";
+        return connected;
+      } catch (_) {
+        $("tradingConnectionBadge").textContent = "AI not connected";
+        return false;
+      }
+    }
+
     function formatIndicator(value, digits = 5) {
       if (value === null || value === undefined || !Number.isFinite(Number(value))) return "—";
       return Number(value).toFixed(digits).replace(/0+$/, "").replace(/\.$/, "");
@@ -4650,7 +4663,7 @@ input,textarea{caret-color:var(--pink-dark);}
         console.error("Trading AI error:", error);
         $("tradingConnectionBadge").textContent = "AI not connected";
         $("tradingStatus").textContent = error?.message || "Could not reach the AI backend.";
-        tradingSetResult("SKIP", "No AI result was accepted because the market-data or AI service was unavailable.");
+        tradingSetResult("SKIP", error?.message || "No AI result was accepted because the market-data or AI service was unavailable.");
       } finally {
         button.disabled = false;
       }
@@ -4707,6 +4720,7 @@ input,textarea{caret-color:var(--pink-dark);}
       $("tradingWarnings").textContent = ""; $("tradingDataInfo").textContent = "No market data loaded yet.";
       tradingSetResult("WAITING", "Choose a pair and timeframe, then analyze."); $("tradingStatus").textContent = "Ready for new market data.";
       $("tradingConnectionBadge").textContent = "AI not connected";
+      checkTradingAIHealth();
     });
     tradingUpdateSnapshot();
 </script>
