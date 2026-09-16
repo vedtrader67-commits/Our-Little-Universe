@@ -1945,7 +1945,8 @@ input,textarea{caret-color:var(--pink-dark);}
           </div>
           <div class="trading-card glass"><div class="eyebrow">AI result</div><div id="tradingResult" class="trading-result" style="margin-top:10px"><div><div id="tradingSignal" class="trading-signal skip">WAITING</div><div id="tradingReason" class="trading-status">Choose a pair and timeframe, then analyze.</div></div></div><div id="tradingWarnings" class="trading-status" style="margin-top:9px"></div></div>
           <div class="trading-card glass"><div class="eyebrow">Automatic indicator snapshot</div><div id="tradingIndicators" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Market data</span><span class="indicator-value">Waiting</span></div></div></div>
-          <div class="trading-card glass"><div class="eyebrow">Adaptive learning</div><div id="tradingLearningInfo" class="trading-status" style="margin-top:8px">Alix learns from completed analysis outcomes for each pair and timeframe.</div></div><div class="trading-card glass"><div class="eyebrow">Data source</div><div id="tradingDataInfo" class="trading-status" style="margin-top:8px">No market data loaded yet.</div></div>
+          <div class="trading-card glass"><div class="eyebrow">Advanced strategy engine</div><div id="tradingStrategyInfo" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Strategy layer</span><span class="indicator-value">Waiting</span></div></div><div class="trading-status" style="margin-top:9px;font-size:11px;line-height:1.5">Bollinger 5/2 • Fractal 2 • RSI 5 • Stochastic 5/3/3 SMA • 80/20 re-entry • trend and candle confirmation. These are analytical signals, not guarantees.</div></div>
+          <div class="trading-card glass"><div class="eyebrow">Adaptive learning dashboard</div><div id="tradingLearningInfo" class="trading-status" style="margin-top:8px">Alix learns from completed analysis outcomes for each pair and timeframe.</div><div class="row wrap" style="margin-top:10px"><button id="tradingLearningRefreshBtn" class="btn" type="button">Refresh learning</button></div><div id="tradingLearningDetails" class="indicator-list" style="margin-top:8px"><div class="indicator-row"><span>Learning status</span><span class="indicator-value">Waiting</span></div></div></div><div class="trading-card glass"><div class="eyebrow">Data source</div><div id="tradingDataInfo" class="trading-status" style="margin-top:8px">No market data loaded yet.</div></div>
         </div>
       </section>
       <div id="alixOverlay" class="alix-overlay" aria-hidden="true"><div class="alix-panel" role="dialog" aria-modal="true" aria-label="Chat with Alix"><div class="alix-head"><div><div class="alix-title">✨ Alix</div><div class="alix-sub">Live AI trading assistant</div></div><button id="closeAlixBtn" class="alix-close" type="button" aria-label="Close Alix">×</button></div><div id="alixMessages" class="alix-messages"><div class="alix-msg ai">Hey! I'm Alix. Ask me about the current setup, indicators, market structure, or why an analysis returned CALL, PUT, or SKIP.</div></div><form id="alixForm" class="alix-composer"><textarea id="alixInput" class="alix-input" rows="1" maxlength="2000" placeholder="Ask Alix anything about the market…"></textarea><button id="alixSendBtn" class="alix-send" type="submit">➤</button></form></div></div>
@@ -4564,19 +4565,6 @@ input,textarea{caret-color:var(--pink-dark);}
       reasonEl.textContent = reason || "No analysis yet.";
     }
 
-    async function checkTradingAIHealth() {
-      try {
-        const response = await fetch(`${TRADING_API_BASE}/health`, { method: "GET", cache: "no-store" });
-        const data = await response.json().catch(() => ({}));
-        const connected = response.ok && data?.ok === true && data?.geminiConfigured === true && data?.marketDataConfigured === true;
-        $("tradingConnectionBadge").textContent = connected ? "AI connected" : "AI not connected";
-        return connected;
-      } catch (_) {
-        $("tradingConnectionBadge").textContent = "AI not connected";
-        return false;
-      }
-    }
-
     function formatIndicator(value, digits = 5) {
       if (value === null || value === undefined || !Number.isFinite(Number(value))) return "—";
       return Number(value).toFixed(digits).replace(/0+$/, "").replace(/\.$/, "");
@@ -4594,8 +4582,12 @@ input,textarea{caret-color:var(--pink-dark);}
         ["MACD", `${formatIndicator(indicators.macd, 6)} (${indicators.macdTrend || "—"})`],
         ["ADX 14", formatIndicator(indicators.adx14, 2)],
         ["ATR 14", formatIndicator(indicators.atr14)],
-        ["Stochastic", `${formatIndicator(indicators.stochK, 2)} / ${formatIndicator(indicators.stochD, 2)}`],
-        ["Bollinger", `${formatIndicator(indicators.bbLower)} — ${formatIndicator(indicators.bbUpper)}`],
+        ["Stochastic 14", `${formatIndicator(indicators.stochK, 2)} / ${formatIndicator(indicators.stochD, 2)}`],
+        ["Stochastic 5/3/3", `${formatIndicator(indicators.stoch533K, 2)} / ${formatIndicator(indicators.stoch533D, 2)}`],
+        ["Bollinger 20/2", `${formatIndicator(indicators.bbLower)} — ${formatIndicator(indicators.bbUpper)}`],
+        ["Bollinger 5/2", `${formatIndicator(indicators.bb5Lower)} — ${formatIndicator(indicators.bb5Upper)}`],
+        ["RSI 5", formatIndicator(indicators.rsi5, 2)],
+        ["Fractal 2", `${formatIndicator(indicators.fractal2LatestLow)} / ${formatIndicator(indicators.fractal2LatestHigh)}`],
         ["CCI 20", formatIndicator(indicators.cci20, 2)],
         ["Williams %R", formatIndicator(indicators.williamsR, 2)],
         ["ROC 12", formatIndicator(indicators.roc12, 2) + "%"],
@@ -4603,6 +4595,65 @@ input,textarea{caret-color:var(--pink-dark);}
         ["Candle pattern", indicators.candlePattern || "—"]
       ];
       $("tradingIndicators").innerHTML = rows.map(([label, value]) => `<div class="indicator-row"><span>${escapeText(label)}</span><span class="indicator-value">${escapeText(value)}</span></div>`).join("");
+    }
+
+    function tradingUpdateStrategyInfo(indicators = latestTradingMarket?.indicators) {
+      const el = $("tradingStrategyInfo");
+      if (!el) return;
+      if (!indicators) {
+        el.innerHTML = '<div class="indicator-row"><span>Strategy layer</span><span class="indicator-value">Waiting</span></div>';
+        return;
+      }
+      const s = indicators.strategySignals || {};
+      const rows = [
+        ["Stoch %K re-entry below 80", s.stoch5ReentryBelow80 ? "BEARISH TRIGGER" : "No"],
+        ["Stoch %K re-entry above 20", s.stoch5ReentryAbove20 ? "BULLISH TRIGGER" : "No"],
+        ["Stoch %K/%D bullish cross", s.stoch5BullishCross ? "YES" : "No"],
+        ["Stoch %K/%D bearish cross", s.stoch5BearishCross ? "YES" : "No"],
+        ["Bollinger 5 lower touch", s.bollinger5LowerTouch ? "YES" : "No"],
+        ["Bollinger 5 upper touch", s.bollinger5UpperTouch ? "YES" : "No"],
+        ["RSI 5 zone", Number.isFinite(Number(indicators.rsi5)) ? (Number(indicators.rsi5) <= 30 ? "OVERSOLD" : Number(indicators.rsi5) >= 70 ? "OVERBOUGHT" : "NEUTRAL") : "—"],
+        ["Fractal 2", s.fractalBullish ? "BULLISH LOW" : s.fractalBearish ? "BEARISH HIGH" : "No recent signal"]
+      ];
+      el.innerHTML = rows.map(([label,value]) => `<div class="indicator-row"><span>${escapeText(label)}</span><span class="indicator-value">${escapeText(value)}</span></div>`).join("");
+    }
+
+    async function refreshTradingLearning() {
+      const auth=getTradingAuth();
+      if(!auth?.currentUser) return;
+      try {
+        const asset=encodeURIComponent($("tradingAsset").value);
+        const timeframe=encodeURIComponent($("tradingTimeframe").value);
+        const response=await fetch(`${TRADING_API_BASE}/api/trading-learning?asset=${asset}&timeframe=${timeframe}`,{headers:await tradingAuthHeaders()});
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error(data?.error || `Learning server returned HTTP ${response.status}.`);
+        const evaluated=Number(data.evaluated||0), wins=Number(data.wins||0), losses=Number(data.losses||0), ties=Number(data.ties||0);
+        const accuracy=(wins+losses)>0 ? ((wins/(wins+losses))*100).toFixed(1)+"%" : "Waiting for evaluated outcomes";
+        $("tradingLearningInfo").textContent=`${data.asset} • ${data.timeframe} • ${Number(data.total||0)} analyses recorded • ${evaluated} evaluated • ${wins} wins • ${losses} losses • ${ties} ties • ${Number(data.pending||0)} pending`;
+        const w=data.weights||{};
+        const weightText=Object.entries(w).map(([k,v])=>`${k}:${Number(v).toFixed(2)}`).join(" • ");
+        $("tradingLearningDetails").innerHTML=[
+          ["Current directional accuracy",accuracy],
+          ["Learning horizon",`${Number(data.horizonBars||3)} candles`],
+          ["Pending evaluations",String(data.pending||0)],
+          ["Adaptive weights",weightText || "Starting weights"]
+        ].map(([label,value])=>`<div class="indicator-row"><span>${escapeText(label)}</span><span class="indicator-value">${escapeText(value)}</span></div>`).join("");
+      } catch(error) {
+        $("tradingLearningDetails").innerHTML=`<div class="indicator-row"><span>Learning status</span><span class="indicator-value">${escapeText(error?.message||"Unavailable")}</span></div>`;
+      }
+    }
+
+    async function checkTradingHealth() {
+      try {
+        const response=await fetch(`${TRADING_API_BASE}/health`,{cache:"no-store"});
+        const data=await response.json().catch(()=>({}));
+        const connected=Boolean(response.ok&&data.ok&&data.marketDataConfigured&&data.geminiConfigured);
+        $("tradingConnectionBadge").textContent=connected?"AI connected":"AI not connected";
+        return connected;
+      } catch(_) {
+        $("tradingConnectionBadge").textContent="AI not connected";
+        return false;
+      }
     }
 
     async function tradingAuthHeaders() {
@@ -4641,6 +4692,7 @@ input,textarea{caret-color:var(--pink-dark);}
         const market = await loadAutomaticMarketData();
         latestTradingMarket = market;
         tradingUpdateSnapshot(market.indicators);
+        tradingUpdateStrategyInfo(market.indicators);
         $("tradingDataInfo").textContent = `${market.asset} • ${market.timeframeLabel} • ${market.candles.length} candles • source: ${market.source || "market data provider"}`;
         const response = await fetch(TRADING_AI_ENDPOINT, {
           method: "POST",
@@ -4655,15 +4707,17 @@ input,textarea{caret-color:var(--pink-dark);}
         tradingSetResult(finalSignal, data?.reason || "The AI returned no explanation.");
         $("tradingWarnings").textContent = Array.isArray(data?.warnings) && data.warnings.length ? "Warnings: " + data.warnings.join(" • ") : "";
         if (data?.learning) {
-          $("tradingLearningInfo").textContent = `Adaptive model • ${Number(data.learning.total||0)} completed analyses • ${Number(data.learning.wins||0)} wins • ${Number(data.learning.losses||0)} losses • it adjusts signal weighting from observed outcomes.`;
+          $("tradingLearningInfo").textContent = `Adaptive model • ${Number(data.learning.total||0)} analyses • ${Number(data.learning.evaluated||0)} evaluated • ${Number(data.learning.wins||0)} wins • ${Number(data.learning.losses||0)} losses • learned weights update from observed outcomes.`;
         }
+        await refreshTradingLearning();
+        await checkTradingHealth();
         $("tradingStatus").textContent = `Analysis received • confidence ${Number(data?.confidence || 0)}% • informational only.`;
         $("tradingConnectionBadge").textContent = "AI connected";
       } catch (error) {
         console.error("Trading AI error:", error);
         $("tradingConnectionBadge").textContent = "AI not connected";
         $("tradingStatus").textContent = error?.message || "Could not reach the AI backend.";
-        tradingSetResult("SKIP", error?.message || "No AI result was accepted because the market-data or AI service was unavailable.");
+        tradingSetResult("SKIP", "No AI result was accepted because the market-data or AI service was unavailable.");
       } finally {
         button.disabled = false;
       }
@@ -4719,10 +4773,17 @@ input,textarea{caret-color:var(--pink-dark);}
       latestTradingMarket = null; latestTradingResult = null; tradingUpdateSnapshot();
       $("tradingWarnings").textContent = ""; $("tradingDataInfo").textContent = "No market data loaded yet.";
       tradingSetResult("WAITING", "Choose a pair and timeframe, then analyze."); $("tradingStatus").textContent = "Ready for new market data.";
+      tradingUpdateStrategyInfo();
       $("tradingConnectionBadge").textContent = "AI not connected";
-      checkTradingAIHealth();
+      setTimeout(checkTradingHealth, 0);
     });
+    $("tradingLearningRefreshBtn")?.addEventListener("click", refreshTradingLearning);
+    $("tradingAsset")?.addEventListener("change", refreshTradingLearning);
+    $("tradingTimeframe")?.addEventListener("change", refreshTradingLearning);
     tradingUpdateSnapshot();
+    tradingUpdateStrategyInfo();
+    checkTradingHealth();
+    setInterval(() => { if (document.visibilityState === "visible") refreshTradingLearning(); }, 30000);
 </script>
 <!--
   MAINTAINABILITY NOTES — THE LINES BELOW DOCUMENT THE POLISH LAYER.
