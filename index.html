@@ -1,354 +1,406 @@
+
 <!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#06101f">
-<meta name="description" content="Professional trading journal and payout calculator with Firebase sync.">
+<meta name="theme-color" content="#040b16">
+<meta name="description" content="TradePulse — professional trading journal, payout calculator and performance analytics.">
 <title>TradePulse — Trading Journal</title>
 <style>
 :root{
-  --bg:#040812;--bg2:#06101f;--panel:rgba(9,19,35,.78);--panel2:rgba(12,25,46,.74);
-  --line:rgba(110,170,255,.16);--line2:rgba(110,170,255,.27);--text:#ecf5ff;--muted:#8ca2bd;
-  --blue:#49a6ff;--blue2:#77c6ff;--cyan:#37e6ff;--green:#39e58c;--red:#ff5470;--amber:#ffc857;
-  --shadow:0 18px 60px rgba(0,0,0,.34);--radius:18px;--radius2:12px;
+  --bg:#030811;--bg2:#061221;--panel:rgba(8,18,34,.88);--panel2:rgba(10,25,46,.78);
+  --line:rgba(93,165,255,.17);--line2:rgba(93,165,255,.34);--line3:rgba(55,230,255,.28);
+  --text:#eff7ff;--muted:#8da3bc;--blue:#4da9ff;--cyan:#37e9ff;--green:#39e58c;--red:#ff5672;--amber:#ffc857;
+  --shadow:0 24px 80px rgba(0,0,0,.38);--radius:20px;--radius2:13px;
   --font:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box}
-html{color-scheme:dark;background:var(--bg)}
-body{margin:0;background:
- radial-gradient(circle at 12% 8%,rgba(73,166,255,.12),transparent 28rem),
- radial-gradient(circle at 90% 18%,rgba(55,230,255,.08),transparent 24rem),
- linear-gradient(180deg,#030711 0%,#06101e 58%,#040812 100%);
- color:var(--text);font-family:var(--font);min-height:100vh;overflow-x:hidden}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-button:disabled{cursor:not-allowed;opacity:.45}
-.app-shell{width:min(1480px,calc(100% - 28px));margin:0 auto;padding:18px 0 40px}
-.glass{background:linear-gradient(180deg,rgba(12,27,48,.82),rgba(7,16,30,.74));border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(15px);-webkit-backdrop-filter:blur(15px)}
-.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:14px;padding:14px 16px;border-radius:20px;position:sticky;top:10px;z-index:20}
-.brand{display:flex;align-items:center;gap:12px;min-width:0}.brand-mark{width:42px;height:42px;border-radius:13px;display:grid;place-items:center;border:1px solid rgba(73,166,255,.5);background:linear-gradient(145deg,rgba(73,166,255,.19),rgba(55,230,255,.05));box-shadow:0 0 26px rgba(73,166,255,.18)}
-.brand-mark::before{content:"";width:16px;height:16px;border:2px solid var(--cyan);border-right-color:transparent;border-radius:50%}.brand-copy{min-width:0}.brand-title{font-size:17px;font-weight:800;letter-spacing:.02em}.brand-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.userbar{display:flex;align-items:center;gap:10px;min-width:0}.pill{padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(5,13,24,.55);font-size:12px;color:var(--muted);display:flex;align-items:center;gap:7px;max-width:270px}.dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px rgba(255,200,87,.5)}.dot.online{background:var(--green);box-shadow:0 0 10px rgba(57,229,140,.55)}.dot.offline{background:var(--red);box-shadow:0 0 10px rgba(255,84,112,.5)}
-.btn{min-height:42px;border-radius:12px;border:1px solid var(--line2);padding:0 14px;color:var(--text);background:rgba(10,22,40,.76);transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease,background .12s ease;touch-action:manipulation}.btn:hover{border-color:rgba(73,166,255,.6);box-shadow:0 0 20px rgba(73,166,255,.12)}.btn:active{transform:translateY(1px)}.btn.primary{background:linear-gradient(145deg,rgba(73,166,255,.25),rgba(55,230,255,.09));border-color:rgba(73,166,255,.55);box-shadow:0 0 24px rgba(73,166,255,.14)}.btn.danger{border-color:rgba(255,84,112,.35);background:rgba(255,84,112,.05)}.btn.small{min-height:34px;padding:0 10px;font-size:12px;border-radius:9px}.btn.icon{width:42px;padding:0;display:grid;place-items:center}
-.auth-screen{min-height:calc(100vh - 90px);display:grid;place-items:center;padding:30px 0}.auth-card{width:min(480px,100%);border-radius:24px;padding:28px}.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);font-weight:800}.auth-title{font-size:32px;margin:8px 0 8px}.auth-note{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:22px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;background:rgba(4,11,21,.7);border:1px solid var(--line);border-radius:12px;margin-bottom:16px}.tab{border:0;border-radius:9px;min-height:38px;background:transparent;color:var(--muted)}.tab.active{background:rgba(73,166,255,.12);color:var(--text);box-shadow:inset 0 0 0 1px rgba(73,166,255,.25)}
-.field{display:grid;gap:7px}.field+ .field{margin-top:13px}.label{font-size:12px;color:#a8bbd0;font-weight:700}.input,.select,.textarea{width:100%;min-height:44px;background:rgba(2,8,17,.76);border:1px solid var(--line);border-radius:11px;padding:10px 12px;color:var(--text);outline:none}.textarea{min-height:92px;resize:vertical}.input:focus,.select:focus,.textarea:focus{border-color:rgba(73,166,255,.72);box-shadow:0 0 0 3px rgba(73,166,255,.08),0 0 18px rgba(73,166,255,.1)}.auth-actions{display:flex;gap:9px;margin-top:18px;flex-wrap:wrap}.status-box{margin-top:14px;font-size:12px;line-height:1.45;color:var(--muted);padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(4,11,20,.55)}
-.hidden{display:none!important}
-.toolbar{display:flex;gap:9px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:14px}.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.section-title{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#9fb2c9;font-weight:800}
-.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}.metric{padding:15px 16px;border-radius:16px;min-width:0}.metric-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:800}.metric-value{font-size:24px;font-weight:850;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric-meta{font-size:11px;color:var(--muted);margin-top:4px}.positive{color:var(--green)}.negative{color:var(--red)}.neutral{color:var(--text)}
-.grid-main{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(320px,.7fr);gap:14px;margin-top:14px}.card{border-radius:var(--radius);padding:18px}.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}.card-title{font-size:16px;font-weight:800}.card-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.4}
-.trade-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.trade-form .span2{grid-column:span 2}.trade-form .full{grid-column:1/-1}.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:rgba(2,8,16,.72);border:1px solid var(--line);border-radius:12px}.seg button{border:0;background:transparent;color:var(--muted);min-height:38px;border-radius:9px;font-weight:750}.seg button.active.win{background:rgba(57,229,140,.12);color:var(--green);box-shadow:inset 0 0 0 1px rgba(57,229,140,.25)}.seg button.active.loss{background:rgba(255,84,112,.11);color:var(--red);box-shadow:inset 0 0 0 1px rgba(255,84,112,.25)}.preview{padding:12px;border-radius:12px;background:linear-gradient(145deg,rgba(73,166,255,.07),rgba(55,230,255,.025));border:1px solid rgba(73,166,255,.14);display:flex;justify-content:space-between;gap:10px;align-items:center}.preview-main{font-weight:850;font-size:18px}.preview-side{text-align:right;color:var(--muted);font-size:11px;line-height:1.5}
-.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}.mini{padding:12px;border-radius:13px;background:rgba(3,10,19,.6);border:1px solid var(--line)}.mini-l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}.mini-v{font-size:18px;font-weight:800;margin-top:5px}.note{font-size:11px;color:var(--muted);line-height:1.55;margin-top:12px}
-.chart-card{margin-top:14px}.chart-wrap{border-radius:14px;border:1px solid var(--line);background:rgba(2,9,18,.6);padding:10px;overflow:hidden}.chart{width:100%;height:260px;display:block}.chart-grid{stroke:rgba(130,170,220,.11);stroke-width:1}.chart-zero{stroke:rgba(255,255,255,.22);stroke-width:1}.chart-path{fill:none;stroke:var(--cyan);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(55,230,255,.3))}.chart-fill{fill:url(#areaGrad);opacity:.85}.chart-label{fill:#7790ad;font-size:10px}
-.table-card{margin-top:14px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:11px 12px;border-bottom:1px solid rgba(110,170,255,.1);font-size:12px}th{position:sticky;top:0;background:#081527;color:#8ea7c4;text-transform:uppercase;letter-spacing:.06em;font-size:10px;z-index:1}tbody tr:hover{background:rgba(73,166,255,.035)}tbody tr:last-child td{border-bottom:0}.tag{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}.tag.win{background:rgba(57,229,140,.08);color:var(--green);border:1px solid rgba(57,229,140,.18)}.tag.loss{background:rgba(255,84,112,.08);color:var(--red);border:1px solid rgba(255,84,112,.18)}.muted{color:var(--muted)}
-.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.month-list{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.month{padding:11px;border-radius:12px;background:rgba(2,9,17,.55);border:1px solid var(--line);min-width:0}.month-name{font-size:11px;color:var(--muted)}.month-value{font-size:17px;font-weight:800;margin-top:5px}.month-sub{font-size:10px;color:var(--muted);margin-top:2px}
-.settings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.sync-line{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px;border-radius:12px;background:rgba(2,9,17,.56);border:1px solid var(--line)}.sync-title{font-size:12px;font-weight:750}.sync-desc{font-size:11px;color:var(--muted);margin-top:3px}
-.toast-area{position:fixed;right:16px;bottom:16px;display:grid;gap:8px;width:min(360px,calc(100% - 32px));z-index:50}.toast{border:1px solid var(--line2);background:rgba(5,13,24,.94);box-shadow:0 18px 50px rgba(0,0,0,.45);backdrop-filter:blur(12px);border-radius:13px;padding:11px 13px;font-size:12px;line-height:1.45;animation:toastIn .16s ease-out}.toast.good{border-color:rgba(57,229,140,.25)}.toast.bad{border-color:rgba(255,84,112,.25)}@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
-.empty{text-align:center;padding:30px;color:var(--muted);font-size:12px}.footer{margin-top:18px;color:#627892;font-size:11px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.64);display:grid;place-items:center;padding:16px;z-index:60}.modal-card{width:min(560px,100%);border-radius:20px;padding:18px}.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:14px}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:15px}
-@media (max-width:1120px){.metrics{grid-template-columns:repeat(3,1fr)}.grid-main{grid-template-columns:1fr}.bottom-grid{grid-template-columns:1fr}.trade-form{grid-template-columns:repeat(2,minmax(0,1fr))}.trade-form .span2{grid-column:span 2}.settings-grid{grid-template-columns:1fr 1fr}.month-list{grid-template-columns:repeat(4,1fr)}}
-@media (max-width:680px){.app-shell{width:min(100% - 18px,1480px);padding-top:9px}.topbar{top:6px;border-radius:15px;padding:10px}.brand-sub{display:none}.userbar .pill{max-width:130px}.metrics{grid-template-columns:repeat(2,1fr);gap:9px}.metric{padding:13px}.metric-value{font-size:20px}.trade-form{grid-template-columns:1fr}.trade-form .span2,.trade-form .full{grid-column:auto}.kpis{grid-template-columns:1fr 1fr}.settings-grid{grid-template-columns:1fr}.month-list{grid-template-columns:repeat(3,1fr)}.auth-screen{min-height:calc(100vh - 20px)}.auth-card{padding:20px}.auth-title{font-size:27px}}
-@media (prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;transition-duration:.001ms!important}}
+html{color-scheme:dark;background:var(--bg);scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--text);font-family:var(--font);background:
+ radial-gradient(circle at 8% 4%,rgba(77,169,255,.13),transparent 28rem),
+ radial-gradient(circle at 92% 11%,rgba(55,233,255,.075),transparent 24rem),
+ linear-gradient(180deg,#02060d 0%,#06111f 60%,#030811 100%);overflow-x:hidden}
+button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.45}
+button,input,select,textarea{touch-action:manipulation}
+.app-shell{width:min(1500px,calc(100% - 28px));margin:0 auto;padding:14px 0 38px}
+.glass{background:linear-gradient(180deg,rgba(11,27,48,.85),rgba(6,14,27,.78));border:1px solid var(--line);box-shadow:var(--shadow);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;border-radius:20px;position:sticky;top:9px;z-index:30;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}.brand-mark{width:42px;height:42px;flex:0 0 42px;border-radius:13px;border:1px solid rgba(77,169,255,.55);display:grid;place-items:center;background:linear-gradient(145deg,rgba(77,169,255,.18),rgba(55,233,255,.04));box-shadow:0 0 28px rgba(77,169,255,.18);position:relative;overflow:hidden}.brand-mark:before{content:"";width:16px;height:16px;border:2px solid var(--cyan);border-right-color:transparent;border-radius:50%;box-shadow:0 0 14px rgba(55,233,255,.5)}.brand-copy{min-width:0}.brand-title{font-size:17px;font-weight:850;letter-spacing:.02em}.brand-sub{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.userbar{display:flex;align-items:center;gap:9px;min-width:0}.pill{display:flex;align-items:center;gap:7px;max-width:320px;padding:8px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(3,9,18,.6);font-size:12px;color:var(--muted);overflow:hidden}.pill .email{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 11px rgba(255,200,87,.5);flex:0 0 auto}.dot.online{background:var(--green);box-shadow:0 0 12px rgba(57,229,140,.55)}.dot.offline{background:var(--red);box-shadow:0 0 12px rgba(255,86,114,.55)}
+.btn{min-height:43px;padding:0 14px;border-radius:12px;border:1px solid var(--line2);color:var(--text);background:rgba(8,19,35,.84);transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease,background .12s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px}.btn:hover{border-color:rgba(77,169,255,.67);box-shadow:0 0 24px rgba(77,169,255,.13)}.btn:active{transform:translateY(1px)}.btn.primary{background:linear-gradient(145deg,rgba(77,169,255,.25),rgba(55,233,255,.08));border-color:rgba(77,169,255,.6);box-shadow:0 0 30px rgba(77,169,255,.15)}.btn.success{border-color:rgba(57,229,140,.35);background:rgba(57,229,140,.055)}.btn.danger{border-color:rgba(255,86,114,.35);background:rgba(255,86,114,.055)}.btn.small{min-height:35px;padding:0 10px;border-radius:9px;font-size:12px}.btn.icon{width:43px;padding:0}
+.hidden{display:none!important}.view{animation:enter .18s ease both}@keyframes enter{from{opacity:.001;transform:translateY(3px)}to{opacity:1;transform:none}}@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.view{animation:none}.btn{transition:none}}
+.auth-screen{min-height:calc(100vh - 30px);display:grid;place-items:center;padding:26px 0}.auth-wrap{width:min(520px,100%)}.auth-card{padding:26px;border-radius:24px}.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);font-weight:850}.auth-title{font-size:31px;line-height:1.12;margin:9px 0 8px}.auth-note{font-size:13px;line-height:1.65;color:var(--muted);margin:0 0 18px}.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:5px;background:rgba(2,8,16,.68);border:1px solid var(--line);border-radius:13px;margin-bottom:15px}.tab{border:0;background:transparent;color:var(--muted);min-height:39px;border-radius:9px;font-weight:800}.tab.active{color:var(--text);background:rgba(77,169,255,.11);box-shadow:inset 0 0 0 1px rgba(77,169,255,.27)}.field{display:grid;gap:7px}.field+.field{margin-top:12px}.label{font-size:12px;color:#a9bed3;font-weight:750}.input,.select,.textarea{width:100%;min-height:44px;padding:10px 12px;color:var(--text);background:rgba(2,8,16,.8);border:1px solid var(--line);border-radius:11px;outline:none}.textarea{min-height:108px;resize:vertical}.input:focus,.select:focus,.textarea:focus{border-color:rgba(77,169,255,.72);box-shadow:0 0 0 3px rgba(77,169,255,.08),0 0 20px rgba(77,169,255,.09)}.auth-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}.auth-actions .btn.primary{flex:1}.status-box{margin-top:13px;padding:10px 12px;border:1px solid var(--line);border-radius:11px;background:rgba(3,9,17,.58);color:var(--muted);font-size:12px;line-height:1.5}.status-box.error{border-color:rgba(255,86,114,.35);color:#ffb6c1}.status-box.good{border-color:rgba(57,229,140,.3);color:#9bf5c6}.config-card{margin-top:12px;padding:14px;border-radius:17px}.config-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.config-title{font-weight:800;font-size:13px}.config-sub{font-size:11px;color:var(--muted);line-height:1.45;margin-top:3px}.config-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}.config-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.config-actions .btn{flex:1}.helper{font-size:10px;color:var(--muted);line-height:1.5;margin-top:9px}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace}.reveal-row{display:flex;justify-content:flex-end;margin-top:5px}.link-btn{border:0;background:none;color:var(--blue2);padding:5px 0;font-size:11px}
+.toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.toolbar-left,.toolbar-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.section-label{font-size:12px;text-transform:uppercase;letter-spacing:.11em;font-weight:850;color:#9db1c8}
+.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:11px}.metric{padding:15px 16px;border-radius:16px;min-width:0}.metric-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:850}.metric-value{font-size:24px;font-weight:900;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.metric-meta{font-size:10px;color:var(--muted);margin-top:4px}.positive{color:var(--green)}.negative{color:var(--red)}.neutral{color:var(--text)}.grid-main{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(320px,.65fr);gap:14px;margin-top:14px}.card{padding:18px;border-radius:var(--radius)}.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.card-title{font-size:16px;font-weight:850}.card-sub{font-size:11px;color:var(--muted);line-height:1.5;margin-top:3px}.trade-form{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.span2{grid-column:span 2}.full{grid-column:1/-1}.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:rgba(2,8,16,.72);border:1px solid var(--line);border-radius:12px}.seg button{min-height:38px;border:0;border-radius:9px;background:transparent;color:var(--muted);font-weight:850}.seg button.active.win{background:rgba(57,229,140,.1);color:var(--green);box-shadow:inset 0 0 0 1px rgba(57,229,140,.22)}.seg button.active.loss{background:rgba(255,86,114,.1);color:var(--red);box-shadow:inset 0 0 0 1px rgba(255,86,114,.22)}.preview{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px;border:1px solid rgba(77,169,255,.16);border-radius:13px;background:linear-gradient(145deg,rgba(77,169,255,.07),rgba(55,233,255,.02))}.preview-main{font-size:20px;font-weight:900}.preview-side{text-align:right;font-size:11px;color:var(--muted);line-height:1.55}.kpis{display:grid;grid-template-columns:1fr 1fr;gap:9px}.mini{padding:12px;border-radius:13px;border:1px solid var(--line);background:rgba(2,9,18,.56);min-width:0}.mini-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;font-weight:800}.mini-v{font-size:18px;font-weight:850;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.note{font-size:10px;color:var(--muted);line-height:1.55;margin-top:11px}
+.chart-card{margin-top:14px}.chart-wrap{border:1px solid var(--line);border-radius:14px;background:rgba(2,8,17,.58);padding:9px;overflow:hidden}.chart{width:100%;height:280px;display:block}.chart-grid{stroke:rgba(130,170,220,.1);stroke-width:1}.chart-zero{stroke:rgba(255,255,255,.2);stroke-width:1}.chart-path{fill:none;stroke:var(--cyan);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 7px rgba(55,233,255,.3))}.chart-fill{fill:url(#areaGrad);opacity:.86}.chart-label{fill:#7890aa;font-size:10px}.legend{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:9px;font-size:10px;color:var(--muted)}
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}.month-list{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.month{padding:11px;border-radius:12px;border:1px solid var(--line);background:rgba(2,9,17,.55);min-width:0}.month-name{font-size:10px;color:var(--muted)}.month-value{font-size:17px;font-weight:850;margin-top:4px}.month-sub{font-size:9px;color:var(--muted);margin-top:2px}.settings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:11px}.sync-line{display:flex;justify-content:space-between;align-items:center;gap:10px}.tag{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.05em}.tag.good{color:var(--green);background:rgba(57,229,140,.08);border:1px solid rgba(57,229,140,.18)}.tag.bad{color:var(--red);background:rgba(255,86,114,.08);border:1px solid rgba(255,86,114,.18)}.tag.neutral{color:var(--muted);background:rgba(255,255,255,.03);border:1px solid var(--line)}
+.table-card{margin-top:14px}.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:820px}th,td{padding:11px 12px;border-bottom:1px solid rgba(93,165,255,.1);font-size:12px;text-align:left}th{position:sticky;top:0;z-index:2;background:#081528;color:#8fa7c4;font-size:9px;text-transform:uppercase;letter-spacing:.08em}tbody tr:hover{background:rgba(77,169,255,.035)}tbody tr:last-child td{border-bottom:0}.tag.win{background:rgba(57,229,140,.08);color:var(--green);border-color:rgba(57,229,140,.18)}.tag.loss{background:rgba(255,86,114,.08);color:var(--red);border-color:rgba(255,86,114,.18)}.empty{text-align:center;padding:34px 14px;color:var(--muted);font-size:12px}.action-row{display:flex;gap:6px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:rgba(1,5,10,.7);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}.modal-card{width:min(440px,100%);padding:18px;border-radius:20px}.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}.toast-area{position:fixed;right:16px;bottom:16px;z-index:120;display:grid;gap:8px;width:min(360px,calc(100% - 32px))}.toast{padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:rgba(5,14,27,.94);box-shadow:0 16px 40px rgba(0,0,0,.3);font-size:12px;color:var(--text);animation:toastIn .16s ease both}.toast.good{border-color:rgba(57,229,140,.28)}.toast.bad{border-color:rgba(255,86,114,.32)}@keyframes toastIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:18px 4px 0;color:#71869e;font-size:10px;line-height:1.5}
+@media(max-width:1100px){.metrics{grid-template-columns:repeat(3,1fr)}.grid-main{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:720px){.app-shell{width:min(100% - 16px,1500px);padding-top:7px}.topbar{top:5px;padding:10px;border-radius:16px}.brand-mark{width:38px;height:38px;flex-basis:38px}.brand-sub{display:none}.pill{max-width:145px}.metrics{grid-template-columns:repeat(2,1fr);gap:8px}.metric{padding:13px}.metric-value{font-size:20px}.trade-form{grid-template-columns:1fr}.span2,.full{grid-column:auto}.bottom-grid{grid-template-columns:1fr}.settings-grid{grid-template-columns:1fr}.month-list{grid-template-columns:repeat(3,1fr)}.auth-card{padding:20px}.auth-title{font-size:27px}.config-grid{grid-template-columns:1fr}.footer{padding-bottom:20px}}
+@media(max-width:430px){.userbar .pill{display:none}.toolbar-right{width:100%}.toolbar-right .input{flex:1;width:auto!important}.month-list{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
-<div class="app-shell">
-  <header id="topbar" class="topbar glass hidden">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true"></div>
-      <div class="brand-copy"><div class="brand-title">TRADEPULSE</div><div class="brand-sub">Trading journal • payout analytics • private cloud sync</div></div>
-    </div>
-    <div class="userbar">
-      <div class="pill" title="Connection status"><span id="connectionDot" class="dot"></span><span id="connectionText">Checking…</span></div>
-      <button id="exportCsvBtn" class="btn small" type="button">Export CSV</button>
-      <button id="logoutBtn" class="btn small danger" type="button">Sign out</button>
-    </div>
-  </header>
-
-  <section id="authScreen" class="auth-screen">
-    <div class="auth-card glass">
-      <div class="eyebrow">PRIVATE TRADING JOURNAL</div>
+<div id="authScreen" class="auth-screen">
+  <div class="auth-wrap">
+    <section class="auth-card glass">
+      <div class="eyebrow">TRADEPULSE / JOURNAL</div>
       <h1 class="auth-title">Track every trade with precision.</h1>
-      <p class="auth-note">Record stake, payout, result and execution time. Calculations stay local for instant feedback, while Firebase keeps your journal synchronized to your account.</p>
-      <div class="auth-tabs"><button id="signInTab" class="tab active" type="button">Sign in</button><button id="signUpTab" class="tab" type="button">Create account</button></div>
-      <form id="authForm" autocomplete="on">
+      <p class="auth-note">Secure email login, cloud-synced trade history and instant payout calculations. Your dashboard can keep a local copy when the network is unavailable.</p>
+      <div class="auth-tabs">
+        <button id="signInTab" class="tab active" type="button">Sign in</button>
+        <button id="signUpTab" class="tab" type="button">Create account</button>
+      </div>
+      <form id="authForm" autocomplete="on" novalidate>
         <div class="field"><label class="label" for="authEmail">Email</label><input id="authEmail" class="input" type="email" autocomplete="email" inputmode="email" required maxlength="254" placeholder="you@example.com"></div>
         <div class="field"><label class="label" for="authPassword">Password</label><input id="authPassword" class="input" type="password" autocomplete="current-password" required minlength="6" maxlength="128" placeholder="Minimum 6 characters"></div>
+        <div class="reveal-row"><button id="togglePassword" class="link-btn" type="button">Show password</button></div>
         <div class="auth-actions"><button id="authSubmit" class="btn primary" type="submit">Sign in</button><button id="resetPasswordBtn" class="btn" type="button">Reset password</button></div>
       </form>
-      <div id="authStatus" class="status-box">Firebase is not connected yet. Add your project config in this HTML file before using cloud login.</div>
-    </div>
+      <div id="authStatus" class="status-box">Connect your Firebase Web App below to enable account login and cloud sync.</div>
+    </section>
+
+    <section id="configCard" class="config-card glass">
+      <div class="config-head">
+        <div><div class="config-title">Firebase connection</div><div class="config-sub">Paste the Web App configuration from Firebase Console. It is stored only in this browser so the static GitHub page can initialize Firebase.</div></div>
+        <span id="configState" class="tag neutral">NOT CONNECTED</span>
+      </div>
+      <div class="config-grid">
+        <div class="field"><label class="label" for="cfgApiKey">apiKey</label><input id="cfgApiKey" class="input mono" autocomplete="off" placeholder="AIza..." spellcheck="false"></div>
+        <div class="field"><label class="label" for="cfgAuthDomain">authDomain</label><input id="cfgAuthDomain" class="input mono" autocomplete="off" placeholder="your-project.firebaseapp.com" spellcheck="false"></div>
+        <div class="field"><label class="label" for="cfgProjectId">projectId</label><input id="cfgProjectId" class="input mono" autocomplete="off" placeholder="your-project-id" spellcheck="false"></div>
+        <div class="field"><label class="label" for="cfgStorageBucket">storageBucket</label><input id="cfgStorageBucket" class="input mono" autocomplete="off" placeholder="your-project.firebasestorage.app" spellcheck="false"></div>
+        <div class="field"><label class="label" for="cfgMessagingSenderId">messagingSenderId</label><input id="cfgMessagingSenderId" class="input mono" autocomplete="off" inputmode="numeric" placeholder="1234567890" spellcheck="false"></div>
+        <div class="field"><label class="label" for="cfgAppId">appId</label><input id="cfgAppId" class="input mono" autocomplete="off" placeholder="1:123:web:abc..." spellcheck="false"></div>
+      </div>
+      <div class="config-actions"><button id="connectFirebaseBtn" class="btn primary" type="button">Connect Firebase</button><button id="forgetFirebaseBtn" class="btn danger" type="button">Forget saved config</button></div>
+      <div class="helper">Firebase Web configuration is intended for client-side initialization; your database security comes from Authentication and Firestore Rules. Never place a service-account private key in this page.</div>
+    </section>
+  </div>
+</div>
+
+<div id="topbar" class="topbar glass hidden">
+  <div class="brand"><div class="brand-mark" aria-hidden="true"></div><div class="brand-copy"><div class="brand-title">TradePulse</div><div class="brand-sub">Trading journal • analytics • payout engine</div></div></div>
+  <div class="userbar"><div class="pill"><span id="connectionDot" class="dot"></span><span id="connectionText">Disconnected</span></div><div class="pill"><span class="email" id="topEmail">Signed out</span></div><button id="logoutBtn" class="btn small" type="button">Sign out</button></div>
+</div>
+
+<main id="app" class="app-shell hidden view">
+  <div class="toolbar">
+    <div class="toolbar-left"><span class="section-label">Performance console</span><span id="syncState" class="tag neutral">LOCAL</span><span id="syncDesc" class="muted" style="font-size:10px">Local cache active</span></div>
+    <div class="toolbar-right"><button id="newTradeBtn" class="btn primary small" type="button">+ New trade</button><button id="downloadJsonBtn" class="btn small" type="button">Backup JSON</button><button id="exportCsvBtn" class="btn small" type="button">Export CSV</button><button id="refreshBtn" class="btn small" type="button">Refresh</button></div>
+  </div>
+
+  <section class="metrics">
+    <div class="metric glass"><div class="metric-label">Today P/L</div><div id="mToday" class="metric-value neutral">$0.00</div><div id="mTodayMeta" class="metric-meta">0 trades</div></div>
+    <div class="metric glass"><div class="metric-label">Month P/L</div><div id="mMonth" class="metric-value neutral">$0.00</div><div id="mMonthMeta" class="metric-meta">0 trades</div></div>
+    <div class="metric glass"><div class="metric-label">All-time P/L</div><div id="mAll" class="metric-value neutral">$0.00</div><div id="mAllMeta" class="metric-meta">0 trades</div></div>
+    <div class="metric glass"><div class="metric-label">Win rate</div><div id="mWinRate" class="metric-value neutral">0.00%</div><div id="mWinMeta" class="metric-meta">0 wins / 0 losses</div></div>
+    <div class="metric glass"><div class="metric-label">Current balance</div><div id="mBalance" class="metric-value neutral">$0.00</div><div class="metric-meta">Starting + net P/L</div></div>
+    <div class="metric glass"><div class="metric-label">ROI</div><div id="mRoi" class="metric-value neutral">0.00%</div><div id="mRoiMeta" class="metric-meta">Against starting balance</div></div>
   </section>
 
-  <main id="app" class="hidden">
-    <div class="toolbar">
-      <div class="toolbar-left"><span class="section-title">Performance console</span><button id="newTradeBtn" class="btn primary small" type="button">+ New trade</button></div>
-      <div class="toolbar-right"><button id="downloadJsonBtn" class="btn small" type="button">Backup JSON</button><button id="refreshBtn" class="btn small" type="button">Refresh</button></div>
-    </div>
-
-    <section class="metrics" aria-label="Performance metrics">
-      <div class="metric glass"><div class="metric-label">Current balance</div><div id="mBalance" class="metric-value neutral">$0.00</div><div id="mBalanceMeta" class="metric-meta">Set starting balance below</div></div>
-      <div class="metric glass"><div class="metric-label">Today P/L</div><div id="mToday" class="metric-value neutral">$0.00</div><div id="mTodayMeta" class="metric-meta">0 trades</div></div>
-      <div class="metric glass"><div class="metric-label">This month</div><div id="mMonth" class="metric-value neutral">$0.00</div><div id="mMonthMeta" class="metric-meta">0 trades</div></div>
-      <div class="metric glass"><div class="metric-label">Win rate</div><div id="mWinRate" class="metric-value neutral">0.00%</div><div id="mWinMeta" class="metric-meta">0 / 0 wins</div></div>
-      <div class="metric glass"><div class="metric-label">Profit factor</div><div id="mPF" class="metric-value neutral">0.00</div><div id="mPFMeta" class="metric-meta">Gross profit / gross loss</div></div>
-      <div class="metric glass"><div class="metric-label">Break-even rate</div><div id="mBE" class="metric-value neutral">0.00%</div><div id="mBEMeta" class="metric-meta">Based on avg payout</div></div>
+  <section class="grid-main">
+    <section class="card glass">
+      <div class="card-head"><div><div id="tradeFormTitle" class="card-title">Log a trade</div><div class="card-sub">One entry calculates profit, return and performance metrics automatically.</div></div><button id="clearTradeFormBtn" class="btn small" type="button">Clear</button></div>
+      <form id="tradeForm" class="trade-form" novalidate>
+        <input id="editingId" type="hidden">
+        <div class="field span2"><label class="label" for="asset">Asset / pair</label><input id="asset" class="input" maxlength="50" placeholder="EUR/USD, USD/JPY, BTC/USD…" required></div>
+        <div class="field"><label class="label" for="stake">Stake / amount</label><input id="stake" class="input" type="number" inputmode="decimal" min="0.01" max="1000000" step="0.01" placeholder="1.00" required></div>
+        <div class="field"><label class="label" for="payout">Payout %</label><input id="payout" class="input" type="number" inputmode="decimal" min="0" max="100" step="0.01" value="80" required></div>
+        <div class="field span2"><label class="label">Result</label><div class="seg"><button id="winBtn" class="active win" type="button">WIN</button><button id="lossBtn" type="button">LOSS</button></div></div>
+        <div class="field"><label class="label" for="tradeDate">Date</label><input id="tradeDate" class="input" type="date" required></div>
+        <div class="field"><label class="label" for="tradeTime">Time</label><input id="tradeTime" class="input" type="time" required></div>
+        <div class="field full"><label class="label" for="note">Note <span class="muted">(optional)</span></label><textarea id="note" class="textarea" maxlength="500" placeholder="Setup, reason, session, psychology…"></textarea></div>
+        <div class="full preview"><div><div class="muted" style="font-size:10px;text-transform:uppercase;letter-spacing:.08em">Calculated result</div><div id="previewMain" class="preview-main">$0.00 profit</div></div><div id="previewSide" class="preview-side">Return: $0.00<br>Break-even: —</div></div>
+        <div class="full" style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap"><button id="saveTradeBtn" class="btn primary" type="submit">Save trade</button></div>
+      </form>
     </section>
 
-    <section class="grid-main">
-      <div class="card glass">
-        <div class="card-head"><div><div id="tradeFormTitle" class="card-title">Log a trade</div><div class="card-sub">Enter the actual stake and platform payout. The app calculates profit, return and journal statistics.</div></div><button id="clearTradeFormBtn" class="btn small" type="button">Clear</button></div>
-        <form id="tradeForm" class="trade-form">
-          <input id="editingId" type="hidden">
-          <div class="field"><label class="label" for="asset">Asset / pair</label><input id="asset" class="input" required maxlength="50" placeholder="EUR/USD"></div>
-          <div class="field"><label class="label" for="stake">Stake</label><input id="stake" class="input" required type="number" min="0.01" max="1000000" step="0.01" inputmode="decimal" placeholder="1.00"></div>
-          <div class="field"><label class="label" for="payout">Payout %</label><input id="payout" class="input" required type="number" min="0" max="100" step="0.01" inputmode="decimal" placeholder="80"></div>
-          <div class="field"><label class="label" for="tradeDate">Trade date</label><input id="tradeDate" class="input" required type="date"></div>
-          <div class="field"><label class="label" for="tradeTime">Time</label><input id="tradeTime" class="input" required type="time" step="60"></div>
-          <div class="field span2"><label class="label">Result</label><div class="seg"><button id="winBtn" class="win active" type="button">WIN</button><button id="lossBtn" class="loss" type="button">LOSS</button></div></div>
-          <div class="field span2"><label class="label" for="note">Note (optional)</label><input id="note" class="input" maxlength="500" placeholder="Setup, session, mistake, observation…"></div>
-          <div class="preview full"><div><div class="label">Calculated outcome</div><div id="previewMain" class="preview-main">$0.00 profit</div></div><div id="previewSide" class="preview-side">Return: $0.00<br>Break-even: 0.00%</div></div>
-          <div class="full" style="display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap"><button id="saveTradeBtn" class="btn primary" type="submit">Save trade</button></div>
-        </form>
+    <aside class="card glass">
+      <div class="card-head"><div><div class="card-title">Trading statistics</div><div class="card-sub">Calculated from the trades currently in your journal.</div></div></div>
+      <div class="kpis">
+        <div class="mini"><div class="mini-l">Gross profit</div><div id="kGrossProfit" class="mini-v positive">$0.00</div></div>
+        <div class="mini"><div class="mini-l">Gross loss</div><div id="kGrossLoss" class="mini-v negative">$0.00</div></div>
+        <div class="mini"><div class="mini-l">Profit factor</div><div id="kPf" class="mini-v">0.00</div></div>
+        <div class="mini"><div class="mini-l">Avg stake</div><div id="kAvgStake" class="mini-v">$0.00</div></div>
+        <div class="mini"><div class="mini-l">Avg payout</div><div id="kAvgPayout" class="mini-v">0.00%</div></div>
+        <div class="mini"><div class="mini-l">Break-even rate</div><div id="kBreakEven" class="mini-v">0.00%</div></div>
+        <div class="mini"><div class="mini-l">Best win streak</div><div id="kBest" class="mini-v">0</div></div>
+        <div class="mini"><div class="mini-l">Worst loss streak</div><div id="kWorst" class="mini-v">0</div></div>
       </div>
+      <div class="note">At an 80% payout, a $1 win produces $0.80 profit and $1.80 total returned. A loss produces -$1.00 P/L.</div>
+    </aside>
+  </section>
 
-      <aside class="card glass">
-        <div class="card-head"><div><div class="card-title">Live statistics</div><div class="card-sub">Computed from all journaled trades.</div></div></div>
-        <div class="kpis">
-          <div class="mini"><div class="mini-l">Total trades</div><div id="sTrades" class="mini-v">0</div></div>
-          <div class="mini"><div class="mini-l">Wins</div><div id="sWins" class="mini-v positive">0</div></div>
-          <div class="mini"><div class="mini-l">Losses</div><div id="sLosses" class="mini-v negative">0</div></div>
-          <div class="mini"><div class="mini-l">Net P/L</div><div id="sNet" class="mini-v">$0.00</div></div>
-          <div class="mini"><div class="mini-l">Avg payout</div><div id="sPayout" class="mini-v">0.00%</div></div>
-          <div class="mini"><div class="mini-l">Avg stake</div><div id="sStake" class="mini-v">$0.00</div></div>
-          <div class="mini"><div class="mini-l">Best streak</div><div id="sBestStreak" class="mini-v positive">0</div></div>
-          <div class="mini"><div class="mini-l">Worst streak</div><div id="sWorstStreak" class="mini-v negative">0</div></div>
-        </div>
-        <div class="note">For a binary payout, break-even win rate = 100 ÷ (100 + payout%). Example: 80% payout → 55.56% break-even rate.</div>
-        <div style="margin-top:12px" class="sync-line"><div><div class="sync-title">Cloud sync</div><div id="syncDesc" class="sync-desc">Waiting for Firebase…</div></div><div id="syncState" class="tag">LOCAL</div></div>
-      </aside>
-    </section>
+  <section class="card glass chart-card">
+    <div class="card-head"><div><div class="card-title">Equity curve</div><div class="card-sub">Cumulative net P/L from the starting balance through completed journal entries.</div></div><select id="curveRange" class="select" style="width:130px;min-height:36px"><option value="30">Last 30</option><option value="60">Last 60</option><option value="100">Last 100</option><option value="250">Last 250</option></select></div>
+    <div class="chart-wrap"><svg id="equityChart" class="chart" viewBox="0 0 1000 280" preserveAspectRatio="none" aria-label="Equity curve"></svg></div>
+    <div class="legend"><span id="curveStart">Start: $0.00</span><span id="curveEnd">End: $0.00</span><span id="curveHigh">High: $0.00</span><span id="curveLow">Low: $0.00</span></div>
+  </section>
 
-    <section class="card glass chart-card">
-      <div class="card-head"><div><div class="card-title">Equity curve</div><div class="card-sub">Cumulative net P/L by trade date. The curve is based only on your recorded trades.</div></div><select id="curveRange" class="select" style="width:150px"><option value="30">Last 30 days</option><option value="90">Last 90 days</option><option value="365">Last 12 months</option></select></div>
-      <div class="chart-wrap"><svg id="equityChart" class="chart" viewBox="0 0 900 260" preserveAspectRatio="none" role="img" aria-label="Equity curve chart"></svg></div>
-    </section>
+  <div class="bottom-grid">
+    <section class="card glass"><div class="card-head"><div><div class="card-title">Monthly results</div><div class="card-sub">Net result for each month in the selected year.</div></div><select id="yearSelect" class="select" style="width:110px;min-height:36px"></select></div><div id="monthList" class="month-list"></div></section>
+    <section class="card glass"><div class="card-head"><div><div class="card-title">Journal settings</div><div class="card-sub">These settings affect the dashboard display and are kept locally per account.</div></div></div><div class="settings-grid"><div class="field"><label class="label" for="currency">Currency symbol</label><input id="currency" class="input" maxlength="4" value="$" placeholder="$"></div><div class="field"><label class="label" for="startingBalance">Starting balance</label><input id="startingBalance" class="input" type="number" min="0" max="100000000" step="0.01" value="0"></div><div class="field"><label class="label" for="decimalPlaces">Decimals</label><select id="decimalPlaces" class="select"><option value="0">0</option><option value="2" selected>2</option><option value="3">3</option><option value="4">4</option></select></div></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button id="saveSettingsBtn" class="btn primary small" type="button">Save settings</button><button id="clearLocalBtn" class="btn danger small" type="button">Clear local cache</button></div></section>
+  </div>
 
-    <section class="bottom-grid">
-      <div class="card glass"><div class="card-head"><div><div class="card-title">Monthly results</div><div class="card-sub">Net profit/loss for each month in the selected year.</div></div><select id="yearSelect" class="select" style="width:110px"></select></div><div id="monthList" class="month-list"></div></div>
-      <div class="card glass"><div class="card-head"><div><div class="card-title">Journal controls</div><div class="card-sub">Local backup stays on this device; Firestore keeps the signed-in cloud copy.</div></div></div>
-        <div class="settings-grid">
-          <div class="field"><label class="label" for="currency">Currency symbol</label><input id="currency" class="input" maxlength="4" value="$" placeholder="$"></div>
-          <div class="field"><label class="label" for="startingBalance">Starting balance</label><input id="startingBalance" class="input" type="number" min="0" max="100000000" step="0.01" value="0" inputmode="decimal"></div>
-          <div class="field"><label class="label" for="decimalPlaces">Decimals</label><select id="decimalPlaces" class="select"><option value="2">2</option><option value="0">0</option><option value="3">3</option><option value="4">4</option></select></div>
-        </div>
-        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button id="saveSettingsBtn" class="btn primary small" type="button">Save settings</button><button id="clearLocalBtn" class="btn danger small" type="button">Clear local cache</button></div>
-      </div>
-    </section>
+  <section class="card glass table-card">
+    <div class="card-head"><div><div class="card-title">Trade history</div><div class="card-sub"><span id="historyCount">0</span> visible records • newest first</div></div><div class="toolbar-right"><input id="historySearch" class="input" style="width:190px;min-height:38px" placeholder="Search asset / note…"><select id="historyResult" class="select" style="width:110px;min-height:38px"><option value="ALL">All</option><option value="WIN">Wins</option><option value="LOSS">Losses</option></select></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Date / time</th><th>Asset</th><th>Stake</th><th>Payout</th><th>Result</th><th>Return</th><th>P/L</th><th>Actions</th></tr></thead><tbody id="tradeBody"></tbody></table></div>
+  </section>
+  <footer class="footer"><span>TradePulse is a journal/calculator, not a trading signal or execution system.</span><span id="footerUid">Signed out</span></footer>
+</main>
 
-    <section class="card glass table-card">
-      <div class="card-head"><div><div class="card-title">Trade history</div><div class="card-sub"><span id="historyCount">0</span> records • newest first</div></div><div class="toolbar-right"><input id="historySearch" class="input" style="width:180px;min-height:38px" placeholder="Search asset / note…"><select id="historyResult" class="select" style="width:110px;min-height:38px"><option value="ALL">All</option><option value="WIN">Wins</option><option value="LOSS">Losses</option></select></div></div>
-      <div class="table-wrap"><table><thead><tr><th>Date / time</th><th>Asset</th><th>Stake</th><th>Payout</th><th>Result</th><th>Return</th><th>P/L</th><th>Actions</th></tr></thead><tbody id="tradeBody"></tbody></table></div>
-    </section>
-    <footer class="footer"><span>TradePulse is a journal/calculator, not a trading signal or execution system.</span><span id="footerUid">Not signed in</span></footer>
-  </main>
-</div>
 <div id="modal" class="modal hidden" aria-hidden="true"><div class="modal-card glass"><div class="modal-head"><div><div class="card-title">Delete trade</div><div class="card-sub">This removes the record from your cloud journal and local cache.</div></div><button id="closeModalBtn" class="btn icon" type="button" aria-label="Close">×</button></div><div style="font-size:13px;color:var(--muted)">Delete <strong id="deletePreview" style="color:var(--text)">this trade</strong>?</div><div class="modal-actions"><button id="cancelDeleteBtn" class="btn" type="button">Cancel</button><button id="confirmDeleteBtn" class="btn danger" type="button">Delete trade</button></div></div></div>
 <div id="toastArea" class="toast-area" aria-live="polite" aria-atomic="true"></div>
 
 <script type="module">
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFirestore, collection, doc, setDoc, deleteDoc, query, orderBy, onSnapshot, Timestamp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-/* =========================
-   1) FIREBASE CONFIG
-   Replace these values with your Firebase Web App config.
-   Firebase Console → Project settings → Your apps → Web app.
-   ========================= */
-const firebaseConfig = {
-  apiKey: "PASTE_YOUR_FIREBASE_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.firebasestorage.app",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
-};
-
-const CONFIG_READY = !Object.values(firebaseConfig).some(v => !v || /PASTE_|YOUR_/i.test(v));
-let app = null, auth = null, db = null;
-if(CONFIG_READY){
-  try{
-    app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    db = getFirestore(app);
-  }catch(err){
-    console.error(err);
-  }
-}
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendPasswordResetEmail, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, query, orderBy, onSnapshot, Timestamp, getDocs } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const $ = id => document.getElementById(id);
-const todayLocal = () => { const d=new Date(); return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-'); };
-const timeLocal = () => { const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; };
-const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
-const finite=(n,fallback=0)=>Number.isFinite(n)?n:fallback;
-const escapeHtml = s => String(s ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-const moneyRaw = n => { const v=finite(Number(n)); return v; };
+const LS_CONFIG = 'tradepulse:firebase-config:v2';
+const LS_SESSION_PREFIX = 'tradepulse:session:';
+const clamp = (n,min,max)=>Math.min(max,Math.max(min,n));
+const finite = (n,fallback=0)=>Number.isFinite(n)?n:fallback;
+const escapeHtml = s => String(s ?? '').replace(/[&<>\'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const uuid = ()=>{ if(globalThis.crypto?.randomUUID) return crypto.randomUUID(); return 't_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,12); };
+const now = ()=>new Date();
+const pad2 = n=>String(n).padStart(2,'0');
+const todayLocal = ()=>{const d=now();return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`};
+const timeLocal = ()=>{const d=now();return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`};
+const monthKey = d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}`;
 
-const state = {
-  user:null, trades:[], unsubscribe:null, editingId:'', deleteId:'', authMode:'signin',
-  result:'WIN', currency:'$', startingBalance:0, decimals:2, filter:'ALL', search:'', curveRange:30,
-  pending:[]
+let app=null, auth=null, db=null;
+let firebaseUnsub=null;
+
+const state={
+  user:null,trades:[],pending:[],authMode:'signin',result:'WIN',editingId:'',deleteId:'',
+  currency:'$',startingBalance:0,decimals:2,search:'',filter:'ALL',curveRange:30,
+  connecting:false,remoteReady:false,syncing:false,lastRemoteIds:new Set()
 };
 
-function storageKey(uid){return `tradepulse:${uid}`}
-function settingsKey(uid){return `tradepulse:${uid}:settings`}
-function pendingKey(uid){return `tradepulse:${uid}:pending`}
-
-function showToast(message,type='info'){
-  const el=document.createElement('div');el.className=`toast ${type==='good'?'good':type==='bad'?'bad':''}`;el.textContent=message;$("toastArea").appendChild(el);setTimeout(()=>el.remove(),3800);
+function userKey(uid){return `${LS_SESSION_PREFIX}${uid}`}
+function configFromInputs(){
+  return {
+    apiKey:$('cfgApiKey').value.trim(),authDomain:$('cfgAuthDomain').value.trim(),projectId:$('cfgProjectId').value.trim(),
+    storageBucket:$('cfgStorageBucket').value.trim(),messagingSenderId:$('cfgMessagingSenderId').value.trim(),appId:$('cfgAppId').value.trim()
+  };
 }
-
-function formatMoney(n){ const num=finite(Number(n)); return `${state.currency}${num.toLocaleString(undefined,{minimumFractionDigits:state.decimals,maximumFractionDigits:state.decimals})}`; }
-function formatPct(n){return `${finite(Number(n)).toFixed(2)}%`}
-function formatDateTime(dateKey,time){ try { const d=new Date(`${dateKey}T${time||'00:00'}`); return d.toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});}catch{return `${dateKey} ${time||''}`;} }
-function parseTradeForm(){
-  const amount=Number($("stake").value), payout=Number($("payout").value);
-  const date=$("tradeDate").value, time=$("tradeTime").value, asset=$("asset").value.trim(), note=$("note").value.trim();
-  if(!asset || !date || !time) throw new Error('Fill asset, date and time.');
-  if(!Number.isFinite(amount) || amount<0.01 || amount>1000000) throw new Error('Stake must be between 0.01 and 1,000,000.');
-  if(!Number.isFinite(payout) || payout<0 || payout>100) throw new Error('Payout must be between 0% and 100%.');
-  const d=new Date(`${date}T${time}:00`); if(Number.isNaN(d.getTime())) throw new Error('Invalid date/time.');
-  const profit = state.result==='WIN' ? amount*payout/100 : -amount;
-  const returned = state.result==='WIN' ? amount+profit : 0;
-  return {asset,amount, payout, result:state.result, profit, returned, tradeDate:date, tradeTime:time, placedAtMs:d.getTime(), note};
+function validConfig(c){return c&&Object.values(c).every(v=>typeof v==='string'&&v.trim())&&!/YOUR_PROJECT|PASTE_/i.test(JSON.stringify(c));}
+function fillConfig(c){if(!c)return;for(const [k,v] of Object.entries({cfgApiKey:c.apiKey,cfgAuthDomain:c.authDomain,cfgProjectId:c.projectId,cfgStorageBucket:c.storageBucket,cfgMessagingSenderId:c.messagingSenderId,cfgAppId:c.appId})){if($(k))$(k).value=v||''}}
+function configStatus(label,good=false,bad=false){$('configState').textContent=label;$('configState').className=`tag ${good?'good':bad?'bad':'neutral'}`}
+function authStatus(msg,type='neutral'){$('authStatus').textContent=msg;$('authStatus').className=`status-box ${type==='good'?'good':type==='bad'?'error':''}`}
+function humanAuthError(err){
+  const code=err?.code||'';
+  const map={
+    'auth/invalid-email':'Enter a valid email address.','auth/missing-password':'Enter your password.','auth/weak-password':'Password must be at least 6 characters.',
+    'auth/email-already-in-use':'An account already exists with this email.','auth/invalid-credential':'Email or password is incorrect.','auth/user-not-found':'Email or password is incorrect.',
+    'auth/wrong-password':'Email or password is incorrect.','auth/too-many-requests':'Too many attempts. Wait a little and try again.','auth/network-request-failed':'Network error. Check your connection.',
+    'auth/operation-not-allowed':'Email/password sign-in is not enabled in Firebase Authentication.','auth/unauthorized-domain':'This website domain is not authorized in Firebase Authentication.',
+    'auth/configuration-not-found':'Firebase Authentication configuration is missing or incomplete.'
+  };
+  return map[code]||err?.message||'Authentication failed. Check Firebase setup and try again.';
 }
-function normalizedTrade(raw,id){
-  return { id:id||raw.id||crypto.randomUUID(), ownerUid:state.user?.uid||raw.ownerUid||'', asset:String(raw.asset||'').slice(0,50), amount:finite(Number(raw.amount)), payout:finite(Number(raw.payout)), result:raw.result==='LOSS'?'LOSS':'WIN', profit:finite(Number(raw.profit)), returned:finite(Number(raw.returned)), tradeDate:String(raw.tradeDate||todayLocal()).slice(0,10), tradeTime:String(raw.tradeTime||'00:00').slice(0,5), placedAtMs:finite(Number(raw.placedAtMs),Date.now()), note:String(raw.note||'').slice(0,500), createdAtMs:finite(Number(raw.createdAtMs),Date.now())};
-}
-function toFirestore(t){ return { ownerUid:t.ownerUid, asset:t.asset, amount:t.amount, payout:t.payout, result:t.result, profit:t.profit, returned:t.returned, tradeDate:t.tradeDate, tradeTime:t.tradeTime, placedAt:Timestamp.fromMillis(t.placedAtMs), createdAt:Timestamp.fromMillis(t.createdAtMs), note:t.note }; }
-function fromFirestore(snap){ const d=snap.data(); return normalizedTrade({...d, placedAtMs:d.placedAt?.toMillis?.()||Date.now(), createdAtMs:d.createdAt?.toMillis?.()||Date.now()},snap.id); }
+function humanFirestoreError(err){const code=err?.code||'';return code==='permission-denied'?'Firestore Rules denied this request. Publish the supplied rules and make sure you are signed in.':code==='failed-precondition'?'Firestore needs an index for this query. Use the link shown by Firebase Console if one is provided.':code==='unavailable'?'Firestore is temporarily unavailable. Local data will remain available.':(err?.message||'Firestore request failed.')}
 
-function persistLocal(){ if(!state.user) return; localStorage.setItem(storageKey(state.user.uid),JSON.stringify(state.trades)); localStorage.setItem(settingsKey(state.user.uid),JSON.stringify({currency:state.currency,startingBalance:state.startingBalance,decimals:state.decimals})); localStorage.setItem(pendingKey(state.user.uid),JSON.stringify(state.pending)); }
+function storageKey(uid){return `tradepulse:${uid}:trades:v2`}
+function settingsKey(uid){return `tradepulse:${uid}:settings:v2`}
+function pendingKey(uid){return `tradepulse:${uid}:pending:v2`}
+
+function persist(){
+  if(!state.user)return;
+  try{localStorage.setItem(storageKey(state.user.uid),JSON.stringify(state.trades));localStorage.setItem(settingsKey(state.user.uid),JSON.stringify({currency:state.currency,startingBalance:state.startingBalance,decimals:state.decimals}));localStorage.setItem(pendingKey(state.user.uid),JSON.stringify(state.pending));}catch(err){console.warn('Local cache unavailable',err)}
+}
 function loadLocal(uid){
-  try{ state.trades=JSON.parse(localStorage.getItem(storageKey(uid))||'[]').map(normalizedTrade); }catch{state.trades=[]}
-  try{const s=JSON.parse(localStorage.getItem(settingsKey(uid)||'null'));if(s){state.currency=String(s.currency||'$').slice(0,4);state.startingBalance=Math.max(0,finite(Number(s.startingBalance)));state.decimals=[0,2,3,4].includes(Number(s.decimals))?Number(s.decimals):2;}}catch{}
-  try{state.pending=JSON.parse(localStorage.getItem(pendingKey(uid))||'[]');}catch{state.pending=[]}
-  $("currency").value=state.currency;$("startingBalance").value=state.startingBalance;$("decimalPlaces").value=String(state.decimals);
+  state.trades=[];state.pending=[];state.currency='$';state.startingBalance=0;state.decimals=2;
+  try{const raw=JSON.parse(localStorage.getItem(storageKey(uid))||'[]');if(Array.isArray(raw))state.trades=raw.map(normalizeTrade).filter(t=>t.id&&t.ownerUid===uid); }catch{}
+  try{const s=JSON.parse(localStorage.getItem(settingsKey(uid))||'null');if(s){state.currency=String(s.currency||'$').slice(0,4)||'$';state.startingBalance=Math.max(0,finite(Number(s.startingBalance)));state.decimals=[0,2,3,4].includes(Number(s.decimals))?Number(s.decimals):2;}}catch{}
+  try{const raw=JSON.parse(localStorage.getItem(pendingKey(uid))||'[]');if(Array.isArray(raw))state.pending=raw;}catch{}
+  $('currency').value=state.currency;$('startingBalance').value=state.startingBalance;$('decimalPlaces').value=String(state.decimals);
 }
 
-function setAuthStatus(msg,bad=false){$("authStatus").textContent=msg;$("authStatus").style.borderColor=bad?'rgba(255,84,112,.28)':'var(--line)';}
-function setAuthMode(mode){ state.authMode=mode; $("signInTab").classList.toggle('active',mode==='signin'); $("signUpTab").classList.toggle('active',mode==='signup'); $("authSubmit").textContent=mode==='signin'?'Sign in':'Create account'; $("authPassword").autocomplete=mode==='signin'?'current-password':'new-password'; }
-
-function setConnection(online,text){$("connectionDot").className=`dot ${online?'online':'offline'}`;$("connectionText").textContent=text;}
-function showApp(){ $("authScreen").classList.add('hidden');$("topbar").classList.remove('hidden');$("app").classList.remove('hidden'); }
-function showAuth(){ $("app").classList.add('hidden');$("topbar").classList.add('hidden');$("authScreen").classList.remove('hidden'); }
-
-function calcStats(trades){
-  const total=trades.length, wins=trades.filter(t=>t.result==='WIN'), losses=trades.filter(t=>t.result==='LOSS');
-  const grossProfit=wins.reduce((s,t)=>s+Math.max(0,t.profit),0), grossLoss=Math.abs(losses.reduce((s,t)=>s+Math.min(0,t.profit),0));
-  const net=trades.reduce((s,t)=>s+t.profit,0), avgPayout=total?trades.reduce((s,t)=>s+t.payout,0)/total:0, avgStake=total?trades.reduce((s,t)=>s+t.amount,0)/total:0;
-  const pf=grossLoss===0?(grossProfit>0?Infinity:0):grossProfit/grossLoss;
-  const breakEven=100/(100+avgPayout);
-  let current=0,best=0,worst=0; [...trades].sort((a,b)=>a.placedAtMs-b.placedAtMs).forEach(t=>{current=t.result==='WIN'?current+1:0;best=Math.max(best,current);}); current=0;[...trades].sort((a,b)=>a.placedAtMs-b.placedAtMs).forEach(t=>{current=t.result==='LOSS'?current+1:0;worst=Math.max(worst,current);});
-  return {total,wins:wins.length,losses:losses.length,grossProfit,grossLoss,net,avgPayout,avgStake,pf,breakEven,winRate:total?wins.length/total*100:0,best,worst};
+function normalizeTrade(raw){
+  const owner=String(raw?.ownerUid||state.user?.uid||'');
+  const amount=clamp(finite(Number(raw?.amount)),0.01,1000000);
+  const payout=clamp(finite(Number(raw?.payout)),0,100);
+  const result=raw?.result==='LOSS'?'LOSS':'WIN';
+  const profit=finite(Number(raw?.profit),result==='WIN'?amount*payout/100:-amount);
+  const returned=finite(Number(raw?.returned),result==='WIN'?amount+profit:0);
+  return {
+    id:String(raw?.id||uuid()),ownerUid:owner,asset:String(raw?.asset||'').trim().slice(0,50),amount,payout,result,profit,returned,
+    tradeDate:/^\d{4}-\d{2}-\d{2}$/.test(String(raw?.tradeDate||''))?String(raw.tradeDate):todayLocal(),
+    tradeTime:/^\d{2}:\d{2}$/.test(String(raw?.tradeTime||''))?String(raw.tradeTime):timeLocal(),
+    placedAtMs:finite(Number(raw?.placedAtMs),Date.now()),createdAtMs:finite(Number(raw?.createdAtMs),Date.now()),note:String(raw?.note||'').slice(0,500)
+  };
 }
-function dateNet(dateKey){return state.trades.filter(t=>t.tradeDate===dateKey).reduce((s,t)=>s+t.profit,0)}
-function monthStats(year,monthIndex){ const key=`${year}-${String(monthIndex+1).padStart(2,'0')}`; const ts=state.trades.filter(t=>t.tradeDate.startsWith(key)); const wins=ts.filter(t=>t.result==='WIN').length;return {trades:ts.length,wins,losses:ts.length-wins,net:ts.reduce((s,t)=>s+t.profit,0)} }
+function toFirestore(t){
+  return {ownerUid:t.ownerUid,asset:t.asset,amount:t.amount,payout:t.payout,result:t.result,profit:t.profit,returned:t.returned,tradeDate:t.tradeDate,tradeTime:t.tradeTime,placedAt:Timestamp.fromMillis(t.placedAtMs),createdAt:Timestamp.fromMillis(t.createdAtMs),note:t.note};
+}
+function fromFirestore(snap){
+  const d=snap.data()||{};
+  return normalizeTrade({...d,id:snap.id,placedAtMs:d.placedAt?.toMillis?.()??Date.now(),createdAtMs:d.createdAt?.toMillis?.()??Date.now()});
+}
+
+function mergeRemoteWithPending(remote){
+  const map=new Map(remote.map(t=>[t.id,t]));
+  for(const p of state.pending){
+    const id=p.id||p.trade?.id;
+    if(!id)continue;
+    if(p.op==='delete')map.delete(id);
+    else if(p.op==='set'&&p.trade)map.set(id,normalizeTrade(p.trade));
+  }
+  return [...map.values()].sort((a,b)=>b.placedAtMs-a.placedAtMs);
+}
+
+function queuePending(item){
+  const id=item.id||item.trade?.id;
+  state.pending=state.pending.filter(p=>(p.id||p.trade?.id)!==id||p.op!==item.op);
+  state.pending.push(item);persist();
+}
+function removePending(op,id){state.pending=state.pending.filter(p=>!(p.op===op&&(p.id||p.trade?.id)===id));persist()}
+
+function money(n){const v=finite(Number(n));return `${state.currency}${v.toLocaleString(undefined,{minimumFractionDigits:state.decimals,maximumFractionDigits:state.decimals})}`}
+function pct(n){return `${finite(Number(n)).toFixed(2)}%`}
+function fmtDT(date,time){const d=new Date(`${date}T${time}:00`);return Number.isNaN(d.getTime())?`${date} ${time}`:d.toLocaleString(undefined,{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}
+function setConnection(online,label){$('connectionDot').className=`dot ${online?'online':'offline'}`;$('connectionText').textContent=label}
+function setSync(label,desc,type='neutral'){$('syncState').textContent=label;$('syncState').className=`tag ${type==='good'?'good':type==='bad'?'bad':'neutral'}`;$('syncDesc').textContent=desc}
+function showToast(msg,type='info'){const el=document.createElement('div');el.className=`toast ${type==='good'?'good':type==='bad'?'bad':''}`;el.textContent=msg;$('toastArea').appendChild(el);setTimeout(()=>el.remove(),3800)}
+function showApp(){ $('authScreen').classList.add('hidden');$('topbar').classList.remove('hidden');$('app').classList.remove('hidden') }
+function showAuth(){ $('app').classList.add('hidden');$('topbar').classList.add('hidden');$('authScreen').classList.remove('hidden') }
+
+function parseTrade(){
+  const asset=$('asset').value.trim(),amount=Number($('stake').value),payout=Number($('payout').value),date=$('tradeDate').value,time=$('tradeTime').value,note=$('note').value.trim();
+  if(!asset)throw new Error('Enter the asset or pair.');
+  if(!Number.isFinite(amount)||amount<0.01||amount>1000000)throw new Error('Stake must be between 0.01 and 1,000,000.');
+  if(!Number.isFinite(payout)||payout<0||payout>100)throw new Error('Payout must be between 0% and 100%.');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!/^\d{2}:\d{2}$/.test(time))throw new Error('Enter a valid date and time.');
+  const placed=new Date(`${date}T${time}:00`);if(Number.isNaN(placed.getTime()))throw new Error('Invalid date/time.');
+  const profit=state.result==='WIN'?amount*payout/100:-amount;
+  const returned=state.result==='WIN'?amount+profit:0;
+  return {asset,amount,payout,result:state.result,profit,returned,tradeDate:date,tradeTime:time,placedAtMs:placed.getTime(),note};
+}
+function syncResult(){ $('winBtn').classList.toggle('active',state.result==='WIN');$('lossBtn').classList.toggle('active',state.result==='LOSS'); }
+function updatePreview(){
+  const amount=Number($('stake').value),payout=Number($('payout').value);if(!Number.isFinite(amount)||amount<0||!Number.isFinite(payout)||payout<0){$('previewMain').textContent='Enter a valid stake and payout';$('previewSide').innerHTML='Return: —<br>Break-even: —';return;}
+  const profit=state.result==='WIN'?amount*payout/100:-amount,returned=state.result==='WIN'?amount+profit:0,be=payout>0?100/(100+payout):100;
+  $('previewMain').textContent=`${profit>=0?'+':''}${money(profit)} ${state.result==='WIN'?'profit':'loss'}`;$('previewMain').className=`preview-main ${profit>=0?'positive':'negative'}`;$('previewSide').innerHTML=`Return: ${money(returned)}<br>Break-even: ${pct(be)}`;
+}
+function clearTradeForm(){state.editingId='';$('editingId').value='';$('tradeFormTitle').textContent='Log a trade';$('saveTradeBtn').textContent='Save trade';$('asset').value='';$('stake').value='';$('payout').value='80';$('tradeDate').value=todayLocal();$('tradeTime').value=timeLocal();$('note').value='';state.result='WIN';syncResult();updatePreview()}
+function editTrade(id){const t=state.trades.find(x=>x.id===id);if(!t)return;state.editingId=t.id;$('editingId').value=t.id;$('tradeFormTitle').textContent='Edit trade';$('saveTradeBtn').textContent='Update trade';$('asset').value=t.asset;$('stake').value=t.amount;$('payout').value=t.payout;$('tradeDate').value=t.tradeDate;$('tradeTime').value=t.tradeTime;$('note').value=t.note;state.result=t.result;syncResult();updatePreview();window.scrollTo({top:0,behavior:'smooth'})}
+
+function stats(trades){
+  const sorted=[...trades].sort((a,b)=>a.placedAtMs-b.placedAtMs),total=sorted.length,wins=sorted.filter(t=>t.result==='WIN'),losses=sorted.filter(t=>t.result==='LOSS');
+  const grossProfit=wins.reduce((s,t)=>s+Math.max(0,t.profit),0);const grossLoss=losses.reduce((s,t)=>s+Math.max(0,-t.profit),0);const net=sorted.reduce((s,t)=>s+t.profit,0);
+  const avgPayout=total?sorted.reduce((s,t)=>s+t.payout,0)/total:0,avgStake=total?sorted.reduce((s,t)=>s+t.amount,0)/total:0;const pf=grossLoss>0?grossProfit/grossLoss:grossProfit>0?Infinity:0;
+  let curWin=0,curLoss=0,best=0,worst=0;for(const t of sorted){if(t.result==='WIN'){curWin++;curLoss=0;best=Math.max(best,curWin)}else{curLoss++;curWin=0;worst=Math.max(worst,curLoss)}}
+  return {total,wins:wins.length,losses:losses.length,grossProfit,grossLoss,net,avgPayout,avgStake,pf,winRate:total?wins.length/total*100:0,breakEven:100/(100+avgPayout),best,worst};
+}
 
 function renderMetrics(){
-  const all=calcStats(state.trades), today=state.trades.filter(t=>t.tradeDate===todayLocal()), month=state.trades.filter(t=>t.tradeDate.startsWith(todayLocal().slice(0,7)));
-  const todayNet=today.reduce((s,t)=>s+t.profit,0), monthNet=month.reduce((s,t)=>s+t.profit,0), balance=state.startingBalance+all.net;
-  const pairs=[['mBalance',balance,'balance'],['mToday',todayNet,'pl'],['mMonth',monthNet,'pl']];
-  pairs.forEach(([id,v])=>{const el=$(id);el.textContent=formatMoney(v);el.className=`metric-value ${v>0?'positive':v<0?'negative':'neutral'}`});
-  $("mBalanceMeta").textContent=`Starting ${formatMoney(state.startingBalance)} + all-time P/L`;
-  $("mTodayMeta").textContent=`${today.length} trade${today.length===1?'':'s'}`;
-  $("mMonthMeta").textContent=`${month.length} trade${month.length===1?'':'s'}`;
-  $("mWinRate").textContent=formatPct(all.winRate);$("mWinMeta").textContent=`${all.wins} / ${all.total} wins`;
-  $("mPF").textContent=Number.isFinite(all.pf)?all.pf.toFixed(2):'∞';$("mPFMeta").textContent=`GP ${formatMoney(all.grossProfit)} / GL ${formatMoney(all.grossLoss)}`;
-  $("mBE").textContent=formatPct(all.breakEven);$("mBEMeta").textContent=`Avg payout ${formatPct(all.avgPayout)}`;
-  $("sTrades").textContent=all.total;$("sWins").textContent=all.wins;$("sLosses").textContent=all.losses;$("sNet").textContent=formatMoney(all.net);$("sNet").className=`mini-v ${all.net>0?'positive':all.net<0?'negative':''}`;$("sPayout").textContent=formatPct(all.avgPayout);$("sStake").textContent=formatMoney(all.avgStake);$("sBestStreak").textContent=all.best;$("sWorstStreak").textContent=all.worst;
+  const all=stats(state.trades),today=state.trades.filter(t=>t.tradeDate===todayLocal()),month=state.trades.filter(t=>t.tradeDate.startsWith(todayLocal().slice(0,7))),ts=stats(today),ms=stats(month),balance=state.startingBalance+all.net,roi=state.startingBalance>0?all.net/state.startingBalance*100:0;
+  const setVal=(id,v)=>{$(id).textContent=v};const tone=(id,v)=>{$(id).classList.remove('positive','negative','neutral');$(id).classList.add(v>0?'positive':v<0?'negative':'neutral')};
+  setVal('mToday',money(ts.net));tone('mToday',ts.net);setVal('mTodayMeta',`${ts.total} trades • ${ts.wins}W / ${ts.losses}L`);
+  setVal('mMonth',money(ms.net));tone('mMonth',ms.net);setVal('mMonthMeta',`${ms.total} trades • ${ms.wins}W / ${ms.losses}L`);
+  setVal('mAll',money(all.net));tone('mAll',all.net);setVal('mAllMeta',`${all.total} trades • ${all.wins}W / ${all.losses}L`);
+  setVal('mWinRate',pct(all.winRate));tone('mWinRate',all.winRate);setVal('mWinMeta',`${all.wins} wins / ${all.losses} losses`);
+  setVal('mBalance',money(balance));tone('mBalance',balance-state.startingBalance);setVal('mRoi',pct(roi));tone('mRoi',roi);setVal('mRoiMeta',state.startingBalance>0?'Against starting balance':'Set starting balance to calculate ROI');
+  setVal('kGrossProfit',money(all.grossProfit));setVal('kGrossLoss',money(all.grossLoss));setVal('kPf',Number.isFinite(all.pf)?all.pf.toFixed(2):'∞');setVal('kAvgStake',money(all.avgStake));setVal('kAvgPayout',pct(all.avgPayout));setVal('kBreakEven',pct(all.breakEven));setVal('kBest',String(all.best));setVal('kWorst',String(all.worst));
 }
-
-function renderMonths(){
-  const ys=[...new Set([new Date().getFullYear(),...state.trades.map(t=>Number(t.tradeDate.slice(0,4))).filter(Number.isFinite)])].sort((a,b)=>b-a); const selected=Number($("yearSelect").value)||ys[0]||new Date().getFullYear();
-  $("yearSelect").innerHTML=ys.map(y=>`<option value="${y}">${y}</option>`).join('');$("yearSelect").value=String(selected);
-  const names=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  $("monthList").innerHTML=names.map((n,i)=>{const m=monthStats(selected,i);return `<div class="month"><div class="month-name">${n} ${selected}</div><div class="month-value ${m.net>0?'positive':m.net<0?'negative':''}">${formatMoney(m.net)}</div><div class="month-sub">${m.trades} trades • ${m.wins}W / ${m.losses}L</div></div>`}).join('');
-}
-
-function renderChart(){
-  const svg=$("equityChart"), range=Number(state.curveRange)||30, now=new Date(); const start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-range+1); const startMs=start.getTime(); const ordered=[...state.trades].sort((a,b)=>a.placedAtMs-b.placedAtMs); let cumulative=ordered.filter(t=>t.placedAtMs<startMs).reduce((s,t)=>s+t.profit,0); const points=[];
-  ordered.forEach(t=>{if(t.placedAtMs<startMs)return;cumulative+=t.profit;const prev=points[points.length-1];if(prev && prev.key===t.tradeDate)prev.value=cumulative;else points.push({key:t.tradeDate,value:cumulative});});
-  if(!points.length){svg.innerHTML=`<text x="450" y="132" text-anchor="middle" class="chart-label">No trades in the selected range</text>`;return}
-  const W=900,H=260,pad={l:36,r:18,t:18,b:28};const vals=points.map(p=>p.value);let min=Math.min(0,...vals),max=Math.max(0,...vals);if(max===min){max+=1;min-=1;}const sx=i=>pad.l+(i/(Math.max(1,points.length-1)))*(W-pad.l-pad.r);const sy=v=>pad.t+(max-v)/(max-min)*(H-pad.t-pad.b);const path=points.map((p,i)=>`${i?'L':'M'} ${sx(i).toFixed(2)} ${sy(p.value).toFixed(2)}`).join(' ');const area=`M ${sx(0)} ${sy(0)} ${path.slice(1)} L ${sx(points.length-1)} ${sy(0)} Z`;
-  const grid=[0,.25,.5,.75,1].map(fr=>{const y=pad.t+fr*(H-pad.t-pad.b);const val=max-fr*(max-min);return `<line x1="${pad.l}" y1="${y}" x2="${W-pad.r}" y2="${y}" class="chart-grid"/><text x="${pad.l-8}" y="${y+3}" text-anchor="end" class="chart-label">${escapeHtml(formatMoney(val))}</text>`}).join('');
-  const labels=[0,Math.floor(points.length/2),points.length-1].filter((v,i,a)=>a.indexOf(v)===i).map(i=>`<text x="${sx(i)}" y="${H-8}" text-anchor="${i===0?'start':i===points.length-1?'end':'middle'}" class="chart-label">${escapeHtml(points[i].key)}</text>`).join('');
-  svg.innerHTML=`<defs><linearGradient id="areaGrad" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#49a6ff" stop-opacity=".28"/><stop offset="100%" stop-color="#49a6ff" stop-opacity="0"/></linearGradient></defs>${grid}<line x1="${pad.l}" y1="${sy(0)}" x2="${W-pad.r}" y2="${sy(0)}" class="chart-zero"/><path d="${area}" class="chart-fill"/><path d="${path}" class="chart-path"/>${labels}`;
-}
-function startKeyForDate(d){return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')}
 function renderHistory(){
-  const search=state.search.toLowerCase(); const filtered=[...state.trades].sort((a,b)=>b.placedAtMs-a.placedAtMs).filter(t=>(state.filter==='ALL'||t.result===state.filter)&&(!search||`${t.asset} ${t.note}`.toLowerCase().includes(search)));
-  $("historyCount").textContent=filtered.length; const body=$("tradeBody");
-  if(!filtered.length){body.innerHTML=`<tr><td colspan="8"><div class="empty">No matching trades. Add your first record above.</div></td></tr>`;return;}
-  body.innerHTML=filtered.map(t=>`<tr><td>${escapeHtml(formatDateTime(t.tradeDate,t.tradeTime))}</td><td>${escapeHtml(t.asset)}</td><td>${formatMoney(t.amount)}</td><td>${formatPct(t.payout)}</td><td><span class="tag ${t.result==='WIN'?'win':'loss'}">${t.result}</span></td><td>${formatMoney(t.returned)}</td><td class="${t.profit>0?'positive':t.profit<0?'negative':''}">${t.profit>0?'+':''}${formatMoney(t.profit)}</td><td><div style="display:flex;gap:6px"><button class="btn small" type="button" data-edit="${t.id}">Edit</button><button class="btn small danger" type="button" data-delete="${t.id}">Delete</button></div></td></tr>`).join('');
+  const q=state.search.trim().toLowerCase(), rows=state.trades.filter(t=>(state.filter==='ALL'||t.result===state.filter)&&(!q||t.asset.toLowerCase().includes(q)||t.note.toLowerCase().includes(q)));$('historyCount').textContent=rows.length;
+  $('tradeBody').innerHTML=rows.length?rows.map(t=>`<tr><td>${escapeHtml(fmtDT(t.tradeDate,t.tradeTime))}</td><td><strong>${escapeHtml(t.asset)}</strong><div class="muted" style="font-size:10px;margin-top:2px">${escapeHtml(t.note)}</div></td><td>${money(t.amount)}</td><td>${pct(t.payout)}</td><td><span class="tag ${t.result==='WIN'?'win':'loss'}">${t.result}</span></td><td>${money(t.returned)}</td><td class="${t.profit>=0?'positive':'negative'}" style="font-weight:850">${t.profit>=0?'+':''}${money(t.profit)}</td><td><div class="action-row"><button class="btn small" type="button" data-edit="${escapeHtml(t.id)}">Edit</button><button class="btn small danger" type="button" data-delete="${escapeHtml(t.id)}">Delete</button></div></td></tr>`).join(''):`<tr><td colspan="8" class="empty">No trades match the current filters.</td></tr>`;
+}
+function renderMonths(){
+  const year=Number($('yearSelect').value)||new Date().getFullYear();const names=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];$('monthList').innerHTML=names.map((name,i)=>{const key=`${year}-${pad2(i+1)}`,ts=state.trades.filter(t=>t.tradeDate.startsWith(key)),s=stats(ts);return `<div class="month"><div class="month-name">${name}</div><div class="month-value ${s.net>0?'positive':s.net<0?'negative':''}">${s.net>=0?'+':''}${money(s.net)}</div><div class="month-sub">${s.total} trades • ${s.wins}W/${s.losses}L</div></div>`}).join('');
+}
+function renderYearOptions(){const years=new Set([new Date().getFullYear(),...state.trades.map(t=>Number(t.tradeDate.slice(0,4))).filter(Number.isFinite)]);const sorted=[...years].sort((a,b)=>b-a);const current=$('yearSelect').value; $('yearSelect').innerHTML=sorted.map(y=>`<option value="${y}">${y}</option>`).join('');$('yearSelect').value=sorted.includes(Number(current))?current:String(new Date().getFullYear());renderMonths()}
+function renderChart(){
+  const svg=$('equityChart'),w=1000,h=280,pad=32;const sorted=[...state.trades].sort((a,b)=>a.placedAtMs-b.placedAtMs).slice(-state.curveRange);let balance=state.startingBalance;const pts=[{x:0,y:balance}];for(let i=0;i<sorted.length;i++){balance+=sorted[i].profit;pts.push({x:i+1,y:balance})}
+  const ys=pts.map(p=>p.y),minY=Math.min(...ys,0),maxY=Math.max(...ys,0),span=maxY-minY||1,xScale=i=>pad+(i/(Math.max(1,pts.length-1)))*(w-pad*2),yScale=v=>h-pad-((v-minY)/span)*(h-pad*2);
+  const path=pts.map((p,i)=>`${i?'L':'M'} ${xScale(i).toFixed(2)} ${yScale(p.y).toFixed(2)}`).join(' ');const zeroY=yScale(0);const area=`M ${xScale(0)} ${zeroY} `+pts.map((p,i)=>`L ${xScale(i).toFixed(2)} ${yScale(p.y).toFixed(2)}`).join(' ')+` L ${xScale(pts.length-1)} ${zeroY} Z`;
+  const grid=[0,.25,.5,.75,1].map(r=>{const y=pad+r*(h-pad*2),val=maxY-r*span;return `<line x1="${pad}" x2="${w-pad}" y1="${y}" y2="${y}" class="chart-grid"/><text x="4" y="${y+3}" class="chart-label">${escapeHtml(money(val))}</text>`}).join('');
+  svg.innerHTML=`<defs><linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="rgba(55,233,255,.22)"/><stop offset="100%" stop-color="rgba(55,233,255,0)"/></linearGradient></defs>${grid}<line x1="${pad}" x2="${w-pad}" y1="${zeroY}" y2="${zeroY}" class="chart-zero"/><path d="${area}" class="chart-fill"/><path d="${path}" class="chart-path"/>`;
+  const last=pts[pts.length-1]?.y??state.startingBalance;const high=Math.max(...ys),low=Math.min(...ys);$('curveStart').textContent=`Start: ${money(state.startingBalance)}`;$('curveEnd').textContent=`End: ${money(last)}`;$('curveHigh').textContent=`High: ${money(high)}`;$('curveLow').textContent=`Low: ${money(low)}`;
+}
+function renderAll(){renderMetrics();renderHistory();renderYearOptions();renderChart();updatePreview()}
+
+async function writeTrade(trade){
+  state.trades=[...state.trades.filter(t=>t.id!==trade.id),trade].sort((a,b)=>b.placedAtMs-a.placedAtMs);persist();renderAll();
+  if(!db||!state.user||!navigator.onLine){queuePending({op:'set',trade});setSync('PENDING','Saved locally • waiting for connection');return false}
+  try{await setDoc(doc(db,'users',state.user.uid,'trades',trade.id),toFirestore(trade),{merge:false});removePending('set',trade.id);setSync('SYNCED','Cloud synced','good');return true}catch(err){console.error(err);queuePending({op:'set',trade});setSync('PENDING','Saved locally • cloud retry queued','neutral');return false}
+}
+async function deleteTrade(id){
+  state.trades=state.trades.filter(t=>t.id!==id);persist();renderAll();
+  if(!db||!state.user||!navigator.onLine){queuePending({op:'delete',id});setSync('PENDING','Deleted locally • waiting for connection');return}
+  try{await deleteDoc(doc(db,'users',state.user.uid,'trades',id));removePending('delete',id);setSync('SYNCED','Cloud synced','good');showToast('Trade deleted.','good')}catch(err){console.error(err);queuePending({op:'delete',id});setSync('PENDING','Delete queued for cloud sync');showToast(humanFirestoreError(err),'bad')}
+}
+async function syncPending(){
+  if(state.syncing||!db||!state.user||!navigator.onLine||!state.pending.length)return;state.syncing=true;
+  try{for(const p of [...state.pending]){const id=p.id||p.trade?.id;if(!id)continue;try{if(p.op==='set')await setDoc(doc(db,'users',state.user.uid,'trades',id),toFirestore(normalizeTrade(p.trade)),{merge:false});else if(p.op==='delete')await deleteDoc(doc(db,'users',state.user.uid,'trades',id));removePending(p.op,id)}catch(err){console.error('Pending sync failed',err);break}}if(!state.pending.length)setSync('SYNCED','Cloud synced','good')}finally{state.syncing=false}
 }
 
-function renderAll(){renderMetrics();renderMonths();renderChart();renderHistory();updatePreview();}
-function updatePreview(){
-  const amount=finite(Number($("stake").value));const payout=clamp(finite(Number($("payout").value)),0,100);const profit=state.result==='WIN'?amount*payout/100:-amount;const returned=state.result==='WIN'?amount+profit:0;const be=100/(100+payout);
-  $("previewMain").textContent=`${profit>0?'+':''}${formatMoney(profit)} ${state.result==='WIN'?'profit':'loss'}`;$("previewMain").className=`preview-main ${profit>0?'positive':profit<0?'negative':''}`;$("previewSide").innerHTML=`Return: ${formatMoney(returned)}<br>Break-even: ${formatPct(be)}`;
+async function connectFirebase(config,manual=true){
+  if(state.connecting)return;state.connecting=true;configStatus('CONNECTING…');authStatus('Connecting to Firebase…');
+  try{
+    if(!validConfig(config))throw new Error('All six Firebase Web App config fields are required.');
+    localStorage.setItem(LS_CONFIG,JSON.stringify(config));
+    app=getApps().length?getApp():initializeApp(config);
+    auth=getAuth(app);db=getFirestore(app);await setPersistence(auth,browserLocalPersistence);
+    configStatus('CONNECTED',true);authStatus('Firebase connected. You can sign in or create an account.','good');setConnection(navigator.onLine,'Firebase ready');
+    attachAuthObserver();
+  }catch(err){console.error(err);configStatus('ERROR',false,true);authStatus(`Firebase setup failed: ${err?.message||'Unknown error'}`,'bad');setConnection(false,'Firebase setup error');}
+  finally{state.connecting=false}
 }
-function clearTradeForm(){state.editingId='';$("editingId").value='';$("tradeFormTitle").textContent='Log a trade';$("saveTradeBtn").textContent='Save trade';$("asset").value='';$("stake").value='';$("payout").value='80';$("tradeDate").value=todayLocal();$("tradeTime").value=timeLocal();$("note").value='';state.result='WIN';syncResultButtons();updatePreview();}
-function syncResultButtons(){$("winBtn").classList.toggle('active',state.result==='WIN');$("lossBtn").classList.toggle('active',state.result==='LOSS');}
-function editTrade(id){const t=state.trades.find(x=>x.id===id);if(!t)return;state.editingId=id;$("editingId").value=id;$("tradeFormTitle").textContent='Edit trade';$("saveTradeBtn").textContent='Update trade';$("asset").value=t.asset;$("stake").value=t.amount;$("payout").value=t.payout;$("tradeDate").value=t.tradeDate;$("tradeTime").value=t.tradeTime;$("note").value=t.note;state.result=t.result;syncResultButtons();updatePreview();window.scrollTo({top:0,behavior:'smooth'});}
-
-async function writeTrade(t){
-  state.trades=[...state.trades.filter(x=>x.id!==t.id),t].sort((a,b)=>b.placedAtMs-a.placedAtMs);persistLocal();renderAll();
-  if(!db||!state.user){state.pending.push({op:'set',trade:t});persistLocal();setSync('LOCAL_ONLY','Local only');return false;}
-  try{await setDoc(doc(db,'users',state.user.uid,'trades',t.id),toFirestore(t),{merge:false});removePending('set',t.id);setSync('SYNCED','Cloud synced');return true;}catch(err){queuePending({op:'set',trade:t});setSync('PENDING','Saved locally • cloud retry queued');return false;}
-}
-function queuePending(item){state.pending=state.pending.filter(p=>!(p.op===item.op&&((p.trade?.id||p.id)===(item.trade?.id||item.id))));state.pending.push(item);persistLocal();}
-function removePending(op,id){state.pending=state.pending.filter(p=>!(p.op===op&&((p.trade?.id||p.id)===id)));persistLocal();}
-function setSync(label,desc){$("syncState").textContent=label;$("syncState").className=`tag ${label==='SYNCED'?'win':label==='PENDING'?'':'loss'}`;$("syncDesc").textContent=desc}
-async function syncPending(){if(!db||!state.user||!navigator.onLine||!state.pending.length)return;const pending=[...state.pending];for(const p of pending){try{if(p.op==='set')await setDoc(doc(db,'users',state.user.uid,'trades',p.trade.id),toFirestore(p.trade),{merge:false});else if(p.op==='delete')await deleteDoc(doc(db,'users',state.user.uid,'trades',p.id));removePending(p.op,p.trade?.id||p.id);}catch{break;}}if(!state.pending.length)setSync('SYNCED','Cloud synced');}
-
-async function deleteTrade(id){if(!state.user)return;state.trades=state.trades.filter(t=>t.id!==id);persistLocal();renderAll();
-  if(db){try{await deleteDoc(doc(db,'users',state.user.uid,'trades',id));removePending('delete',id);showToast('Trade deleted','good');setSync('SYNCED','Cloud synced');}catch{queuePending({op:'delete',id});setSync('PENDING','Deleted locally • cloud retry queued');showToast('Deleted locally; cloud delete will retry.','bad');}}else{queuePending({op:'delete',id});showToast('Deleted locally.','good');}
-}
-
-$("authForm").addEventListener('submit',async e=>{e.preventDefault();if(!CONFIG_READY||!auth){setAuthStatus('Firebase config is still placeholder. Replace firebaseConfig in this file first.',true);return;}const email=$("authEmail").value.trim(),pass=$("authPassword").value;if(!email||!pass)return;$("authSubmit").disabled=true;setAuthStatus(state.authMode==='signin'?'Signing in…':'Creating account…');try{if(state.authMode==='signin')await signInWithEmailAndPassword(auth,email,pass);else await createUserWithEmailAndPassword(auth,email,pass);setAuthStatus('');}catch(err){setAuthStatus(err?.message||'Authentication failed.',true);}finally{$("authSubmit").disabled=false;}});
-$("signInTab").addEventListener('click',()=>setAuthMode('signin'));$("signUpTab").addEventListener('click',()=>setAuthMode('signup'));
-$("resetPasswordBtn").addEventListener('click',async()=>{if(!auth){setAuthStatus('Configure Firebase first.',true);return;}const email=$("authEmail").value.trim();if(!email){setAuthStatus('Enter your email first.',true);return;}try{await sendPasswordResetEmail(auth,email);setAuthStatus('Password reset email sent. Check your inbox.');}catch(err){setAuthStatus(err?.message||'Could not send reset email.',true);}});
-$("logoutBtn").addEventListener('click',()=>auth&&signOut(auth));
-$("newTradeBtn").addEventListener('click',()=>{clearTradeForm();$("asset").focus();});$("clearTradeFormBtn").addEventListener('click',clearTradeForm);
-$("winBtn").addEventListener('click',()=>{state.result='WIN';syncResultButtons();updatePreview()});$("lossBtn").addEventListener('click',()=>{state.result='LOSS';syncResultButtons();updatePreview()});
-['stake','payout'].forEach(id=>$(id).addEventListener('input',updatePreview));
-$("tradeForm").addEventListener('submit',async e=>{e.preventDefault();if(!state.user){showToast('Sign in first.','bad');return;}try{const base=parseTradeForm();const id=state.editingId||crypto.randomUUID();const old=state.trades.find(t=>t.id===id);const trade=normalizedTrade({...base,id,ownerUid:state.user.uid,createdAtMs:old?.createdAtMs||Date.now()});$("saveTradeBtn").disabled=true;const ok=await writeTrade(trade);clearTradeForm();showToast(ok?'Trade synced successfully.':'Trade saved locally; cloud sync is queued.',ok?'good':'bad');}catch(err){showToast(err.message||'Please check the fields.','bad')}finally{$("saveTradeBtn").disabled=false;}});
-$("tradeBody").addEventListener('click',e=>{const edit=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(edit)editTrade(edit.dataset.edit);if(del){const t=state.trades.find(x=>x.id===del.dataset.delete);if(t){state.deleteId=t.id;$("deletePreview").textContent=`${t.asset} • ${formatMoney(t.profit)}`;$("modal").classList.remove('hidden');$("modal").setAttribute('aria-hidden','false')}}});
-function closeModal(){$("modal").classList.add('hidden');$("modal").setAttribute('aria-hidden','true');state.deleteId=''}
-$("closeModalBtn").addEventListener('click',closeModal);$("cancelDeleteBtn").addEventListener('click',closeModal);$("confirmDeleteBtn").addEventListener('click',async()=>{const id=state.deleteId;closeModal();if(id)await deleteTrade(id)});
-$("historySearch").addEventListener('input',e=>{state.search=e.target.value;renderHistory()});$("historyResult").addEventListener('change',e=>{state.filter=e.target.value;renderHistory()});$("curveRange").addEventListener('change',e=>{state.curveRange=Number(e.target.value);renderChart()});$("yearSelect").addEventListener('change',renderMonths);
-$("saveSettingsBtn").addEventListener('click',()=>{const cur=$("currency").value.trim()||'$';const sb=Math.max(0,finite(Number($("startingBalance").value)));const dec=Number($("decimalPlaces").value);state.currency=cur.slice(0,4);state.startingBalance=sb;state.decimals=[0,2,3,4].includes(dec)?dec:2;persistLocal();renderAll();showToast('Settings saved.','good')});
-$("clearLocalBtn").addEventListener('click',()=>{if(!state.user)return;if(confirm('Clear this device’s local cache? Cloud data will remain in Firebase.')){localStorage.removeItem(storageKey(state.user.uid));localStorage.removeItem(pendingKey(state.user.uid));loadLocal(state.user.uid);renderAll();showToast('Local cache cleared.','good')}});
-$("refreshBtn").addEventListener('click',()=>{if(state.user){loadLocal(state.user.uid);renderAll();syncPending();showToast('Dashboard refreshed.','good')}});
-$("downloadJsonBtn").addEventListener('click',()=>{if(!state.user){showToast('Sign in first.','bad');return;}const data={exportedAt:new Date().toISOString(),userId:state.user.uid,settings:{currency:state.currency,startingBalance:state.startingBalance,decimals:state.decimals},trades:state.trades};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});downloadBlob(blob,`tradepulse-backup-${todayLocal()}.json`);});
-$("exportCsvBtn").addEventListener('click',()=>{if(!state.user){showToast('Sign in first.','bad');return;}const rows=[['id','date','time','asset','stake','payout_percent','result','return','profit_loss','note'],...state.trades.map(t=>[t.id,t.tradeDate,t.tradeTime,t.asset,t.amount,t.payout,t.result,t.returned,t.profit,t.note])];const csv=rows.map(r=>r.map(v=>{const s=String(v??'');return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}).join(',')).join('\n');downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),`tradepulse-trades-${todayLocal()}.csv`)});
-function downloadBlob(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
-window.addEventListener('online',()=>{setConnection(true,'Online');syncPending();if(state.user&&db)setSync('SYNCED','Online • Firebase ready')});window.addEventListener('offline',()=>{setConnection(false,'Offline');setSync('LOCAL','Offline • local cache active')});
-
-if(!CONFIG_READY||!auth){setConnection(false,'Firebase setup needed');setAuthStatus('Add your Firebase Web App config to firebaseConfig in this HTML file. Then enable Email/Password Authentication and create a Firestore database.',true);}else{
-  setConnection(navigator.onLine,'Checking Firebase…');
+function attachAuthObserver(){
+  if(!auth||attachAuthObserver.done)return;attachAuthObserver.done=true;
   onAuthStateChanged(auth,async user=>{
-    if(state.unsubscribe){state.unsubscribe();state.unsubscribe=null}
-    if(!user){state.user=null;showAuth();return;}
-    state.user=user;loadLocal(user.uid);showApp();$("footerUid").textContent=`Signed in • ${user.email||user.uid}`;setConnection(navigator.onLine,'Online');renderAll();clearTradeForm();
+    if(firebaseUnsub){firebaseUnsub();firebaseUnsub=null}
+    state.remoteReady=false;state.pending=[];state.trades=[];
+    if(!user){state.user=null;showAuth();$('topEmail').textContent='Signed out';$('footerUid').textContent='Signed out';return}
+    state.user=user;loadLocal(user.uid);$('topEmail').textContent=user.email||user.uid;$('footerUid').textContent=`Signed in • ${user.email||user.uid}`;showApp();renderAll();setConnection(navigator.onLine,'Firebase ready');setSync('LOADING','Loading cloud journal');
     const ref=collection(db,'users',user.uid,'trades');
-    state.unsubscribe=onSnapshot(query(ref,orderBy('placedAt','desc')),snap=>{const remote=snap.docs.map(fromFirestore);state.trades=remote;persistLocal();renderAll();setSync('SYNCED',`${remote.length} cloud trade${remote.length===1?'':'s'} synced`);syncPending();},err=>{console.error(err);setSync('PENDING','Cloud read unavailable • local cache active');showToast(`Firebase sync issue: ${err?.message||'permission/network error'}`,'bad')});
+    firebaseUnsub=onSnapshot(query(ref,orderBy('placedAt','desc')),snap=>{
+      const remote=snap.docs.map(fromFirestore).filter(t=>t.ownerUid===user.uid);state.trades=mergeRemoteWithPending(remote);state.remoteReady=true;state.lastRemoteIds=new Set(remote.map(t=>t.id));persist();renderAll();setSync('SYNCED',`${remote.length} cloud trade${remote.length===1?'':'s'} synced`,'good');syncPending();
+    },err=>{console.error(err);state.remoteReady=false;state.trades=mergeRemoteWithPending(state.trades);persist();renderAll();setSync('LOCAL','Cloud read unavailable • local cache active','neutral');showToast(humanFirestoreError(err),'bad')});
     await syncPending();
   });
 }
-setAuthMode('signin');clearTradeForm();
+
+function setAuthMode(mode){state.authMode=mode;$('signInTab').classList.toggle('active',mode==='signin');$('signUpTab').classList.toggle('active',mode==='signup');$('authSubmit').textContent=mode==='signin'?'Sign in':'Create account';$('authPassword').autocomplete=mode==='signin'?'current-password':'new-password'}
+
+$('connectFirebaseBtn').addEventListener('click',()=>connectFirebase(configFromInputs(),true));
+$('forgetFirebaseBtn').addEventListener('click',()=>{if(state.user){showToast('Sign out before forgetting Firebase config.','bad');return}localStorage.removeItem(LS_CONFIG);location.reload()});
+$('signInTab').addEventListener('click',()=>setAuthMode('signin'));$('signUpTab').addEventListener('click',()=>setAuthMode('signup'));
+$('togglePassword').addEventListener('click',()=>{const inp=$('authPassword'),show=inp.type==='password';inp.type=show?'text':'password';$('togglePassword').textContent=show?'Hide password':'Show password'});
+$('authForm').addEventListener('submit',async e=>{e.preventDefault();if(!auth){authStatus('Connect Firebase first.','bad');return}const email=$('authEmail').value.trim(),pass=$('authPassword').value;if(!email||!pass){authStatus('Enter email and password.','bad');return}if(!/^\S+@\S+\.\S+$/.test(email)){authStatus('Enter a valid email address.','bad');return}$('authSubmit').disabled=true;authStatus(state.authMode==='signin'?'Signing in…':'Creating your account…');try{if(state.authMode==='signin')await signInWithEmailAndPassword(auth,email,pass);else await createUserWithEmailAndPassword(auth,email,pass);authStatus('Authentication successful. Loading journal…','good')}catch(err){authStatus(humanAuthError(err),'bad')}finally{$('authSubmit').disabled=false}});
+$('resetPasswordBtn').addEventListener('click',async()=>{if(!auth){authStatus('Connect Firebase first.','bad');return}const email=$('authEmail').value.trim();if(!email||!/\S+@\S+\.\S+/.test(email)){authStatus('Enter the email address for the reset link first.','bad');return}try{await sendPasswordResetEmail(auth,email);authStatus('Password reset email sent. Check the inbox and spam folder.','good')}catch(err){authStatus(humanAuthError(err),'bad')}});
+$('logoutBtn').addEventListener('click',async()=>{if(!auth)return;try{await signOut(auth)}catch(err){showToast(humanAuthError(err),'bad')}});
+
+$('newTradeBtn').addEventListener('click',()=>{clearTradeForm();$('asset').focus()});$('clearTradeFormBtn').addEventListener('click',clearTradeForm);
+$('winBtn').addEventListener('click',()=>{state.result='WIN';syncResult();updatePreview()});$('lossBtn').addEventListener('click',()=>{state.result='LOSS';syncResult();updatePreview()});
+['stake','payout'].forEach(id=>$(id).addEventListener('input',updatePreview));
+$('tradeForm').addEventListener('submit',async e=>{e.preventDefault();if(!state.user){showToast('Sign in first.','bad');return}try{const base=parseTrade(),id=state.editingId||uuid(),old=state.trades.find(t=>t.id===id),trade=normalizeTrade({...base,id,ownerUid:state.user.uid,createdAtMs:old?.createdAtMs||Date.now()});$('saveTradeBtn').disabled=true;const ok=await writeTrade(trade);clearTradeForm();showToast(ok?'Trade saved and synced.':'Trade saved locally; cloud sync is queued.',ok?'good':'bad')}catch(err){showToast(err.message||'Please check the fields.','bad')}finally{$('saveTradeBtn').disabled=false}});
+$('tradeBody').addEventListener('click',e=>{const edit=e.target.closest('[data-edit]'),del=e.target.closest('[data-delete]');if(edit)editTrade(edit.dataset.edit);if(del){const t=state.trades.find(x=>x.id===del.dataset.delete);if(t){state.deleteId=t.id;$('deletePreview').textContent=`${t.asset} • ${t.profit>=0?'+':''}${money(t.profit)}`;$('modal').classList.remove('hidden');$('modal').setAttribute('aria-hidden','false')}}});
+function closeModal(){$('modal').classList.add('hidden');$('modal').setAttribute('aria-hidden','true');state.deleteId=''}
+$('closeModalBtn').addEventListener('click',closeModal);$('cancelDeleteBtn').addEventListener('click',closeModal);$('confirmDeleteBtn').addEventListener('click',async()=>{const id=state.deleteId;closeModal();if(id)await deleteTrade(id)});
+$('historySearch').addEventListener('input',e=>{state.search=e.target.value;renderHistory()});$('historyResult').addEventListener('change',e=>{state.filter=e.target.value;renderHistory()});$('curveRange').addEventListener('change',e=>{state.curveRange=Number(e.target.value);renderChart()});$('yearSelect').addEventListener('change',renderMonths);
+$('saveSettingsBtn').addEventListener('click',()=>{const c=$('currency').value.trim().slice(0,4)||'$';const b=Number($('startingBalance').value),d=Number($('decimalPlaces').value);if(!Number.isFinite(b)||b<0||b>100000000){showToast('Starting balance must be between 0 and 100,000,000.','bad');return}state.currency=c;state.startingBalance=b;state.decimals=[0,2,3,4].includes(d)?d:2;persist();renderAll();showToast('Settings saved.','good')});
+$('clearLocalBtn').addEventListener('click',()=>{if(!state.user)return;if(confirm('Clear this device cache? Cloud data remains in Firebase.')){localStorage.removeItem(storageKey(state.user.uid));localStorage.removeItem(settingsKey(state.user.uid));localStorage.removeItem(pendingKey(state.user.uid));loadLocal(state.user.uid);renderAll();showToast('Local cache cleared.','good')}});
+$('refreshBtn').addEventListener('click',async()=>{renderAll();await syncPending();showToast('Dashboard refreshed.','good')});
+$('downloadJsonBtn').addEventListener('click',()=>{if(!state.user){showToast('Sign in first.','bad');return}const payload={exportedAt:new Date().toISOString(),userId:state.user.uid,settings:{currency:state.currency,startingBalance:state.startingBalance,decimals:state.decimals},trades:state.trades};download(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),`tradepulse-backup-${todayLocal()}.json`)});
+$('exportCsvBtn').addEventListener('click',()=>{if(!state.user){showToast('Sign in first.','bad');return}const rows=[['id','date','time','asset','stake','payout_percent','result','return','profit_loss','note'],...state.trades.map(t=>[t.id,t.tradeDate,t.tradeTime,t.asset,t.amount,t.payout,t.result,t.returned,t.profit,t.note])];const csv=rows.map(r=>r.map(v=>{const s=String(v??'');return /[",\n]/.test(s)?`"${s.replaceAll('"','""')}"`:s}).join(',')).join('\n');download(new Blob([csv],{type:'text/csv;charset=utf-8'}),`tradepulse-trades-${todayLocal()}.csv`)});
+function download(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+window.addEventListener('online',()=>{setConnection(true,'Online');if(state.user)syncPending()});window.addEventListener('offline',()=>{setConnection(false,'Offline');setSync('LOCAL','Offline • local cache active','neutral')});
+window.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('modal').classList.contains('hidden'))closeModal()});
+
+(function boot(){
+  let saved=null;try{saved=JSON.parse(localStorage.getItem(LS_CONFIG)||'null')}catch{}
+  if(saved&&validConfig(saved)){fillConfig(saved);connectFirebase(saved,false)}else{configStatus('NOT CONNECTED');authStatus('Paste your Firebase Web App configuration below, then press Connect Firebase.','neutral');setConnection(false,'Firebase not connected');showAuth()}
+  setAuthMode('signin');clearTradeForm();renderAll();
+})();
 </script>
 </body>
 </html>
