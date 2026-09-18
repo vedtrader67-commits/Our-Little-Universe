@@ -986,6 +986,353 @@
     .alix-title{font-weight:900;font-size:18px;color:#5b3548}.alix-sub{font-size:11px;color:#967985;margin-top:2px}.alix-close{border:0;background:#fff0f6;color:#9d426d;border-radius:50%;width:34px;height:34px;font-size:20px}
     .alix-messages{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:9px}.alix-msg{max-width:86%;padding:10px 12px;border-radius:16px;font-size:13px;line-height:1.45;white-space:pre-wrap;word-break:break-word}.alix-msg.ai{align-self:flex-start;background:#fff0f6;color:#573748;border-bottom-left-radius:5px}.alix-msg.user{align-self:flex-end;background:#dc6e9d;color:#fff;border-bottom-right-radius:5px}
     .alix-composer{display:flex;gap:8px;padding:10px;border-top:1px solid #f0dfe7;background:#fffafd}.alix-input{flex:1;min-height:42px;max-height:110px;resize:none;border:1px solid #ead5df;border-radius:14px;padding:10px 12px;outline:none;background:#fff}.alix-send{width:46px;border:0;border-radius:14px;background:#dc6e9d;color:#fff;font-weight:800}.alix-send:disabled{opacity:.55}
+
+/* ============================================================
+   OPEN-WORLD STORY GAME — FRONT-END ONLY
+   ============================================================ */
+.game-shell {
+  width: 100%;
+  min-height: calc(100vh - 90px);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.game-stage {
+  position: relative;
+  min-height: min(78vh, 760px);
+  height: calc(100vh - 180px);
+  overflow: hidden;
+  border-radius: 28px;
+  background: #10151b;
+  border: 1px solid rgba(255,255,255,.18);
+  box-shadow: 0 22px 65px rgba(20,20,30,.22);
+  isolation: isolate;
+}
+#gameCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  user-select: none;
+}
+.game-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 50% 42%, transparent 48%, rgba(0,0,0,.35) 100%),
+    linear-gradient(180deg, rgba(0,0,0,.08), transparent 25%, transparent 75%, rgba(0,0,0,.16));
+}
+.game-topbar {
+  position: absolute;
+  inset: 12px 12px auto 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  pointer-events: none;
+}
+.game-title-chip,
+.game-stat-chip,
+.game-quest-card,
+.game-phone-card,
+.game-dialog {
+  background: rgba(13,18,24,.78);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: 0 12px 30px rgba(0,0,0,.2);
+}
+.game-title-chip {
+  padding: 10px 13px;
+  border-radius: 16px;
+  color: #fff;
+  pointer-events: auto;
+}
+.game-title-chip strong {
+  display: block;
+  font-size: 15px;
+  letter-spacing: .02em;
+}
+.game-title-chip span {
+  display: block;
+  margin-top: 2px;
+  font-size: 10px;
+  opacity: .72;
+}
+.game-stat-row {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.game-stat-chip {
+  color: #fff;
+  border-radius: 14px;
+  padding: 8px 10px;
+  font-size: 11px;
+  min-width: 76px;
+  text-align: center;
+}
+.game-stat-chip b {
+  display: block;
+  font-size: 13px;
+  margin-top: 2px;
+}
+.game-quest-card {
+  position: absolute;
+  left: 12px;
+  top: 82px;
+  width: min(310px, calc(100% - 24px));
+  border-radius: 18px;
+  padding: 12px 13px;
+  color: #fff;
+}
+.game-quest-label {
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .62;
+}
+.game-quest-title {
+  margin-top: 4px;
+  font-weight: 800;
+  font-size: 14px;
+}
+.game-quest-objective {
+  margin-top: 4px;
+  color: rgba(255,255,255,.72);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.game-quest-bar {
+  height: 5px;
+  margin-top: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255,255,255,.11);
+}
+.game-quest-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #f5b4cb, #fff);
+  transition: width .2s ease;
+}
+.game-mini-map {
+  position: absolute;
+  right: 12px;
+  bottom: 120px;
+  width: 140px;
+  height: 140px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(8,11,15,.82);
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 12px 30px rgba(0,0,0,.28);
+}
+#gameMapCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.game-location-label {
+  position: absolute;
+  right: 12px;
+  bottom: 266px;
+  max-width: 180px;
+  padding: 7px 9px;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 10px;
+  text-align: right;
+  background: rgba(13,18,24,.65);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+}
+.game-controls {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  pointer-events: none;
+}
+.game-joystick {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.2);
+  border: 1px solid rgba(255,255,255,.14);
+  box-shadow: inset 0 0 0 14px rgba(255,255,255,.025);
+  pointer-events: auto;
+  touch-action: none;
+}
+.game-joystick-knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  margin: -29px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.22);
+  border: 1px solid rgba(255,255,255,.3);
+  box-shadow: 0 8px 25px rgba(0,0,0,.18);
+  transform: translate3d(0,0,0);
+  will-change: transform;
+}
+.game-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 70px);
+  gap: 9px;
+  pointer-events: auto;
+}
+.game-action-btn {
+  width: 70px;
+  height: 54px;
+  border: 1px solid rgba(255,255,255,.16);
+  border-radius: 17px;
+  color: #fff;
+  background: rgba(10,14,18,.72);
+  backdrop-filter: blur(14px);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 800;
+  touch-action: manipulation;
+  box-shadow: 0 9px 25px rgba(0,0,0,.18);
+}
+.game-action-btn:active,
+.game-action-btn.active {
+  transform: translateY(1px) scale(.97);
+  background: rgba(255,255,255,.18);
+}
+.game-dialog-wrap,
+.game-phone-wrap {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgba(0,0,0,.36);
+  backdrop-filter: blur(4px);
+  z-index: 8;
+}
+.game-dialog,
+.game-phone-card {
+  width: min(520px, 100%);
+  border-radius: 22px;
+  padding: 18px;
+  color: #fff;
+}
+.game-dialog-name {
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.62);
+}
+.game-dialog-text {
+  margin-top: 8px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+.game-dialog-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 14px;
+  justify-content: flex-end;
+}
+.game-dialog-actions button,
+.game-phone-actions button {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 13px;
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+}
+.game-dialog-actions button.primary {
+  background: #fff;
+  color: #1a1f25;
+}
+.game-phone-card h3 {
+  margin: 0;
+  font-size: 19px;
+}
+.game-evidence-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.game-evidence-item {
+  padding: 10px 11px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.07);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.game-download-note {
+  margin-top: 10px;
+  color: rgba(255,255,255,.55);
+  font-size: 10px;
+  line-height: 1.4;
+}
+.game-footer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.game-footer-copy {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.game-footer-actions {
+  display: flex;
+  gap: 8px;
+}
+.game-footer-actions button {
+  white-space: nowrap;
+}
+.game-hidden {
+  display: none !important;
+}
+@media (max-width: 600px) {
+  .game-stage {
+    min-height: calc(100vh - 175px);
+    height: calc(100vh - 175px);
+    border-radius: 22px;
+  }
+  .game-mini-map {
+    width: 118px;
+    height: 118px;
+    bottom: 126px;
+  }
+  .game-location-label {
+    bottom: 254px;
+  }
+  .game-joystick {
+    width: 114px;
+    height: 114px;
+  }
+  .game-action-grid {
+    grid-template-columns: repeat(2, 64px);
+    gap: 7px;
+  }
+  .game-action-btn {
+    width: 64px;
+    height: 50px;
+  }
+}
+
 </style>
 
 <style id="final-performance-overrides">
@@ -1980,8 +2327,97 @@ input,textarea{caret-color:var(--pink-dark);}
       </section>
       <div id="alixOverlay" class="alix-overlay" aria-hidden="true"><div class="alix-panel" role="dialog" aria-modal="true" aria-label="Chat with Alix"><div class="alix-head"><div><div class="alix-title">✨ Alix</div><div class="alix-sub">Live AI trading assistant</div></div><button id="closeAlixBtn" class="alix-close" type="button" aria-label="Close Alix">×</button></div><div id="alixMessages" class="alix-messages"><div class="alix-msg ai">Hey! I'm Alix. Ask me about the current setup, indicators, market structure, or why an analysis returned CALL, PUT, or SKIP.</div></div><form id="alixForm" class="alix-composer"><textarea id="alixInput" class="alix-input" rows="1" maxlength="2000" placeholder="Ask Alix anything about the market…"></textarea><button id="alixSendBtn" class="alix-send" type="submit">➤</button></form></div></div>
 
+
+
+    <!-- GAME WORLD -->
+    <section id="gameScreen" class="screen">
+      <div class="container game-shell">
+        <div class="topbar">
+          <div>
+            <div class="eyebrow">story adventure</div>
+            <h2 class="page-title">The Last Signal.</h2>
+          </div>
+          <div class="pill">open world • offline game layer</div>
+        </div>
+
+        <div class="game-stage" id="gameStage">
+          <canvas id="gameCanvas" aria-label="The Last Signal game world"></canvas>
+          <div class="game-vignette"></div>
+
+          <div class="game-topbar">
+            <div class="game-title-chip">
+              <strong>THE LAST SIGNAL</strong>
+              <span>Explore • Investigate • Choose</span>
+            </div>
+            <div class="game-stat-row">
+              <div class="game-stat-chip">TIME<b id="gameTimeText">18:40</b></div>
+              <div class="game-stat-chip">XP<b id="gameXpText">0</b></div>
+              <div class="game-stat-chip">CLUES<b id="gameClueText">0 / 5</b></div>
+            </div>
+          </div>
+
+          <div class="game-quest-card">
+            <div class="game-quest-label">Current mission</div>
+            <div class="game-quest-title" id="gameQuestTitle">Arrival</div>
+            <div class="game-quest-objective" id="gameQuestObjective">Head to Central Station and find Maya.</div>
+            <div class="game-quest-bar"><div class="game-quest-fill" id="gameQuestFill"></div></div>
+          </div>
+
+          <div class="game-location-label" id="gameLocationLabel">Downtown</div>
+
+          <div class="game-mini-map">
+            <canvas id="gameMapCanvas"></canvas>
+          </div>
+
+          <div class="game-controls">
+            <div class="game-joystick" id="gameJoystick">
+              <div class="game-joystick-knob" id="gameJoystickKnob"></div>
+            </div>
+            <div class="game-action-grid">
+              <button class="game-action-btn" id="gameInteractBtn" type="button">INTERACT</button>
+              <button class="game-action-btn" id="gameSprintBtn" type="button">SPRINT</button>
+              <button class="game-action-btn" id="gameVehicleBtn" type="button">VEHICLE</button>
+              <button class="game-action-btn" id="gamePhoneBtn" type="button">PHONE</button>
+            </div>
+          </div>
+
+          <div class="game-dialog-wrap game-hidden" id="gameDialogWrap">
+            <div class="game-dialog">
+              <div class="game-dialog-name" id="gameDialogName">Maya</div>
+              <div class="game-dialog-text" id="gameDialogText"></div>
+              <div class="game-dialog-actions">
+                <button id="gameDialogClose" type="button">Close</button>
+                <button class="primary" id="gameDialogContinue" type="button">Continue</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="game-phone-wrap game-hidden" id="gamePhoneWrap">
+            <div class="game-phone-card">
+              <h3>Evidence & Phone</h3>
+              <div class="game-evidence-list" id="gameEvidenceList"></div>
+              <div class="game-phone-actions">
+                <button id="gamePhoneClose" type="button">Close phone</button>
+              </div>
+              <div class="game-download-note">Your story progress saves automatically on this device.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="game-footer-bar">
+          <div class="game-footer-copy">
+            WASD / arrow keys also work. Drag the world to look around. The game is entirely front-end and does not change your existing backend.
+          </div>
+          <div class="game-footer-actions">
+            <button id="gameResetBtn" class="btn" type="button">Reset story</button>
+            <button id="downloadGameBtn" class="primary-btn" type="button">⬇ Download Game</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
 <nav class="bottom-nav">
-      <div class="nav-inner" style="grid-template-columns:repeat(8,1fr);width:min(100%,720px)">
+      <div class="nav-inner" style="grid-template-columns:repeat(9,1fr);width:min(100%,820px)">
         <button class="nav-btn active" data-screen="homeScreen" type="button"><span class="nav-icon">⌂</span><span class="nav-label">Home</span></button>
         <button class="nav-btn" data-screen="discoverScreen" type="button"><span class="nav-icon">⌕</span><span class="nav-label">Discover</span></button>
         <button class="nav-btn" data-screen="requestsScreen" type="button"><span class="nav-icon">♡</span><span class="nav-label">Requests</span></button>
@@ -1990,6 +2426,7 @@ input,textarea{caret-color:var(--pink-dark);}
         <button class="nav-btn" data-screen="profileScreen" type="button"><span class="nav-icon">●</span><span class="nav-label">Profile</span></button>
         <button class="nav-btn" data-screen="tradingScreen" type="button"><span class="nav-icon">↗</span><span class="nav-label">Trading</span></button>
         <button class="nav-btn" data-screen="learningScreen" type="button"><span class="nav-icon">🧠</span><span class="nav-label">Learning</span></button>
+        <button class="nav-btn" data-screen="gameScreen" type="button"><span class="nav-icon">🎮</span><span class="nav-label">Game</span></button>
       </div>
     </nav>
   </main>
@@ -6268,5 +6705,1186 @@ input,textarea{caret-color:var(--pink-dark);}
   Performance note 047: Keep authentication passwords inside Firebase Authentication only.
   Performance note 047: Use password reset mail instead of storing password recovery data in Firestore.
 -->
+
+<script>
+(() => {
+  "use strict";
+
+  /* ============================================================
+     THE LAST SIGNAL — LIGHTWEIGHT 2.5D OPEN WORLD
+     ============================================================ */
+  const canvas = document.getElementById("gameCanvas");
+  const mapCanvas = document.getElementById("gameMapCanvas");
+  if (!canvas || !mapCanvas) return;
+
+  const ctx = canvas.getContext("2d", { alpha: false });
+  const mapCtx = mapCanvas.getContext("2d");
+  const $g = id => document.getElementById(id);
+
+  const WORLD = { width: 1800, height: 1500 };
+  const SAVE_KEY = "ourUniverseLastSignalV1";
+  const TAU = Math.PI * 2;
+
+  const state = {
+    running: false,
+    raf: 0,
+    lastTs: 0,
+    width: 1,
+    height: 1,
+    dpr: 1,
+    cameraYaw: -0.34,
+    cameraZoom: 0.95,
+    lookPointer: null,
+    sprint: false,
+    vehicle: false,
+    dialogOpen: false,
+    phoneOpen: false,
+    nearest: null,
+    toastUntil: 0,
+    saveDirty: false,
+    timeMinutes: 18 * 60 + 40,
+    xp: 0,
+    clues: [],
+    questIndex: 0,
+    evidence: [],
+    chosenEnding: "",
+    player: {
+      x: 900,
+      y: 1160,
+      angle: 0,
+      speed: 0
+    },
+    joystick: {
+      x: 0,
+      y: 0,
+      active: false,
+      pointerId: null
+    },
+    keys: new Set()
+  };
+
+  const missionData = [
+    {
+      title: "Arrival",
+      objective: "Head to Central Station and find Maya.",
+      target: "maya",
+      reward: 30
+    },
+    {
+      title: "The Blue File",
+      objective: "Investigate the abandoned factory and recover the file.",
+      target: "factoryFile",
+      reward: 40
+    },
+    {
+      title: "Signal at the Lake",
+      objective: "Reach the lake and inspect the strange signal marker.",
+      target: "lakeSignal",
+      reward: 50
+    },
+    {
+      title: "Return Home",
+      objective: "Go back to your apartment and decode the evidence.",
+      target: "home",
+      reward: 60
+    },
+    {
+      title: "Final Night",
+      objective: "Find the hidden transmitter at the factory before midnight.",
+      target: "finalSignal",
+      reward: 100
+    }
+  ];
+
+  const mapPoints = {
+    apartment: { x: 1080, y: 1190, label: "Apartment" },
+    station: { x: 1370, y: 680, label: "Central Station" },
+    factory: { x: 300, y: 420, label: "Old Factory" },
+    lake: { x: 420, y: 1190, label: "Moon Lake" },
+    school: { x: 1040, y: 490, label: "School" },
+    park: { x: 780, y: 720, label: "Riverside Park" }
+  };
+
+  const buildings = [];
+  const roads = [];
+  const trees = [];
+  const props = [];
+  const npcs = [];
+  const cars = [];
+  const zones = [];
+
+  const rand = (min, max) => Math.random() * (max - min) + min;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
+  const choose = list => list[Math.floor(Math.random() * list.length)];
+
+  function saveGame() {
+    try {
+      localStorage.setItem(SAVE_KEY, JSON.stringify({
+        timeMinutes: state.timeMinutes,
+        xp: state.xp,
+        clues: state.clues,
+        evidence: state.evidence,
+        questIndex: state.questIndex,
+        chosenEnding: state.chosenEnding,
+        player: {
+          x: state.player.x,
+          y: state.player.y
+        }
+      }));
+      state.saveDirty = false;
+    } catch (error) {
+      console.warn("Game save failed", error);
+    }
+  }
+
+  function loadGame() {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return;
+      const data = JSON.parse(raw);
+      if (Number.isFinite(data.timeMinutes)) state.timeMinutes = data.timeMinutes;
+      if (Number.isFinite(data.xp)) state.xp = data.xp;
+      if (Array.isArray(data.clues)) state.clues = data.clues;
+      if (Array.isArray(data.evidence)) state.evidence = data.evidence;
+      if (Number.isFinite(data.questIndex)) state.questIndex = clamp(data.questIndex, 0, missionData.length);
+      if (typeof data.chosenEnding === "string") state.chosenEnding = data.chosenEnding;
+      if (data.player && Number.isFinite(data.player.x) && Number.isFinite(data.player.y)) {
+        state.player.x = data.player.x;
+        state.player.y = data.player.y;
+      }
+    } catch (error) {
+      console.warn("Game save load failed", error);
+    }
+  }
+
+  function resetGame() {
+    localStorage.removeItem(SAVE_KEY);
+    state.timeMinutes = 18 * 60 + 40;
+    state.xp = 0;
+    state.clues = [];
+    state.evidence = [];
+    state.questIndex = 0;
+    state.chosenEnding = "";
+    state.vehicle = false;
+    state.player.x = 900;
+    state.player.y = 1160;
+    updateHUD();
+    showToast("Story reset");
+    saveGame();
+  }
+
+  function addClue(id, text) {
+    if (state.clues.includes(id)) return false;
+    state.clues.push(id);
+    state.evidence.push(text);
+    state.xp += 20;
+    state.saveDirty = true;
+    saveGame();
+    updateHUD();
+    return true;
+  }
+
+  function advanceQuest() {
+    const mission = missionData[state.questIndex];
+    if (!mission) return;
+    state.xp += mission.reward;
+    state.questIndex += 1;
+    state.saveDirty = true;
+    saveGame();
+    updateHUD();
+  }
+
+  function showToast(text) {
+    state.toastUntil = performance.now() + 1800;
+    $g("gameLocationLabel").textContent = text;
+  }
+
+  function formatTime(minutes) {
+    const mins = ((minutes % 1440) + 1440) % 1440;
+    const h24 = Math.floor(mins / 60);
+    const m = mins % 60;
+    const h = h24 % 12 || 12;
+    return `${h}:${String(Math.floor(m / 10)).padStart(2, "0")}${m % 10} ${h24 >= 12 ? "PM" : "AM"}`;
+  }
+
+  function updateHUD() {
+    const mission = missionData[state.questIndex];
+    $g("gameTimeText").textContent = formatTime(state.timeMinutes);
+    $g("gameXpText").textContent = String(state.xp);
+    $g("gameClueText").textContent = `${state.clues.length} / 5`;
+    if (mission) {
+      $g("gameQuestTitle").textContent = mission.title;
+      $g("gameQuestObjective").textContent = mission.objective;
+      const pct = clamp((state.clues.length / 5) * 100 + state.questIndex * 6, 0, 100);
+      $g("gameQuestFill").style.width = `${pct}%`;
+    } else {
+      $g("gameQuestTitle").textContent = "Epilogue";
+      $g("gameQuestObjective").textContent = state.chosenEnding || "The city remembers what you chose.";
+      $g("gameQuestFill").style.width = "100%";
+    }
+  }
+
+  function addBuilding(x, y, w, h, height, kind = "building") {
+    buildings.push({ x, y, w, h, height, kind });
+  }
+
+  function addRoad(x, y, w, h) {
+    roads.push({ x, y, w, h });
+  }
+
+  function addTree(x, y, scale = 1) {
+    trees.push({ x, y, scale });
+  }
+
+  function addProp(x, y, type, scale = 1) {
+    props.push({ x, y, type, scale });
+  }
+
+  function buildWorld() {
+    if (buildings.length) return;
+
+    addRoad(120, 620, 1560, 96);
+    addRoad(690, 70, 96, 1370);
+    addRoad(1210, 120, 92, 1160);
+    addRoad(250, 980, 1280, 84);
+    addRoad(1480, 160, 90, 1120);
+    addRoad(200, 230, 1200, 74);
+
+    const blocks = [
+      [180, 100, 290, 340], [520, 110, 190, 320], [820, 100, 290, 360],
+      [1320, 120, 250, 330], [130, 760, 300, 180], [480, 760, 185, 190],
+      [800, 790, 300, 170], [1190, 760, 320, 190], [1410, 1180, 250, 170],
+      [760, 1140, 250, 240], [1120, 1110, 220, 230], [80, 1140, 260, 220]
+    ];
+    blocks.forEach(([x, y, w, h]) => {
+      addBuilding(x, y, w, h, rand(48, 120));
+    });
+
+    addBuilding(1230, 520, 260, 130, 42, "station");
+    addBuilding(170, 330, 300, 210, 24, "factory");
+    addBuilding(900, 350, 260, 180, 50, "school");
+    addBuilding(1010, 1090, 180, 160, 52, "home");
+
+    for (let i = 0; i < 80; i++) {
+      const side = choose(["left", "right"]);
+      const x = side === "left" ? rand(40, 320) : rand(1460, 1760);
+      const y = rand(70, 1420);
+      if (!insideRoad(x, y)) addTree(x, y, rand(.75, 1.25));
+    }
+    for (let i = 0; i < 26; i++) {
+      addTree(rand(540, 1020), rand(560, 920), rand(.75, 1.25));
+    }
+
+    for (let i = 0; i < 34; i++) {
+      cars.push({
+        x: rand(150, 1600),
+        y: choose([rand(645, 675), rand(990, 1040), rand(250, 290), rand(1190, 1230)]),
+        axis: "x",
+        speed: rand(18, 34),
+        color: choose(["#e6e7ea", "#c7ccd4", "#566070", "#7b5e52", "#2d333d"]),
+        parked: false
+      });
+    }
+    cars.push({ x: 910, y: 1015, axis: "x", speed: 0, color: "#8a91a0", parked: true, playerCar: true });
+
+    for (let i = 0; i < 18; i++) {
+      npcs.push({
+        x: rand(260, 1510),
+        y: choose([rand(560, 610), rand(700, 750), rand(1070, 1120), rand(1240, 1340)]),
+        vx: rand(-1, 1),
+        vy: rand(-1, 1),
+        speed: rand(7, 13),
+        phase: rand(0, TAU),
+        type: "citizen"
+      });
+    }
+    npcs.push({ x: 1360, y: 610, vx: 0, vy: 0, speed: 0, phase: 0, type: "maya", name: "Maya" });
+
+    zones.push(
+      { id: "station", x: 1280, y: 500, w: 240, h: 230, label: "Central Station" },
+      { id: "factory", x: 100, y: 260, w: 420, h: 350, label: "Old Factory" },
+      { id: "lake", x: 100, y: 1010, w: 430, h: 390, label: "Moon Lake" },
+      { id: "home", x: 940, y: 1030, w: 300, h: 300, label: "Apartment" },
+      { id: "school", x: 860, y: 290, w: 370, h: 300, label: "School" },
+      { id: "park", x: 570, y: 540, w: 480, h: 420, label: "Riverside Park" }
+    );
+
+    addProp(420, 1170, "signal", 1.2);
+    addProp(360, 1160, "bench", 1);
+    addProp(1460, 680, "lamp", 1.25);
+    addProp(1340, 680, "lamp", 1.25);
+    addProp(310, 570, "crate", 1.1);
+    addProp(880, 1080, "mail", 1);
+  }
+
+  function insideRoad(x, y) {
+    return roads.some(r => x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h);
+  }
+
+  function collidesBuilding(x, y, pad = 10) {
+    return buildings.some(b => x > b.x - pad && x < b.x + b.w + pad && y > b.y - pad && y < b.y + b.h + pad);
+  }
+
+  function zoneAt(x, y) {
+    for (const z of zones) {
+      if (x >= z.x && x <= z.x + z.w && y >= z.y && y <= z.y + z.h) return z;
+    }
+    return null;
+  }
+
+  function locationLabel() {
+    const zone = zoneAt(state.player.x, state.player.y);
+    if (zone) return zone.label;
+    if (state.player.x < 600 && state.player.y > 900) return "Moon Lake Road";
+    if (state.player.x > 1250 && state.player.y < 450) return "North District";
+    return "Downtown";
+  }
+
+  function project(x, y, z = 0) {
+    const dx = x - state.player.x;
+    const dy = y - state.player.y;
+    const c = Math.cos(state.cameraYaw);
+    const s = Math.sin(state.cameraYaw);
+    const rx = dx * c - dy * s;
+    const ry = dx * s + dy * c;
+    const scale = 1.12 * state.cameraZoom;
+    const horizon = state.height * 0.48;
+    return {
+      x: state.width * 0.5 + rx * scale,
+      y: horizon + ry * scale * 0.62 - z * scale,
+      depth: ry,
+      scale
+    };
+  }
+
+  function drawSky() {
+    const h = state.height;
+    const w = state.width;
+    const t = (state.timeMinutes % 1440) / 1440;
+    let top = "#3d4654";
+    let mid = "#788391";
+    let bottom = "#c4cad0";
+
+    if (t > .25 && t < .48) {
+      top = "#5f7c98";
+      mid = "#aabcc9";
+      bottom = "#e2d7c7";
+    } else if (t >= .48 && t < .62) {
+      top = "#8c5e61";
+      mid = "#d49673";
+      bottom = "#e7b887";
+    } else if (t >= .62 && t < .83) {
+      top = "#111821";
+      mid = "#273240";
+      bottom = "#43505e";
+    }
+
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, top);
+    grad.addColorStop(.52, mid);
+    grad.addColorStop(1, bottom);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+
+    ctx.fillStyle = "rgba(255,255,255,.13)";
+    for (let i = 0; i < 12; i++) {
+      const x = (i * 173 + 80) % w;
+      const y = 30 + ((i * 61) % Math.max(90, h * .28));
+      ctx.beginPath();
+      ctx.arc(x, y, 1.2, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  function drawGround() {
+    const p1 = project(0, 0);
+    const p2 = project(WORLD.width, 0);
+    const p3 = project(WORLD.width, WORLD.height);
+    const p4 = project(0, WORLD.height);
+    ctx.fillStyle = "#69715f";
+    ctx.beginPath();
+    ctx.moveTo(p1.x - 2000, p1.y + 900);
+    ctx.lineTo(p2.x + 2000, p2.y + 900);
+    ctx.lineTo(p3.x + 2000, p3.y + 900);
+    ctx.lineTo(p4.x - 2000, p4.y + 900);
+    ctx.closePath();
+    ctx.fill();
+
+    roads.forEach(r => drawFlatRect(r, "#34383d"));
+    roads.forEach(r => {
+      const vertical = r.h > r.w;
+      const lineCount = Math.floor(vertical ? r.h / 60 : r.w / 60);
+      ctx.save();
+      ctx.strokeStyle = "rgba(244,219,150,.55)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([18, 18]);
+      ctx.beginPath();
+      if (vertical) {
+        const x = r.x + r.w / 2;
+        ctx.moveTo(project(x, r.y).x, project(x, r.y).y);
+        ctx.lineTo(project(x, r.y + r.h).x, project(x, r.y + r.h).y);
+      } else {
+        const y = r.y + r.h / 2;
+        ctx.moveTo(project(r.x, y).x, project(r.x, y).y);
+        ctx.lineTo(project(r.x + r.w, y).x, project(r.x + r.w, y).y);
+      }
+      ctx.stroke();
+      ctx.restore();
+      void lineCount;
+    });
+
+    const lake = { x: 60, y: 980, w: 500, h: 440 };
+    drawFlatRect(lake, "#315b68");
+    for (let i = 0; i < 12; i++) {
+      const yy = lake.y + 20 + i * 32;
+      const a = project(lake.x + 20, yy);
+      const b = project(lake.x + lake.w - 20, yy + 4);
+      ctx.strokeStyle = "rgba(195,230,235,.18)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+    }
+  }
+
+  function drawFlatRect(r, fill) {
+    const a = project(r.x, r.y);
+    const b = project(r.x + r.w, r.y);
+    const c = project(r.x + r.w, r.y + r.h);
+    const d = project(r.x, r.y + r.h);
+    ctx.fillStyle = fill;
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.lineTo(c.x, c.y);
+    ctx.lineTo(d.x, d.y);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawBuilding(b) {
+    const ground = [
+      project(b.x, b.y),
+      project(b.x + b.w, b.y),
+      project(b.x + b.w, b.y + b.h),
+      project(b.x, b.y + b.h)
+    ];
+    const top = ground.map(p => ({ ...p, y: p.y - b.height * p.scale }));
+    const front = b.kind === "factory" ? "#5a5c5d" : b.kind === "station" ? "#5b6670" : b.kind === "school" ? "#706c64" : b.kind === "home" ? "#6f5d63" : "#656a70";
+    const side = "#4c5157";
+    const roof = b.kind === "factory" ? "#464949" : "#777c83";
+
+    ctx.fillStyle = "rgba(0,0,0,.18)";
+    ctx.beginPath();
+    ctx.moveTo(ground[0].x + 8, ground[0].y + 10);
+    ctx.lineTo(ground[1].x + 8, ground[1].y + 10);
+    ctx.lineTo(ground[2].x + 8, ground[2].y + 10);
+    ctx.lineTo(ground[3].x + 8, ground[3].y + 10);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = front;
+    ctx.beginPath();
+    ctx.moveTo(ground[0].x, ground[0].y);
+    ctx.lineTo(ground[1].x, ground[1].y);
+    ctx.lineTo(top[1].x, top[1].y);
+    ctx.lineTo(top[0].x, top[0].y);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = side;
+    ctx.beginPath();
+    ctx.moveTo(ground[1].x, ground[1].y);
+    ctx.lineTo(ground[2].x, ground[2].y);
+    ctx.lineTo(top[2].x, top[2].y);
+    ctx.lineTo(top[1].x, top[1].y);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = roof;
+    ctx.beginPath();
+    ctx.moveTo(top[0].x, top[0].y);
+    ctx.lineTo(top[1].x, top[1].y);
+    ctx.lineTo(top[2].x, top[2].y);
+    ctx.lineTo(top[3].x, top[3].y);
+    ctx.closePath();
+    ctx.fill();
+
+    drawWindows(b, top);
+
+    if (["station", "factory", "school", "home"].includes(b.kind)) {
+      const label = b.kind === "station" ? "STATION" : b.kind === "factory" ? "OLD FACTORY" : b.kind === "school" ? "SCHOOL" : "HOME";
+      const p = project(b.x + b.w * .45, b.y, b.height + 3);
+      ctx.fillStyle = "rgba(8,12,16,.74)";
+      ctx.fillRect(p.x - 34, p.y - 10, 68, 16);
+      ctx.fillStyle = "rgba(255,255,255,.8)";
+      ctx.font = "700 7px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText(label, p.x, p.y + 1);
+    }
+  }
+
+  function drawWindows(b, top) {
+    const rows = b.kind === "factory" ? 2 : 4;
+    const cols = b.kind === "factory" ? 6 : 5;
+    const glow = isNight() ? "#e5c995" : "#c1cfda";
+    ctx.fillStyle = glow;
+    for (let row = 1; row <= rows; row++) {
+      const fy = row / (rows + 1);
+      for (let col = 1; col <= cols; col++) {
+        const fx = col / (cols + 1);
+        const xTop = top[0].x + (top[1].x - top[0].x) * fx;
+        const yTop = top[0].y + (top[1].y - top[0].y) * fx;
+        const xBottom = xTop * .99 + top[0].x * .01;
+        const yBottom = yTop + 7 + fy * 4;
+        ctx.globalAlpha = isNight() ? .8 : .42;
+        ctx.fillRect(xBottom - 2, yBottom, 4, 6);
+      }
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawTree(tree) {
+    const p = project(tree.x, tree.y, 0);
+    const s = tree.scale * p.scale;
+    if (p.x < -50 || p.x > state.width + 50 || p.y < -100 || p.y > state.height + 80) return;
+    ctx.fillStyle = "rgba(0,0,0,.18)";
+    ctx.beginPath();
+    ctx.ellipse(p.x + 4 * s, p.y + 5 * s, 15 * s, 6 * s, 0, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "#5b4334";
+    ctx.fillRect(p.x - 3 * s, p.y - 28 * s, 6 * s, 28 * s);
+    const leaf = isNight() ? "#25372a" : "#35583e";
+    ctx.fillStyle = leaf;
+    for (let i = 0; i < 4; i++) {
+      ctx.beginPath();
+      ctx.arc(p.x + (i - 1.5) * 8 * s, p.y - 30 * s - (i % 2) * 5 * s, 12 * s, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  function drawProp(p) {
+    const q = project(p.x, p.y);
+    const s = p.scale * q.scale;
+    if (p.type === "lamp") {
+      ctx.strokeStyle = "#3f4448";
+      ctx.lineWidth = Math.max(1, 3 * s / 10);
+      ctx.beginPath();
+      ctx.moveTo(q.x, q.y);
+      ctx.lineTo(q.x, q.y - 42 * s);
+      ctx.stroke();
+      ctx.fillStyle = isNight() ? "#ffe2a7" : "#b9bec0";
+      ctx.beginPath();
+      ctx.arc(q.x, q.y - 46 * s, 6 * s, 0, TAU);
+      ctx.fill();
+      return;
+    }
+    if (p.type === "crate") {
+      ctx.fillStyle = "#6c503b";
+      ctx.fillRect(q.x - 10 * s, q.y - 8 * s, 20 * s, 16 * s);
+      return;
+    }
+    if (p.type === "bench") {
+      ctx.fillStyle = "#765a45";
+      ctx.fillRect(q.x - 18 * s, q.y - 8 * s, 36 * s, 6 * s);
+      ctx.fillRect(q.x - 15 * s, q.y - 2 * s, 4 * s, 11 * s);
+      ctx.fillRect(q.x + 11 * s, q.y - 2 * s, 4 * s, 11 * s);
+      return;
+    }
+    if (p.type === "mail") {
+      ctx.fillStyle = "#607077";
+      ctx.fillRect(q.x - 5 * s, q.y - 13 * s, 10 * s, 13 * s);
+      return;
+    }
+    if (p.type === "signal") {
+      const pulse = 1 + Math.sin(performance.now() / 300) * .12;
+      ctx.strokeStyle = "rgba(130,218,255,.7)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(q.x, q.y - 16 * s, 8 * s * pulse, 0, TAU);
+      ctx.stroke();
+      ctx.fillStyle = "#8ce7ff";
+      ctx.beginPath();
+      ctx.arc(q.x, q.y - 16 * s, 3 * s, 0, TAU);
+      ctx.fill();
+    }
+  }
+
+  function drawCar(car) {
+    const p = project(car.x, car.y);
+    const s = p.scale;
+    const length = car.playerCar ? 44 : 34;
+    const width = car.playerCar ? 22 : 18;
+    if (p.x < -80 || p.x > state.width + 80 || p.y < -80 || p.y > state.height + 80) return;
+    ctx.save();
+    ctx.translate(p.x, p.y - 7 * s);
+    ctx.rotate(car.axis === "x" ? 0 : Math.PI / 2);
+    ctx.fillStyle = "rgba(0,0,0,.24)";
+    ctx.fillRect(-length / 2 + 3, 4, length, width * .45);
+    ctx.fillStyle = car.color;
+    ctx.fillRect(-length / 2, -width / 3, length, width * .66);
+    ctx.fillStyle = "#313a45";
+    ctx.fillRect(-length / 4, -width / 3 + 2, length / 2, width * .45);
+    ctx.fillStyle = "#161a1f";
+    ctx.fillRect(-length / 2 + 4, width / 3, 8, 5);
+    ctx.fillRect(length / 2 - 12, width / 3, 8, 5);
+    ctx.restore();
+  }
+
+  function drawNpc(npc) {
+    const p = project(npc.x, npc.y);
+    const s = p.scale;
+    if (p.x < -30 || p.x > state.width + 30 || p.y < -40 || p.y > state.height + 50) return;
+    ctx.fillStyle = "rgba(0,0,0,.22)";
+    ctx.beginPath();
+    ctx.ellipse(p.x + 2, p.y + 3, 8 * s, 3 * s, 0, 0, TAU);
+    ctx.fill();
+    const shirt = npc.type === "maya" ? "#d8a6bb" : "#b9c2cc";
+    ctx.fillStyle = shirt;
+    ctx.fillRect(p.x - 5 * s, p.y - 18 * s, 10 * s, 13 * s);
+    ctx.fillStyle = "#dec1a4";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 23 * s, 5 * s, 0, TAU);
+    ctx.fill();
+    if (npc.type === "maya" && state.questIndex === 0) {
+      ctx.fillStyle = "rgba(255,255,255,.82)";
+      ctx.font = "700 9px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("MAYA", p.x, p.y - 33 * s);
+    }
+  }
+
+  function drawPlayer() {
+    const p = project(state.player.x, state.player.y);
+    const s = p.scale;
+    ctx.fillStyle = "rgba(0,0,0,.28)";
+    ctx.beginPath();
+    ctx.ellipse(p.x + 3, p.y + 4, 11 * s, 4 * s, 0, 0, TAU);
+    ctx.fill();
+    if (state.vehicle) return;
+    ctx.fillStyle = "#2b3440";
+    ctx.fillRect(p.x - 7 * s, p.y - 26 * s, 14 * s, 18 * s);
+    ctx.fillStyle = "#d8b69e";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 32 * s, 6 * s, 0, TAU);
+    ctx.fill();
+    ctx.fillStyle = "#20252b";
+    ctx.beginPath();
+    ctx.arc(p.x, p.y - 34 * s, 6.5 * s, Math.PI, TAU);
+    ctx.fill();
+    if (state.vehicle) {
+      ctx.fillStyle = "rgba(255,255,255,.3)";
+      ctx.font = "700 8px sans-serif";
+      ctx.textAlign = "center";
+      ctx.fillText("DRIVING", p.x, p.y - 42);
+    }
+  }
+
+  function drawNearestMarker() {
+    if (!state.nearest) return;
+    const p = project(state.nearest.x, state.nearest.y, 8);
+    const bob = Math.sin(performance.now() / 180) * 3;
+    ctx.fillStyle = "rgba(255,255,255,.95)";
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y - 12 + bob);
+    ctx.lineTo(p.x - 7, p.y - 2 + bob);
+    ctx.lineTo(p.x + 7, p.y - 2 + bob);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function renderMap() {
+    const size = 140;
+    const rect = mapCanvas.getBoundingClientRect();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const pw = Math.max(1, Math.floor(rect.width * dpr));
+    const ph = Math.max(1, Math.floor(rect.height * dpr));
+    if (mapCanvas.width !== pw || mapCanvas.height !== ph) {
+      mapCanvas.width = pw;
+      mapCanvas.height = ph;
+    }
+    mapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    mapCtx.clearRect(0, 0, rect.width, rect.height);
+    mapCtx.fillStyle = "#13191f";
+    mapCtx.fillRect(0, 0, rect.width, rect.height);
+    const sx = rect.width / WORLD.width;
+    const sy = rect.height / WORLD.height;
+    roads.forEach(r => {
+      mapCtx.fillStyle = "#3b4249";
+      mapCtx.fillRect(r.x * sx, r.y * sy, r.w * sx, r.h * sy);
+    });
+    mapCtx.fillStyle = "#315d6c";
+    mapCtx.fillRect(60 * sx, 980 * sy, 500 * sx, 440 * sy);
+    Object.values(mapPoints).forEach(p => {
+      mapCtx.fillStyle = "rgba(255,255,255,.25)";
+      mapCtx.fillRect(p.x * sx - 2, p.y * sy - 2, 4, 4);
+    });
+    mapCtx.fillStyle = "#fff";
+    mapCtx.beginPath();
+    mapCtx.arc(state.player.x * sx, state.player.y * sy, 4, 0, TAU);
+    mapCtx.fill();
+  }
+
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    state.width = Math.max(1, r.width);
+    state.height = Math.max(1, r.height);
+    state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.floor(state.width * state.dpr);
+    canvas.height = Math.floor(state.height * state.dpr);
+    ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+    renderMap();
+  }
+
+  function isNight() {
+    const m = state.timeMinutes % 1440;
+    return m < 360 || m > 1170;
+  }
+
+  function updateNpcs(dt) {
+    npcs.forEach((n, idx) => {
+      if (n.type === "maya") return;
+      n.phase += dt * .7;
+      const turn = Math.sin(n.phase + idx) * .3;
+      const nx = n.vx * Math.cos(turn) - n.vy * Math.sin(turn);
+      const ny = n.vx * Math.sin(turn) + n.vy * Math.cos(turn);
+      const mag = Math.hypot(nx, ny) || 1;
+      n.vx = nx / mag;
+      n.vy = ny / mag;
+      const tx = n.x + n.vx * n.speed * dt;
+      const ty = n.y + n.vy * n.speed * dt;
+      if (!collidesBuilding(tx, ty, 10) && tx > 30 && tx < WORLD.width - 30 && ty > 30 && ty < WORLD.height - 30) {
+        n.x = tx;
+        n.y = ty;
+      } else {
+        n.vx *= -1;
+        n.vy *= -1;
+      }
+    });
+  }
+
+  function updateCars(dt) {
+    cars.forEach(car => {
+      if (car.playerCar || car.parked || state.vehicle && car.playerCar) return;
+      if (car.axis === "x") {
+        car.x += car.speed * dt;
+        if (car.x > WORLD.width + 70) car.x = -70;
+      } else {
+        car.y += car.speed * dt;
+        if (car.y > WORLD.height + 70) car.y = -70;
+      }
+    });
+  }
+
+  function axisInput() {
+    let x = state.joystick.x;
+    let y = state.joystick.y;
+    if (state.keys.has("a") || state.keys.has("arrowleft")) x -= 1;
+    if (state.keys.has("d") || state.keys.has("arrowright")) x += 1;
+    if (state.keys.has("w") || state.keys.has("arrowup")) y -= 1;
+    if (state.keys.has("s") || state.keys.has("arrowdown")) y += 1;
+    const mag = Math.hypot(x, y);
+    return mag > 1 ? { x: x / mag, y: y / mag } : { x, y };
+  }
+
+  function updatePlayer(dt) {
+    const input = axisInput();
+    const moving = Math.hypot(input.x, input.y) > .08;
+    const fast = state.sprint ? 170 : 112;
+    const speed = state.vehicle ? fast * 1.75 : fast;
+    if (moving) {
+      const c = Math.cos(state.cameraYaw);
+      const s = Math.sin(state.cameraYaw);
+      const worldX = input.x * c + input.y * s;
+      const worldY = -input.x * s + input.y * c;
+      const nextX = state.player.x + worldX * speed * dt;
+      const nextY = state.player.y + worldY * speed * dt;
+      if (!collidesBuilding(nextX, state.player.y, state.vehicle ? 14 : 9)) state.player.x = clamp(nextX, 30, WORLD.width - 30);
+      if (!collidesBuilding(state.player.x, nextY, state.vehicle ? 14 : 9)) state.player.y = clamp(nextY, 30, WORLD.height - 30);
+      state.player.angle = Math.atan2(worldY, worldX);
+      state.player.speed = speed;
+      if (state.vehicle) {
+        const car = cars.find(c => c.playerCar);
+        if (car) {
+          car.x = state.player.x;
+          car.y = state.player.y;
+        }
+      }
+    } else {
+      state.player.speed = 0;
+    }
+  }
+
+  function findNearest() {
+    let best = null;
+    let bestD = 95;
+
+    const candidates = [];
+    if (state.questIndex === 0) candidates.push({ x: 1360, y: 610, id: "maya", name: "Maya" });
+    if (state.questIndex === 1) candidates.push({ x: 420, y: 450, id: "factoryFile", name: "Blue file" });
+    if (state.questIndex === 2) candidates.push({ x: 420, y: 1170, id: "lakeSignal", name: "Signal marker" });
+    if (state.questIndex === 3) candidates.push({ x: 1080, y: 1190, id: "home", name: "Apartment" });
+    if (state.questIndex >= 4 && state.questIndex < missionData.length) candidates.push({ x: 420, y: 450, id: "finalSignal", name: "Hidden transmitter" });
+
+    const car = cars.find(c => c.playerCar);
+    if (!state.vehicle && car) candidates.push({ x: car.x, y: car.y, id: "vehicle", name: "Car" });
+    if (state.vehicle) candidates.push({ x: state.player.x, y: state.player.y, id: "vehicleExit", name: "Exit vehicle" });
+
+    for (const item of candidates) {
+      const d = Math.hypot(item.x - state.player.x, item.y - state.player.y);
+      if (d < bestD) {
+        best = item;
+        bestD = d;
+      }
+    }
+    state.nearest = best;
+  }
+
+  function interact() {
+    if (state.dialogOpen || state.phoneOpen) return;
+    const n = state.nearest;
+    if (!n) {
+      showToast("Nothing nearby");
+      return;
+    }
+    if (n.id === "vehicle") {
+      state.vehicle = true;
+      showToast("Driving");
+      return;
+    }
+    if (n.id === "vehicleExit") {
+      state.vehicle = false;
+      showToast("Back on foot");
+      return;
+    }
+    if (n.id === "maya" && state.questIndex === 0) {
+      openDialog("Maya", "You got my message. Do not use the main road tonight. Someone has been watching the station.", () => {
+        addClue("station_message", "Maya warned you that someone is watching the station.");
+        advanceQuest();
+      });
+      return;
+    }
+    if (n.id === "factoryFile" && state.questIndex === 1) {
+      openDialog("Evidence", "Inside a rusted cabinet you find a blue file. The final page has your initials and a time: 23:50.", () => {
+        addClue("blue_file", "Blue file: your initials, time 23:50, and a transmitter diagram.");
+        advanceQuest();
+      });
+      return;
+    }
+    if (n.id === "lakeSignal" && state.questIndex === 2) {
+      openDialog("Signal", "The marker pulses when your phone is near it. Someone has hidden a second clue under the stone.", () => {
+        addClue("lake_signal", "Lake marker reacts to your phone and hides a second clue.");
+        advanceQuest();
+      });
+      return;
+    }
+    if (n.id === "home" && state.questIndex === 3) {
+      openDialog("Phone", "The clues combine into one location: the old factory. The transmitter activates at 23:50.", () => {
+        addClue("decoded", "Decoded message points back to the old factory at 23:50.");
+        advanceQuest();
+      });
+      return;
+    }
+    if (n.id === "finalSignal" && state.questIndex >= 4) {
+      openDialog("The Transmitter", "A final message asks whether you will expose the truth or erase everything you found.", () => {
+        addClue("final", "You found the hidden transmitter and reached the final decision.");
+        showEndingChoice();
+      });
+    }
+  }
+
+  function openDialog(name, text, onContinue) {
+    state.dialogOpen = true;
+    $g("gameDialogName").textContent = name;
+    $g("gameDialogText").textContent = text;
+    $g("gameDialogWrap").classList.remove("game-hidden");
+    $g("gameDialogContinue").onclick = () => {
+      closeDialog();
+      onContinue?.();
+    };
+  }
+
+  function closeDialog() {
+    state.dialogOpen = false;
+    $g("gameDialogWrap").classList.add("game-hidden");
+  }
+
+  function showEndingChoice() {
+    state.dialogOpen = true;
+    $g("gameDialogName").textContent = "Your Choice";
+    $g("gameDialogText").textContent = "Expose the evidence to the city, or destroy the transmitter and keep the secret?";
+    $g("gameDialogWrap").classList.remove("game-hidden");
+    const wrap = $g("gameDialogWrap");
+    const buttons = wrap.querySelector(".game-dialog-actions");
+    buttons.innerHTML = `
+      <button type="button" id="endingSecretBtn">Keep the secret</button>
+      <button type="button" class="primary" id="endingTruthBtn">Expose the truth</button>
+    `;
+    $g("endingSecretBtn").onclick = () => finishEnding("You erased the transmitter and left the city with one secret only you remember.");
+    $g("endingTruthBtn").onclick = () => finishEnding("You exposed the evidence. By sunrise, the city knew what had been hidden for years.");
+  }
+
+  function finishEnding(text) {
+    state.chosenEnding = text;
+    state.questIndex = missionData.length;
+    state.dialogOpen = false;
+    $g("gameDialogWrap").classList.add("game-hidden");
+    state.saveDirty = true;
+    saveGame();
+    updateHUD();
+    showToast("Story complete");
+  }
+
+  function openPhone() {
+    state.phoneOpen = true;
+    const list = $g("gameEvidenceList");
+    list.innerHTML = "";
+    if (!state.evidence.length) {
+      const empty = document.createElement("div");
+      empty.className = "game-evidence-item";
+      empty.textContent = "No evidence collected yet. Explore the city and investigate the mission targets.";
+      list.appendChild(empty);
+    } else {
+      state.evidence.forEach((item, i) => {
+        const row = document.createElement("div");
+        row.className = "game-evidence-item";
+        row.textContent = `${i + 1}. ${item}`;
+        list.appendChild(row);
+      });
+    }
+    $g("gamePhoneWrap").classList.remove("game-hidden");
+  }
+
+  function closePhone() {
+    state.phoneOpen = false;
+    $g("gamePhoneWrap").classList.add("game-hidden");
+  }
+
+  function update(dt) {
+    if (!state.running || state.dialogOpen || state.phoneOpen) return;
+    state.timeMinutes += dt * 0.85;
+    if (state.timeMinutes >= 1440) state.timeMinutes -= 1440;
+    updatePlayer(dt);
+    updateNpcs(dt);
+    updateCars(dt);
+    findNearest();
+    updateHUD();
+    if (state.saveDirty && Math.random() < .02) saveGame();
+  }
+
+  function render() {
+    drawSky();
+    drawGround();
+
+    const drawables = [];
+    buildings.forEach(b => drawables.push({ depth: project(b.x + b.w / 2, b.y + b.h / 2).depth, draw: () => drawBuilding(b) }));
+    trees.forEach(t => drawables.push({ depth: project(t.x, t.y).depth, draw: () => drawTree(t) }));
+    props.forEach(p => drawables.push({ depth: project(p.x, p.y).depth, draw: () => drawProp(p) }));
+    cars.forEach(c => drawables.push({ depth: project(c.x, c.y).depth, draw: () => drawCar(c) }));
+    npcs.forEach(n => drawables.push({ depth: project(n.x, n.y).depth, draw: () => drawNpc(n) }));
+    drawables.sort((a, b) => a.depth - b.depth);
+    drawables.forEach(item => item.draw());
+
+    drawPlayer();
+    drawNearestMarker();
+    renderMap();
+
+    if (isNight()) {
+      ctx.fillStyle = "rgba(12,19,30,.18)";
+      ctx.fillRect(0, 0, state.width, state.height);
+    }
+  }
+
+  function frame(ts) {
+    if (!state.running) return;
+    const dt = Math.min(.033, Math.max(.001, (ts - state.lastTs) / 1000 || .016));
+    state.lastTs = ts;
+    update(dt);
+    render();
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  function startGame() {
+    if (state.running) return;
+    buildWorld();
+    loadGame();
+    resize();
+    updateHUD();
+    state.running = true;
+    state.lastTs = performance.now();
+    cancelAnimationFrame(state.raf);
+    state.raf = requestAnimationFrame(frame);
+  }
+
+  function stopGame() {
+    if (!state.running) return;
+    state.running = false;
+    cancelAnimationFrame(state.raf);
+    saveGame();
+  }
+
+  function bindJoystick() {
+    const base = $g("gameJoystick");
+    const knob = $g("gameJoystickKnob");
+    const radius = 47;
+
+    function setJoystick(e) {
+      const rect = base.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const dx = e.clientX - cx;
+      const dy = e.clientY - cy;
+      const length = Math.hypot(dx, dy);
+      const factor = length > radius ? radius / length : 1;
+      const x = dx * factor;
+      const y = dy * factor;
+      state.joystick.x = x / radius;
+      state.joystick.y = y / radius;
+      knob.style.transform = `translate3d(${x}px,${y}px,0)`;
+    }
+
+    function resetJoystick() {
+      state.joystick.x = 0;
+      state.joystick.y = 0;
+      state.joystick.active = false;
+      state.joystick.pointerId = null;
+      knob.style.transform = "translate3d(0,0,0)";
+    }
+
+    base.addEventListener("pointerdown", e => {
+      state.joystick.active = true;
+      state.joystick.pointerId = e.pointerId;
+      base.setPointerCapture(e.pointerId);
+      setJoystick(e);
+      e.preventDefault();
+    }, { passive: false });
+    base.addEventListener("pointermove", e => {
+      if (!state.joystick.active || e.pointerId !== state.joystick.pointerId) return;
+      setJoystick(e);
+      e.preventDefault();
+    }, { passive: false });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach(type => {
+      base.addEventListener(type, resetJoystick, { passive: true });
+    });
+  }
+
+  function bindLook() {
+    canvas.addEventListener("pointerdown", e => {
+      if (e.target !== canvas) return;
+      state.lookPointer = { id: e.pointerId, x: e.clientX };
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener("pointermove", e => {
+      if (!state.lookPointer || e.pointerId !== state.lookPointer.id) return;
+      const dx = e.clientX - state.lookPointer.x;
+      state.cameraYaw += dx * .0045;
+      state.lookPointer.x = e.clientX;
+    });
+    ["pointerup", "pointercancel", "lostpointercapture"].forEach(type => {
+      canvas.addEventListener(type, () => { state.lookPointer = null; });
+    });
+  }
+
+  function bindActions() {
+    $g("gameInteractBtn").addEventListener("click", interact);
+    $g("gameSprintBtn").addEventListener("pointerdown", () => {
+      state.sprint = true;
+      $g("gameSprintBtn").classList.add("active");
+    });
+    ["pointerup", "pointercancel", "pointerleave"].forEach(type => {
+      $g("gameSprintBtn").addEventListener(type, () => {
+        state.sprint = false;
+        $g("gameSprintBtn").classList.remove("active");
+      });
+    });
+    $g("gameVehicleBtn").addEventListener("click", interact);
+    $g("gamePhoneBtn").addEventListener("click", () => {
+      if (state.phoneOpen) closePhone();
+      else openPhone();
+    });
+    $g("gameDialogClose").addEventListener("click", closeDialog);
+    $g("gamePhoneClose").addEventListener("click", closePhone);
+    $g("gameResetBtn").addEventListener("click", resetGame);
+    $g("downloadGameBtn").addEventListener("click", downloadCurrentGame);
+  }
+
+  function bindKeyboard() {
+    window.addEventListener("keydown", e => {
+      const key = e.key.toLowerCase();
+      state.keys.add(key);
+      if (key === "e") interact();
+      if (key === "shift") state.sprint = true;
+      if (key === "p") openPhone();
+    });
+    window.addEventListener("keyup", e => {
+      const key = e.key.toLowerCase();
+      state.keys.delete(key);
+      if (key === "shift") state.sprint = false;
+    });
+  }
+
+  function downloadCurrentGame() {
+    try {
+      const source = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+      const blob = new Blob([source], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "our-universe-the-last-signal.html";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1200);
+      showToast("Game download started");
+    } catch (error) {
+      console.error("Game download failed", error);
+      showToast("Download unavailable in this browser");
+    }
+  }
+
+  function onScreenShown() {
+    startGame();
+  }
+
+  function watchNavigation() {
+    document.querySelectorAll(".nav-btn[data-screen='gameScreen']").forEach(btn => {
+      btn.addEventListener("click", onScreenShown);
+    });
+    document.querySelectorAll(".nav-btn").forEach(btn => {
+      if (btn.dataset.screen !== "gameScreen") {
+        btn.addEventListener("click", stopGame);
+      }
+    });
+    const gameScreen = $g("gameScreen");
+    if (gameScreen?.classList.contains("active")) startGame();
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) stopGame();
+      else if ($g("gameScreen")?.classList.contains("active")) startGame();
+    });
+  }
+
+  loadGame();
+  buildWorld();
+  bindJoystick();
+  bindLook();
+  bindActions();
+  bindKeyboard();
+  watchNavigation();
+  window.addEventListener("resize", resize);
+
+  const originalShowScreen = window.showScreen;
+  if (typeof originalShowScreen === "function") {
+    window.showScreen = function(id) {
+      const result = originalShowScreen.apply(this, arguments);
+      if (id === "gameScreen") startGame();
+      else stopGame();
+      return result;
+    };
+  }
+})();
+</script>
+
 </body>
 </html>
