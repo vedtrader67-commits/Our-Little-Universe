@@ -427,11 +427,31 @@ finally{$("authBusy").classList.add("hidden");}
 
 async function login(){
 $("authBusy").classList.remove("hidden");
+const email=$("loginEmail").value.trim();
+const password=$("loginPassword").value;
 try{
-await signInWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value);
-toast("Signed in.","success");
-}catch(error){toast(error.message,"error");}
-finally{$("authBusy").classList.add("hidden");}
+if(!email)throw new Error("Enter your email.");
+if(!password)throw new Error("Enter your password.");
+await signInWithEmailAndPassword(auth,email,password);
+toast("Signed in. Loading your workspace…","success");
+}catch(error){
+console.error("Firebase sign-in failed:",error);
+const code=String(error?.code||"");
+const message=code==="auth/invalid-credential"||code==="auth/wrong-password"
+?"Incorrect email or password."
+:code==="auth/user-not-found"
+?"No Firebase account exists for this email."
+:code==="auth/invalid-email"
+?"Enter a valid email address."
+:code==="auth/too-many-requests"
+?"Too many attempts. Please wait and try again."
+:code==="auth/network-request-failed"
+?"Firebase network request failed. Check your internet connection."
+:(error?.message||"Sign-in failed.");
+toast(message,"error");
+}finally{
+$("authBusy").classList.add("hidden");
+}
 }
 
 async function resetPassword(){
@@ -463,13 +483,37 @@ $("authModal").classList.add("show");
 $("app").classList.add("hidden");
 return;
 }
+
+// Authentication itself succeeded, so reveal the application immediately.
+// Firestore/backend problems must not make a successful login look frozen.
 $("authModal").classList.remove("show");
 $("app").classList.remove("hidden");
 $("userEmail").textContent=user.email||"";
+
+try{
 await ensureUserDoc(user);
+}catch(error){
+console.error("ensureUserDoc failed:",error);
+toast("Login succeeded, but the profile could not be saved: "+error.message,"error");
+}
+
+try{
 await refreshAll();
+}catch(error){
+console.error("refreshAll failed:",error);
+}
+
+try{
 await healthCheck();
+}catch(error){
+console.error("healthCheck failed:",error);
+}
+
+try{
 addChatMessage("ai","I’m Alix. I can discuss trading, price action, your saved strategy memory, or normal daily topics. For a video strategy, use Video Lab.");
+}catch(error){
+console.error("Alix welcome message failed:",error);
+}
 });
 
 async function loadMemory(){
@@ -483,7 +527,11 @@ function renderVideoCount(){$("dashVideos").textContent=String(videoCache.length
 async function loadVideos(){try{const snap=await getDocs(query(collection(db,"users",currentUser.uid,"videoAnalyses"),orderBy("createdAt","desc"),limit(50)));videoCache=snap.docs.map(d=>({id:d.id,...d.data()}))}catch(e){videoCache=[];console.error("Video analyses load failed:",e);toast("Video analyses could not be loaded: "+e.message,"error")}renderVideoCount();renderSetups()}
 async function loadJournal(){try{const snap=await getDocs(query(collection(db,"users",currentUser.uid,"tradeJournal"),orderBy("createdAt","desc"),limit(100)));journalCache=snap.docs.map(d=>({id:d.id,...d.data()}))}catch(e){journalCache=[];console.error("Journal load failed:",e);toast("Journal could not be loaded: "+e.message,"error")}renderJournal()}
 async function loadSetups(){try{const snap=await getDocs(query(collection(db,"users",currentUser.uid,"setupCards"),orderBy("createdAt","desc"),limit(100)));setupCache=snap.docs.map(d=>({id:d.id,...d.data()}))}catch(e){setupCache=[];console.error("Setup load failed:",e)}renderSetups()}
-async function refreshAll(){await Promise.allSettled([loadMemory(),loadVideos(),loadJournal(),loadSetups()]);$("dashMemory").textContent=String(memoryCache.length);$("dashVideos").textContent=String(videoCache.length);$("dashTrades").textContent=String(journalCache.length)}catch(error){toast("Could not load saved trading data: "+error.message,"error");}
+async function refreshAll(){
+  await Promise.allSettled([loadMemory(),loadVideos(),loadJournal(),loadSetups()]);
+  $("dashMemory").textContent=String(memoryCache.length);
+  $("dashVideos").textContent=String(videoCache.length);
+  $("dashTrades").textContent=String(journalCache.length);
 }
 
 async function healthCheck(){
