@@ -313,7 +313,7 @@ pre{white-space:pre-wrap;word-break:break-word;background:#080d15;border:1px sol
 <div class="card">
 <div class="field"><label>Backend URL</label><input id="backendUrl"></div>
 <div class="controls" style="margin-top:10px"><button class="btn primary" id="saveBackend">Save backend URL</button><button class="btn ghost" id="testBackend">Test health</button></div>
-<div id="healthDetails" class="rule" style="margin-top:12px">Not checked.</div>
+<div id="healthDetails" class="rule" style="margin-top:12px">Not checked. The default server is the Render backend configured in this file.</div>
 </div>
 <div class="card" style="margin-top:16px">
 <h2>Architecture</h2>
@@ -392,11 +392,10 @@ return currentUser.getIdToken(true);
 
 async function api(path,body={},options={}){
 const token=await idToken();
-const method=options.method||"POST";
-const response=await fetch(backend()+path,{method,headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},body:method==="GET"?undefined:JSON.stringify(body)});
-const raw=await response.text();let data;try{data=JSON.parse(raw)}catch{data={error:raw||"Empty response"}};
-if(!response.ok){const message=typeof data.error==="string"?data.error:(data.error?.message||data.message||`HTTP ${response.status}`);throw new Error(message)}
-return data?.data&&data.data.jobId?{...data.data,...data}:data;
+const response=await fetch(backend()+path,{
+method:options.method||"POST",
+headers:{"Content-Type":"application/json","Authorization":"Bearer "+token},
+body:options.method==="GET"?undefined:JSON.stringify(body)
 });
 const raw=await response.text();
 let data;
@@ -427,31 +426,11 @@ finally{$("authBusy").classList.add("hidden");}
 
 async function login(){
 $("authBusy").classList.remove("hidden");
-const email=$("loginEmail").value.trim();
-const password=$("loginPassword").value;
 try{
-if(!email)throw new Error("Enter your email.");
-if(!password)throw new Error("Enter your password.");
-await signInWithEmailAndPassword(auth,email,password);
-toast("Signed in. Loading your workspace…","success");
-}catch(error){
-console.error("Firebase sign-in failed:",error);
-const code=String(error?.code||"");
-const message=code==="auth/invalid-credential"||code==="auth/wrong-password"
-?"Incorrect email or password."
-:code==="auth/user-not-found"
-?"No Firebase account exists for this email."
-:code==="auth/invalid-email"
-?"Enter a valid email address."
-:code==="auth/too-many-requests"
-?"Too many attempts. Please wait and try again."
-:code==="auth/network-request-failed"
-?"Firebase network request failed. Check your internet connection."
-:(error?.message||"Sign-in failed.");
-toast(message,"error");
-}finally{
-$("authBusy").classList.add("hidden");
-}
+await signInWithEmailAndPassword(auth,$("loginEmail").value.trim(),$("loginPassword").value);
+toast("Signed in.","success");
+}catch(error){toast(error.message,"error");}
+finally{$("authBusy").classList.add("hidden");}
 }
 
 async function resetPassword(){
@@ -483,36 +462,14 @@ $("authModal").classList.add("show");
 $("app").classList.add("hidden");
 return;
 }
-
-// Authentication itself succeeded, so reveal the application immediately.
-// Firestore/backend problems must not make a successful login look frozen.
 $("authModal").classList.remove("show");
 $("app").classList.remove("hidden");
 $("userEmail").textContent=user.email||"";
-
-try{
-await ensureUserDoc(user);
-}catch(error){
-console.error("ensureUserDoc failed:",error);
-toast("Login succeeded, but the profile could not be saved: "+error.message,"error");
-}
-
-try{
+try{await ensureUserDoc(user);}catch(error){toast("Signed in, but profile setup could not be saved: "+error.message,"error");}
 await refreshAll();
-}catch(error){
-console.error("refreshAll failed:",error);
-}
-
-try{
 await healthCheck();
-}catch(error){
-console.error("healthCheck failed:",error);
-}
-
-try{
+if(!$("chatLog").children.length){
 addChatMessage("ai","I’m Alix. I can discuss trading, price action, your saved strategy memory, or normal daily topics. For a video strategy, use Video Lab.");
-}catch(error){
-console.error("Alix welcome message failed:",error);
 }
 });
 
@@ -523,36 +480,140 @@ memoryCache=snap.docs.map(d=>({id:d.id,...d.data()}));
 renderMemory();
 }
 
-function renderVideoCount(){$("dashVideos").textContent=String(videoCache.length)}
-async function loadVideos(){try{const snap=await getDocs(query(collection(db,"users",currentUser.uid,"videoAnalyses"),orderBy("createdAt","desc"),limit(50)));videoCache=snap.docs.map(d=>({id:d.id,...d.data()}))}catch(e){videoCache=[];console.error("Video analyses load failed:",e);toast("Video analyses could not be loaded: "+e.message,"error")}renderVideoCount();renderSetups()}
-async function loadJournal(){try{const snap=await getDocs(query(collection(db,"users",currentUser.uid,"tradeJournal"),orderBy("createdAt","desc"),limit(100)));journalCache=snap.docs.map(d=>({id:d.id,...d.data()}))}catch(e){journalCache=[];console.error("Journal load failed:",e);toast("Journal could not be loaded: "+e.message,"error")}renderJournal()}
-async function loadSetups(){try{const snap=await getDocs(query(collection(db,"users",currentUser.uid,"setupCards"),orderBy("createdAt","desc"),limit(100)));setupCache=snap.docs.map(d=>({id:d.id,...d.data()}))}catch(e){setupCache=[];console.error("Setup load failed:",e)}renderSetups()}
+function renderVideoCount(){ $("dashVideos").textContent=String(videoCache.length); }
+
+async function loadVideos(){
+const ref=collection(db,"users",currentUser.uid,"videoAnalyses");
+const snap=await getDocs(query(ref,orderBy("createdAt","desc"),limit(50)));
+videoCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+renderVideoCount();
+renderSetups();
+}
+
+async function loadJournal(){
+const ref=collection(db,"users",currentUser.uid,"tradeJournal");
+const snap=await getDocs(query(ref,orderBy("createdAt","desc"),limit(100)));
+journalCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+renderJournal();
+}
+
+async function loadSetups(){
+const ref=collection(db,"users",currentUser.uid,"setupCards");
+const snap=await getDocs(query(ref,orderBy("createdAt","desc"),limit(100)));
+setupCache=snap.docs.map(d=>({id:d.id,...d.data()}));
+renderSetups();
+}
+
 async function refreshAll(){
-  await Promise.allSettled([loadMemory(),loadVideos(),loadJournal(),loadSetups()]);
-  $("dashMemory").textContent=String(memoryCache.length);
-  $("dashVideos").textContent=String(videoCache.length);
-  $("dashTrades").textContent=String(journalCache.length);
+const jobs=[
+  ["memory",loadMemory],
+  ["videos",loadVideos],
+  ["journal",loadJournal],
+  ["setups",loadSetups]
+];
+const results=await Promise.allSettled(jobs.map(([,fn])=>fn()));
+const failed=[];
+results.forEach((result,i)=>{
+  if(result.status==="rejected") failed.push(jobs[i][0]+": "+result.reason?.message);
+});
+$("dashMemory").textContent=String(memoryCache.length);
+$("dashVideos").textContent=String(videoCache.length);
+$("dashTrades").textContent=String(journalCache.length);
+renderVideoCount();
+if(failed.length) toast("Some saved data could not load: "+failed.join(" | "),"error");
 }
 
 async function healthCheck(){
 try{
-const r=await fetch(backend()+"/api/health");
-const raw=await r.text();
+const response=await fetch(backend()+"/api/health",{cache:"no-store"});
+const raw=await response.text();
 let data;
-try{data=JSON.parse(raw)}catch{data={error:raw||"Invalid health response"}}
-if(!r.ok)throw new Error(typeof data.error==="string"?data.error:(data.error?.message||`HTTP ${r.status}`));
+try{data=JSON.parse(raw);}catch{data={response:raw||"Empty response"};}
+if(!response.ok) throw new Error(data.error||("HTTP "+response.status));
 $("backendDot").className="dot ok";
 $("backendStatus").textContent="Backend online";
 $("dashBackend").textContent="ONLINE";
 $("healthDetails").innerHTML="<b>Online.</b><br><pre>"+escapeHtml(JSON.stringify(data,null,2))+"</pre>";
-}catch(e){
+}catch(error){
 $("backendDot").className="dot bad";
 $("backendStatus").textContent="Backend unavailable";
 $("dashBackend").textContent="OFFLINE";
-$("healthDetails").textContent="Backend unavailable: "+e.message;
+$("healthDetails").textContent="Backend unavailable: "+error.message;
 }
 }
 
+$("saveBackend").addEventListener("click",()=>{
+let value=$("backendUrl").value.trim().replace(/\/$/,"");
+if(!/^https?:\/\//i.test(value))return toast("Backend URL must start with http:// or https://","error");
+localStorage.setItem("OU_BACKEND_URL",value);
+toast("Backend URL saved.","success");
+healthCheck();
+});
+$("testBackend").addEventListener("click",healthCheck);
+$("backendUrl").value=backend();
+
+function signalClass(signal){
+const s=String(signal||"").toUpperCase();
+if(s.includes("UP"))return"up";
+if(s.includes("DOWN"))return"down";
+return"";
+}
+
+async function runTradingAnalysis(pair,timeframe){
+$("tradingLoading").classList.remove("hidden");
+try{
+const mode=$("tradeMode").value;
+const data=await api("/api/trading-analysis",{pair,timeframe,mode});
+renderTradingAnalysis(data);
+await addDoc(collection(db,"users",currentUser.uid,"tradingMemory"),{
+type:"market-analysis",
+title:`${pair} ${timeframe} analysis`,
+details:JSON.stringify({
+signal:data.signal,
+confidence:data.confidence,
+structure:data.structure,
+reasoning:data.reasoning,
+invalidation:data.invalidation
+}),
+createdAt:serverTimestamp(),
+source:"trading-lab"
+});
+await loadMemory();
+}catch(error){toast("Trading analysis failed: "+error.message,"error");}
+finally{$("tradingLoading").classList.add("hidden");}
+}
+
+function renderTradingAnalysis(data){
+const signal=String(data.signal||"NEUTRAL").toUpperCase();
+$("tradeSignal").innerHTML=`<span class="badge ${signalClass(signal)}">${escapeHtml(signal)}</span>`;
+$("tradeConfidence").textContent=`Confidence: ${escapeHtml(data.confidence??"—")}`;
+$("tradeStructure").textContent=data.structure||"—";
+$("tradeInvalidation").textContent=data.invalidation||"—";
+$("tradeReasoning").innerHTML=escapeHtml(data.reasoning||"No reasoning returned.").replace(/\n/g,"<br>");
+const candles=Array.isArray(data.keyCandles)?data.keyCandles:[];
+$("tradeCandles").innerHTML=candles.length?candles.map(c=>`<div class="timeline-row"><b>${escapeHtml(c.time||"—")}</b><span class="badge ${signalClass(c.direction)}">${escapeHtml(c.direction||"—")}</span><span>${escapeHtml(c.description||c.reason||"—")}</span><span>${escapeHtml(c.outcome||"—")}</span></div>`).join(""):"<div class='empty'>No key candles returned.</div>";
+const ind=data.indicators||{};
+$("indicatorGrid").innerHTML=Object.entries(ind).map(([k,v])=>`<div class="rule"><div class="small muted">${escapeHtml(k)}</div><b>${escapeHtml(v)}</b></div>`).join("")||"<div class='empty'>No indicator context.</div>";
+const candlesData=Array.isArray(data.candles)?data.candles:[];
+$("ohlcTable").innerHTML=candlesData.length?`<table><thead><tr><th>Time</th><th>Open</th><th>High</th><th>Low</th><th>Close</th><th>Volume</th></tr></thead><tbody>${candlesData.slice(-100).reverse().map(c=>`<tr><td>${escapeHtml(c.datetime||"")}</td><td>${escapeHtml(c.open)}</td><td>${escapeHtml(c.high)}</td><td>${escapeHtml(c.low)}</td><td>${escapeHtml(c.close)}</td><td>${escapeHtml(c.volume??"")}</td></tr>`).join("")}</tbody></table>`:"<div class='empty'>No candles.</div>";
+showPage("trading");
+}
+
+$("runTradingAnalysis").addEventListener("click",()=>runTradingAnalysis($("tradePair").value,$("tradeTimeframe").value));
+$("quickAnalyze").addEventListener("click",async()=>{
+const pair=$("quickPair").value;
+const tf=$("quickTimeframe").value;
+$("quickResult").classList.remove("hidden");
+$("quickResult").textContent="Analyzing…";
+try{
+const data=await api("/api/trading-analysis",{pair,timeframe:tf,mode:"price-action"});
+$("quickResult").innerHTML=`<b>${escapeHtml(data.signal||"NEUTRAL")}</b> — ${escapeHtml(data.structure||"")}<br>${escapeHtml(data.reasoning||"")}`;
+}catch(error){$("quickResult").textContent=error.message;}
+});
+
+function addChatMessage(role,text){
+const item=document.createElement("div");
+item.className="msg "+(role==="user"?"user":"ai");
 item.innerHTML=`<div class="role">${role==="user"?"You":"Alix"}</div><div>${escapeHtml(text).replace(/\n/g,"<br>")}</div>`;
 $("chatLog").appendChild(item);
 $("chatLog").scrollTop=$("chatLog").scrollHeight;
@@ -577,8 +638,66 @@ $("chatLog").scrollTop=$("chatLog").scrollHeight;
 $("sendChat").addEventListener("click",sendChat);
 $("chatInput").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChat();}});
 
-async function analyzeVideo(){const url=$("videoUrl").value.trim();if(!url)return toast("Paste a public YouTube URL.","error");$("videoJob").classList.remove("hidden");$("videoJobText").textContent="Starting background analysis…";try{const data=await api("/api/analyze-video",{url,prompt:$("videoPrompt").value,generateImage:$("videoGenerateImage").checked});currentVideoJob=data.jobId;if(!currentVideoJob)throw new Error("Backend did not return a video job ID.");await pollVideoJob(currentVideoJob)}catch(e){$("videoJob").classList.add("hidden");toast("Video analysis failed: "+e.message,"error")}}
-async function pollVideoJob(jobId){for(let attempts=1;attempts<=240;attempts++){const token=await idToken();const r=await fetch(backend()+"/api/video-job/"+encodeURIComponent(jobId),{headers:{Authorization:"Bearer "+token}});const raw=await r.text();let data;try{data=JSON.parse(raw)}catch{data={error:raw||"Invalid backend response"}}if(!r.ok)throw new Error(typeof data.error==="string"?data.error:(data.error?.message||"Job polling failed."));const job=data?.data?.jobId?data.data:data;if(job.status==="completed"){$("videoJob").classList.add("hidden");const result=job.result||{};renderVideoResult(result,job.jobId);await addDoc(collection(db,"users",currentUser.uid,"videoAnalyses"),{url:result.url||$("videoUrl").value.trim(),summary:result.summary||"",analysis:result.analysis||"",strategy:result.strategy||{},trades:result.trades||[],wins:result.wins||[],losses:result.losses||[],uncertainty:result.uncertainty||[],createdAt:serverTimestamp(),source:"gemini-video-lab"});for(const trade of (result.trades||[])){await addDoc(collection(db,"users",currentUser.uid,"setupCards"),{...trade,title:trade.title||`${trade.direction||"UNKNOWN"} setup`,videoUrl:result.url||$("videoUrl").value.trim(),createdAt:serverTimestamp(),source:"video-lab"})}await refreshAll();toast("Video analysis completed.","success");return}if(job.status==="failed")throw new Error(typeof job.error==="string"?job.error:(job.error?.message||"Video job failed."));const p=Number.isFinite(Number(job.progress))?Math.round(Number(job.progress)):0;$("videoJobText").textContent=`${job.stage||job.status||"working"} — ${p}% — elapsed ${attempts*3}s`;await new Promise(r=>setTimeout(r,3000))}throw new Error("Video analysis timed out in the UI. The server job may still be running.")}
+async function analyzeVideo(){
+const url=$("videoUrl").value.trim();
+if(!url)return toast("Paste a public YouTube URL.","error");
+$("videoJob").classList.remove("hidden");
+$("videoJobText").textContent="Starting background analysis…";
+try{
+const data=await api("/api/analyze-video",{url,prompt:$("videoPrompt").value,generateImage:$("videoGenerateImage").checked});
+currentVideoJob=data.jobId;
+await pollVideoJob(data.jobId);
+}catch(error){
+$("videoJob").classList.add("hidden");
+toast("Video analysis failed: "+error.message,"error");
+}
+}
+
+async function pollVideoJob(jobId){
+let attempts=0;
+while(attempts<180){
+attempts++;
+const token=await idToken();
+const response=await fetch(backend()+"/api/video-job/"+encodeURIComponent(jobId),{
+  headers:{Authorization:"Bearer "+token},
+  cache:"no-store"
+});
+const raw=await response.text();
+let data;
+try{data=JSON.parse(raw);}catch{data={error:raw||"Empty response"};}
+if(!response.ok)throw new Error(data.error||("Job polling failed (HTTP "+response.status+")"));
+if(data.status==="completed"){
+$("videoJob").classList.add("hidden");
+renderVideoResult(data.result,data.jobId);
+await addDoc(collection(db,"users",currentUser.uid,"videoAnalyses"),{
+url:data.result.url||$("videoUrl").value.trim(),
+summary:data.result.summary||"",
+analysis:data.result.analysis||"",
+strategy:data.result.strategy||{},
+trades:data.result.trades||[],
+image:data.result.image||"",
+createdAt:serverTimestamp()
+});
+for(const trade of (data.result.trades||[])){
+await addDoc(collection(db,"users",currentUser.uid,"setupCards"),{
+...trade,
+videoUrl:data.result.url||$("videoUrl").value.trim(),
+createdAt:serverTimestamp(),
+source:"video-lab"
+});
+}
+await refreshAll();
+toast("Video analysis completed.","success");
+return;
+}
+if(data.status==="failed")throw new Error(data.error||"Video job failed.");
+$("videoJobText").textContent=`${data.status||"working"}… elapsed ${attempts*3}s`;
+await new Promise(r=>setTimeout(r,3000));
+}
+throw new Error("Video analysis timed out in the UI. The server job may still be running.");
+}
+$("analyzeVideoBtn").addEventListener("click",analyzeVideo);
+$("clearVideoResult").addEventListener("click",()=>{$("videoResult").innerHTML="";$("videoUrl").value="";});
 
 function renderVideoResult(result,jobId=""){
 const trades=Array.isArray(result.trades)?result.trades:[];
