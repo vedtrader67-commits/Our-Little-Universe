@@ -400,7 +400,10 @@ body:options.method==="GET"?undefined:JSON.stringify(body)
 const raw=await response.text();
 let data;
 try{data=JSON.parse(raw);}catch{data={error:raw||"Empty response"};}
-if(!response.ok)throw new Error(data.error||("HTTP "+response.status));
+if(!response.ok){
+const message=data?.error?.message||data?.message||(typeof data?.error==="string"?data.error:null)||data?.raw||("HTTP "+response.status);
+throw new Error(String(message));
+}
 return data;
 }
 
@@ -675,7 +678,6 @@ summary:data.result.summary||"",
 analysis:data.result.analysis||"",
 strategy:data.result.strategy||{},
 trades:data.result.trades||[],
-image:data.result.image||"",
 createdAt:serverTimestamp()
 });
 for(const trade of (data.result.trades||[])){
