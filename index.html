@@ -13,6 +13,18 @@
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/11.10.0/firebase-storage-compat.js"></script>
+<script>
+  // --- Paste your Firebase project's config here ---
+  // Firebase console -> Project settings -> General -> Your apps -> SDK setup and configuration
+  window.__FIREBASE_CONFIG__ = {
+    apiKey: "",
+    authDomain: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
+    appId: ""
+  };
+</script>
 <style>
 
 :root {
@@ -12046,14 +12058,14 @@ const Auth = {
     }
   },
   async signIn(email, password) {
-    if (!App.auth) throw new Error("Firebase is not ready");
+    if (!App.auth) throw new Error("Firebase is not connected yet. Add your project keys to __FIREBASE_CONFIG__.");
     await App.auth.signInWithEmailAndPassword(email, password);
   },
   async signUpFromForm() {
     const form = document.getElementById("authForm");
     const fd = new FormData(form);
     try {
-      if (!App.auth) throw new Error("Firebase is not ready");
+      if (!App.auth) throw new Error("Firebase is not connected yet. Add your project keys to __FIREBASE_CONFIG__.");
       await App.auth.createUserWithEmailAndPassword(String(fd.get("email")), String(fd.get("password")));
       UI.closeModal();
       UI.go("account");
@@ -12063,7 +12075,7 @@ const Auth = {
   },
   async google() {
     try {
-      if (!App.auth) throw new Error("Firebase is not ready");
+      if (!App.auth) throw new Error("Firebase is not connected yet. Add your project keys to __FIREBASE_CONFIG__.");
       await App.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
       UI.closeModal();
       UI.go("account");
