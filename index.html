@@ -992,13 +992,16 @@ button:not(:disabled):active { transform: translateY(1px) scale(.985); }
 @keyframes skyspin { to { transform:translate(-50%,-50%) rotate(360deg); } }
 @keyframes skyripple { to { transform:scale(1); opacity:0; } }
 
+/* v3.1 quick controls */
+.quicktools{display:flex;align-items:center;gap:5px;margin-left:auto;margin-right:7px}.quicktool{width:34px;height:34px;border:1px solid var(--line);border-radius:10px;background:#0d1d30;color:var(--text);font-size:13px;font-weight:900;cursor:pointer;transition:transform .16s ease,border-color .16s ease,background .16s ease}.quicktool:hover{border-color:#35b8ff55;background:#122943}.quicktool.active{border-color:#35b8ff66;box-shadow:0 0 18px #35b8ff12}.utilityrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:8px 0 10px}.utilityhint{color:var(--dim);font-size:7px;letter-spacing:.08em;text-transform:uppercase}@media(max-width:600px){.quicktools{gap:3px;margin-right:3px}.quicktool{width:30px;height:30px}.brandsub{display:none}}
+
 </style>
 </head>
 <body>
 <div id="app" class="app">
 <header class="topbar">
 <a href="#" class="brand" data-nav="game"><div class="brandmark">✈</div><div><div class="brandname">SKYCRASH</div><div class="brandsub">REAL-TIME CRASH PLATFORM</div></div></a>
-<div class="topright"><div id="balancePill" class="balancepill hidden">🪙 <b id="headerBalance">0</b></div><button id="accountBtn" class="iconbtn hidden" aria-label="Account">☰</button></div>
+<div class="quicktools"><button id="soundQuickBtn" class="quicktool hidden" type="button" title="Toggle sound">🔊</button><button id="motionQuickBtn" class="quicktool hidden" type="button" title="Toggle animations">✨</button><button id="fullscreenQuickBtn" class="quicktool hidden" type="button" title="Fullscreen">⛶</button><button id="reconnectQuickBtn" class="quicktool hidden" type="button" title="Reconnect">↻</button></div><div class="topright"><div id="balancePill" class="balancepill hidden">🪙 <b id="headerBalance">0</b></div><button id="accountBtn" class="iconbtn hidden" aria-label="Account">☰</button></div>
 </header>
 <main class="main">
 <nav id="nav" class="nav hidden"><button class="active" data-nav="game">GAME</button><button data-nav="wallet">WALLET</button><button data-nav="profile">PROFILE</button><button id="adminNav" class="hidden" data-nav="admin">ADMIN</button></nav>
@@ -1015,7 +1018,7 @@ button:not(:disabled):active { transform: translateY(1px) scale(.985); }
 <div class="gamegrid">
 <div>
 <section class="card gamecard">
-<div class="gamehead"><div class="roundstate"><span id="liveDot" class="live"></span><div><div id="roundTitle" class="roundtitle">CONNECTING</div><div id="roundMeta" class="roundmeta">Loading game server</div></div></div><div class="fair">✓ PROVABLY FAIR</div></div>
+<div class="utilityrow"><span class="utilityhint">LIVE CONTROL PANEL</span><span id="quickServerStatus" class="serverpill">● CHECKING</span></div><div class="gamehead"><div class="roundstate"><span id="liveDot" class="live"></span><div><div id="roundTitle" class="roundtitle">CONNECTING</div><div id="roundMeta" class="roundmeta">Loading game server</div></div></div><div class="fair">✓ PROVABLY FAIR</div></div>
 <div id="stage" class="stage"><div class="stars"></div><div class="cloud one"></div><div class="cloud two"></div><div id="flightLine" class="flightline"></div><div id="flightStroke" class="flightstroke"></div><div id="trail" class="trail"></div><div id="plane" class="plane">✈️</div><div class="multwrap"><div id="multiplier" class="mult live">1.00×</div></div><div id="countdown" class="countdown">CONNECTING</div></div>
 <div class="gamefoot"><div class="stat"><label>ROUND</label><strong id="footerRound">—</strong></div><div class="stat"><label>OPEN BETS</label><strong id="footerOpen">0</strong></div><div class="stat"><label>CURRENT WIN</label><strong id="footerWin">0</strong></div></div>
 <div class="betpanel"><div class="panelrow"><div><div class="ptitle">Place your bet</div><div class="psub">The server owns the balance and settlement state.</div></div><div id="cashMode" class="kycchip">DEMO / LOCKED</div></div>
@@ -1113,6 +1116,11 @@ const ui = {
   serverPill: $("serverPill"),
   headerBalance: $("headerBalance"),
   accountBtn: $("accountBtn"),
+  soundQuickBtn: $("soundQuickBtn"),
+  motionQuickBtn: $("motionQuickBtn"),
+  fullscreenQuickBtn: $("fullscreenQuickBtn"),
+  reconnectQuickBtn: $("reconnectQuickBtn"),
+  quickServerStatus: $("quickServerStatus"),
   loginTab: $("loginTab"),
   registerTab: $("registerTab"),
   loginForm: $("loginForm"),
@@ -1349,10 +1357,12 @@ async function checkServer() {
     ui.serverPill.classList.remove("bad");
     ui.serverPill.classList.add("ok");
     ui.serverPill.querySelector("span").textContent = "SERVER ONLINE";
+    if (ui.quickServerStatus) ui.quickServerStatus.textContent = "● ONLINE";
   } catch (error) {
     ui.serverPill.classList.remove("ok");
     ui.serverPill.classList.add("bad");
     ui.serverPill.querySelector("span").textContent = "SERVER ERROR";
+    if (ui.quickServerStatus) ui.quickServerStatus.textContent = "● OFFLINE";
   }
 }
 
@@ -1472,6 +1482,7 @@ function signedInUi() {
   ui.nav.classList.remove("hidden");
   ui.balancePill.classList.remove("hidden");
   ui.accountBtn.classList.remove("hidden");
+  [ui.soundQuickBtn,ui.motionQuickBtn,ui.fullscreenQuickBtn,ui.reconnectQuickBtn].forEach((el)=>el?.classList.remove("hidden"));
   if (state.admin) ui.adminNav.classList.remove("hidden");
   else ui.adminNav.classList.add("hidden");
 }
@@ -1481,6 +1492,7 @@ function signedOutUi() {
   ui.nav.classList.add("hidden");
   ui.balancePill.classList.add("hidden");
   ui.accountBtn.classList.add("hidden");
+  [ui.soundQuickBtn,ui.motionQuickBtn,ui.fullscreenQuickBtn,ui.reconnectQuickBtn].forEach((el)=>el?.classList.add("hidden"));
   ui.adminNav.classList.add("hidden");
 
   Object.values(pageIds).forEach((id) => $(id)?.classList.remove("active"));
@@ -2471,11 +2483,13 @@ function loadSettings() {
     state.settings.animations = true;
   }
   document.body.classList.toggle("no-animations", !state.settings.animations);
+  syncQuickTools();
 }
 
 function saveSettings() {
   localStorage.setItem("skycrash.settings", JSON.stringify(state.settings));
   document.body.classList.toggle("no-animations", !state.settings.animations);
+  syncQuickTools();
 }
 
 function playTone(kind = "tap") {
@@ -2734,6 +2748,20 @@ async function refreshServerWallet() {
   }
 }
 
+function syncQuickTools(){
+  if(ui.soundQuickBtn){ui.soundQuickBtn.textContent=state.settings.sound?"🔊":"🔇";ui.soundQuickBtn.classList.toggle("active",state.settings.sound);}
+  if(ui.motionQuickBtn){ui.motionQuickBtn.textContent=state.settings.animations?"✨":"⏸";ui.motionQuickBtn.classList.toggle("active",state.settings.animations);}
+}
+async function quickReconnect(){
+  ui.reconnectQuickBtn?.classList.add("is-busy");
+  try{closeStream();await checkServer();if(state.user){await loadBootstrap();await connectStream();showToast("Connection refreshed.","success");}}catch(e){showToast(e.message||"Reconnect failed.","error");}
+  finally{ui.reconnectQuickBtn?.classList.remove("is-busy");}
+}
+async function quickFullscreen(){
+  try{if(!document.fullscreenElement) await document.documentElement.requestFullscreen?.(); else await document.exitFullscreen?.();}
+  catch{showToast("Fullscreen is not available.","error");}
+}
+
 function bindEvents() {
   ui.loginTab.addEventListener("click", () => switchAuth("login"));
   ui.registerTab.addEventListener("click", () => switchAuth("register"));
@@ -2767,6 +2795,10 @@ function bindEvents() {
   ui.settingsBtn.addEventListener("click", openSettingsModal);
   ui.rulesBtn.addEventListener("click", openRulesModal);
   ui.historyBtn.addEventListener("click", openMyHistory);
+  ui.soundQuickBtn?.addEventListener("click",()=>{state.settings.sound=!state.settings.sound;saveSettings();syncQuickTools();if(state.settings.sound)playTone("tap");});
+  ui.motionQuickBtn?.addEventListener("click",()=>{state.settings.animations=!state.settings.animations;saveSettings();syncQuickTools();});
+  ui.fullscreenQuickBtn?.addEventListener("click",quickFullscreen);
+  ui.reconnectQuickBtn?.addEventListener("click",quickReconnect);
   ui.chatForm.addEventListener("submit", sendChat);
   ui.betBtn.addEventListener("click", () => placeBet());
   ui.cashoutBtn.addEventListener("click", cashOut);
