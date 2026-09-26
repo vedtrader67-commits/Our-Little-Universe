@@ -978,6 +978,20 @@ transition-duration:.001ms!important}
 }
 
 .linkbtn{border:0;background:transparent;color:var(--blue2);font-size:9px;font-weight:900;text-align:center;padding:2px 0}.linkbtn:hover{text-decoration:underline}.profitpreview{margin-top:5px;color:var(--dim);font-size:8px;line-height:1.4}.autobets{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#0a1727}.autostatus{grid-column:1/-1;padding:7px 8px;border-radius:8px;color:var(--dim);background:#07111f;font-size:8px;font-weight:900}.autostatus.on{color:var(--green);background:#42dc9a10}.featuregrid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:12px;margin-top:12px}.featurecard{padding:13px}.featurehead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.mini-badge{min-width:24px;padding:5px 7px;border-radius:8px;text-align:center;color:var(--blue2);background:#35b8ff10;font-size:8px;font-weight:1000}.chatmessages{height:230px;overflow:auto;padding:5px 2px;display:grid;align-content:start;gap:7px;scrollbar-width:thin}.chatmsg{max-width:92%;padding:8px 9px;border:1px solid var(--line);border-radius:10px 10px 10px 3px;background:#102036}.chatmsg.own{justify-self:end;border-radius:10px 10px 3px 10px;background:#0d2940;border-color:#35b8ff2b}.chatmeta{display:flex;justify-content:space-between;gap:8px;align-items:center}.chatmeta strong{font-size:8px}.chatmeta span{color:var(--dim);font-size:7px}.chattext{margin-top:3px;font-size:9px;line-height:1.45;word-break:break-word}.chatform{display:grid;grid-template-columns:1fr 72px;gap:7px;margin-top:8px}.toolgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.toolbtn{min-height:42px;border:1px solid var(--line);border-radius:10px;background:#12243a;color:var(--text);font-size:9px;font-weight:950}.toolbtn:active{transform:translateY(1px)}.sessionstats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}.sessionstats>div{padding:8px;border:1px solid var(--line);border-radius:9px;background:#0a1727}.sessionstats span{display:block;color:var(--dim);font-size:7px;font-weight:800;text-transform:uppercase}.sessionstats strong{display:block;margin-top:4px;font-size:10px}.shortcutline{margin-top:9px;color:var(--dim);font-size:7px;line-height:1.5}.statmodal{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px}.statmodal>div{padding:11px;border:1px solid var(--line);border-radius:11px;background:#0a1727}.statmodal span{display:block;color:var(--dim);font-size:8px}.statmodal strong{display:block;margin-top:4px;font-size:14px}.settingslist{display:grid;gap:8px;margin-bottom:10px}.settingslist .toggle{margin:0}.no-animations *{animation:none!important;transition:none!important}.chatmessages::-webkit-scrollbar{width:5px}.chatmessages::-webkit-scrollbar-thumb{background:#243c56;border-radius:20px}
+
+/* v2.3 interaction polish */
+button, .btn, .toolbtn, .tiny { position: relative; overflow: hidden; transform: translateZ(0); }
+button:not(:disabled):active { transform: translateY(1px) scale(.985); }
+.btn.is-busy { pointer-events:none; opacity:.72; }
+.btn.is-busy::after { content:""; position:absolute; width:14px; height:14px; border:2px solid currentColor; border-right-color:transparent; border-radius:50%; inset:50% auto auto 50%; transform:translate(-50%,-50%); animation:skyspin .65s linear infinite; }
+.ripple { position:absolute; border-radius:50%; pointer-events:none; background:currentColor; opacity:.16; transform:scale(0); animation:skyripple .45s ease-out forwards; }
+.serverpill { display:inline-flex; align-items:center; gap:6px; padding:6px 9px; border:1px solid var(--line); border-radius:999px; color:var(--dim); font-size:8px; letter-spacing:.08em; }
+.serverpill i { width:6px; height:6px; border-radius:50%; background:#777; box-shadow:0 0 10px currentColor; }
+.serverpill.ok i { background:#42dc9a; color:#42dc9a; }
+.serverpill.bad i { background:#ff5f76; color:#ff5f76; }
+@keyframes skyspin { to { transform:translate(-50%,-50%) rotate(360deg); } }
+@keyframes skyripple { to { transform:scale(1); opacity:0; } }
+
 </style>
 </head>
 <body>
@@ -1096,6 +1110,7 @@ const ui = {
   nav: $("nav"),
   adminNav: $("adminNav"),
   balancePill: $("balancePill"),
+  serverPill: $("serverPill"),
   headerBalance: $("headerBalance"),
   accountBtn: $("accountBtn"),
   loginTab: $("loginTab"),
@@ -1271,7 +1286,7 @@ function jsonResponse(text, response = null) {
       ? " Render returned an HTML page instead of the SkyCrash API JSON. Make sure Render is running server.js with `npm start`, not serving the public folder as a static site."
       : " Check the deployed API response.";
     return {
-      error: `Server returned a non-JSON response (HTTP ${response?.status || "?"}).${hint}`
+      error: `Server returned a non-JSON response (HTTP ${response?.status || "?"}) at ${response?.url || "the requested API endpoint"}.${hint}`
     };
   }
 }
@@ -1323,6 +1338,47 @@ function authError(error) {
     "auth/network-request-failed": "Network error. Check your connection."
   };
   return map[code] || error?.message || "Authentication failed.";
+}
+
+async function checkServer() {
+  if (!ui.serverPill) return;
+  try {
+    const response = await fetch("/api/ping", { headers: { Accept: "application/json" }, cache: "no-store" });
+    const data = jsonResponse(await response.text(), response);
+    if (!response.ok || !data.ok) throw new Error(data.error || "Server unavailable");
+    ui.serverPill.classList.remove("bad");
+    ui.serverPill.classList.add("ok");
+    ui.serverPill.querySelector("span").textContent = "SERVER ONLINE";
+  } catch (error) {
+    ui.serverPill.classList.remove("ok");
+    ui.serverPill.classList.add("bad");
+    ui.serverPill.querySelector("span").textContent = "SERVER ERROR";
+  }
+}
+
+function bindInteractionPolish() {
+  document.addEventListener("pointerdown", (event) => {
+    const button = event.target.closest("button");
+    if (!button || button.disabled) return;
+    const rect = button.getBoundingClientRect();
+    const ripple = document.createElement("span");
+    ripple.className = "ripple";
+    const size = Math.max(rect.width, rect.height) * 1.4;
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+    button.appendChild(ripple);
+    window.setTimeout(() => ripple.remove(), 500);
+    if (navigator.vibrate) navigator.vibrate(8);
+  }, { passive: true });
+
+  document.addEventListener("submit", (event) => {
+    const button = event.target.querySelector('button[type="submit"], button:not([type])');
+    if (!button || button.dataset.noBusy === "true") return;
+    button.classList.add("is-busy");
+    window.setTimeout(() => button.classList.remove("is-busy"), 1800);
+  }, true);
 }
 
 async function publicConfig() {
@@ -2789,6 +2845,9 @@ function bindEvents() {
 }
 
 async function boot() {
+  bindInteractionPolish();
+  checkServer();
+  window.setInterval(checkServer, 15000);
   loadSettings();
   try {
     state.config = await publicConfig();
