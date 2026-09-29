@@ -1,39 +1,1224 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>BlueRoom — Watch Together</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#03101f">
+<meta name="description" content="BlueRoom private watch-together room">
+<title>BlueRoom — Watch Together</title>
 <style>
-:root{--bg:#030712;--panel:#081426;--line:#17345b;--blue:#2998ff;--cyan:#4de8ff;--text:#eaf5ff;--muted:#8ca5c4;--bad:#ff718b;--ok:#35e69b}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% -10%,#0b2d5d,#050a14 48%,#02040a);color:var(--text);font:15px system-ui,sans-serif;min-height:100vh}button,input{font:inherit}.app{max-width:1400px;margin:auto;padding:16px}.hidden{display:none!important}.card{background:#071222ee;border:1px solid var(--line);border-radius:18px;box-shadow:0 0 30px #178dff18}.top{height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;position:sticky;top:8px;z-index:5}.brand{font-weight:900;font-size:20px}.glow{color:var(--cyan);text-shadow:0 0 20px #39dfff77}.user{display:flex;gap:9px;align-items:center}.avatar{width:36px;height:36px;border-radius:50%;object-fit:cover}.btn{border:1px solid #28517e;background:#0b1b30;color:var(--text);padding:10px 13px;border-radius:11px;cursor:pointer}.primary{background:linear-gradient(135deg,#147dff,#24c9ff);color:#001321;border:0;font-weight:800}.danger{border-color:#703247}.input{width:100%;background:#050e1b;border:1px solid #203c61;color:var(--text);padding:11px;border-radius:10px;outline:none}.input:focus{border-color:var(--blue)}.login{min-height:100vh;display:grid;place-items:center}.loginbox{width:min(440px,calc(100% - 28px));padding:32px;text-align:center}.logo{width:46px;height:46px;margin:auto;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#168cff,#5ceaff);color:#00111f;font-weight:900;font-size:22px}.login h1{font-size:40px;margin:12px 0}.muted{color:var(--muted)}.shell{display:grid;grid-template-columns:290px 1fr 320px;gap:14px;margin-top:14px}.side{padding-bottom:12px}.side h3{font-size:14px;padding:15px;margin:0;border-bottom:1px solid var(--line)}.section{padding:14px}.row{display:flex;gap:8px}.row>*{flex:1}.roomcode{font-size:29px;font-weight:900;letter-spacing:7px;text-align:center;color:var(--cyan);padding:15px;margin:12px 0;border:1px dashed #2d83bd;border-radius:13px}.video{background:#000;border-radius:15px;overflow:hidden;aspect-ratio:16/9}.video video{width:100%;height:100%;display:block}.main{padding:14px}.controls{margin-top:10px}.range{width:100%;accent-color:var(--cyan)}.controlrow{display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin-top:8px}.time{margin-left:auto;color:#a9bfd8;font-size:13px}.people{padding:8px 14px}.person{padding:9px 0;border-bottom:1px solid #132741;display:flex;gap:8px;align-items:center}.dot{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 9px var(--ok)}.chat{height:420px;display:flex;flex-direction:column}.messages{flex:1;overflow:auto;padding:10px 14px}.msg{background:#0a192c;border:1px solid #183454;border-radius:11px;padding:8px;margin:7px 0}.msg b{color:#70dfff;font-size:12px}.msg p{margin:3px 0;word-break:break-word}.chatbox{display:flex;gap:6px;padding:9px;border-top:1px solid var(--line)}.error{color:var(--bad);font-size:13px;margin-top:7px}.ok{color:var(--ok);font-size:13px;margin-top:7px}.modal{position:fixed;inset:0;background:#02050bdd;display:grid;place-items:center;z-index:20}.modalbox{width:min(480px,calc(100% - 25px));padding:22px}.toast{position:fixed;right:15px;bottom:15px;background:#08182a;border:1px solid #2a6595;padding:12px 15px;border-radius:11px;opacity:0;transform:translateY(20px);transition:.2s;z-index:50}.toast.show{opacity:1;transform:none}.stats{display:flex;gap:9px;margin-bottom:14px}.stat{flex:1;padding:12px;border:1px solid var(--line);border-radius:12px}.stat b{display:block;font-size:20px}.stat span{font-size:11px;color:var(--muted)}@media(max-width:1050px){.shell{grid-template-columns:1fr}.chat{height:330px}}@media(max-width:600px){.app{padding:9px}.user span{display:none}.row{flex-direction:column}.roomcode{font-size:24px}}
-</style></head><body>
-<div id="login" class="login app"><div class="card loginbox"><div class="logo">B</div><h1>Blue<span class="glow">Room</span></h1><p class="muted">Private watch-together rooms. No separate BlueRoom password.</p><button id="google" class="btn primary" style="width:100%">Continue with Google</button><div id="loginErr" class="error"></div></div></div>
-<div id="app" class="app hidden"><header class="card top"><div class="brand">Blue<span class="glow">Room</span></div><div class="user"><span id="name">Guest</span><img id="avatar" class="avatar"><button id="logout" class="btn">Sign out</button></div></header>
-<main class="shell"><aside class="card side"><h3>Private Room</h3><div class="section"><button id="create" class="btn primary" style="width:100%">＋ Create room</button><div style="height:9px"></div><input id="code" class="input" maxlength="6" placeholder="6-character code"><div style="height:8px"></div><button id="join" class="btn" style="width:100%">Join room</button><div id="roomErr" class="error"></div><div id="roomBox" class="hidden"><div id="roomCode" class="roomcode">------</div><div class="row"><button id="copy" class="btn">Copy invite</button><button id="leave" class="btn danger">Leave</button></div></div></div><h3>Shared movie URL</h3><div class="section"><input id="movieUrl" class="input" placeholder="https://.../movie.mp4"><div style="height:8px"></div><button id="setMovie" class="btn" style="width:100%">Set movie for both</button><p class="muted" style="font-size:12px">A local file on your phone cannot be sent directly to the other phone. Use a publicly reachable video URL.</p></div></aside>
-<section><div class="card main"><div class="stats"><div class="stat"><b id="online">0</b><span>CONNECTED</span></div><div class="stat"><b id="status">Not in room</b><span>ROOM</span></div><div class="stat"><b id="roomSmall">—</b><span>CODE</span></div></div><div class="video"><video id="video" playsinline controlslist="nodownload"></video></div><div class="controls"><input id="seek" class="range" type="range" min="0" max="1000" value="0"><div class="controlrow"><button id="back" class="btn">−10s</button><button id="play" class="btn primary">Play</button><button id="forward" class="btn">+10s</button><button id="mute" class="btn">Mute</button><select id="speed" class="input" style="width:auto"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="2">2×</option></select><button id="full" class="btn">Fullscreen</button><span id="time" class="time">00:00 / 00:00</span></div></div></div></section>
-<aside class="card side"><h3>People <span id="peopleCount" class="muted">(0)</span></h3><div id="people" class="people"></div><h3>Room Chat</h3><div class="chat"><div id="messages" class="messages"></div><form id="chat" class="chatbox"><input id="message" class="input" maxlength="500" placeholder="Message…"><button class="btn primary">Send</button></form></div></aside></main></div><div id="toast" class="toast"></div>
+:root{
+  --bg:#020711;
+  --bg2:#061325;
+  --panel:#07172b;
+  --panel2:#0a1e36;
+  --line:#17406b;
+  --line2:#1c5b92;
+  --blue:#269cff;
+  --cyan:#55e7ff;
+  --text:#ecf8ff;
+  --muted:#8ca9c7;
+  --good:#35e69b;
+  --warn:#ffd166;
+  --bad:#ff6685;
+  --shadow:0 0 45px rgba(24,144,255,.16);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html{background:var(--bg);scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -15%,#0c3d70 0,#061528 34%,#020711 72%);color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{font:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+.hidden{display:none!important}
+.app{width:min(1500px,100%);margin:auto;padding:14px}
+.card{background:linear-gradient(180deg,rgba(9,29,51,.96),rgba(4,15,28,.96));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.top{position:sticky;top:10px;z-index:20;min-height:66px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(14px)}
+.brand{font-weight:950;letter-spacing:.4px;font-size:21px}
+.glow{color:var(--cyan);text-shadow:0 0 20px rgba(85,231,255,.5)}
+.user{display:flex;align-items:center;gap:10px;min-width:0}
+.avatar{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);object-fit:cover;background:#0b2948}
+.userText{min-width:0}
+.userText b,.userText span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.userText span{font-size:12px;color:var(--muted)}
+.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 320px;gap:14px;margin-top:14px}
+.side{padding:16px;min-height:720px}
+.main{padding:14px;min-height:720px}
+.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;font-size:15px}
+.muted{color:var(--muted)}
+.small{font-size:12px}
+.hr{height:1px;background:var(--line);margin:16px 0}
+.stack{display:grid;gap:9px}
+.row{display:flex;gap:8px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.input,.select{width:100%;border:1px solid var(--line);background:#03101f;color:var(--text);border-radius:11px;padding:10px 12px;outline:none}
+.input:focus,.select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(38,156,255,.12)}
+.btn{border:1px solid var(--line2);background:#0a1e35;color:var(--text);border-radius:11px;padding:9px 12px;transition:.16s ease;white-space:nowrap}
+.btn:hover{transform:translateY(-1px);border-color:var(--blue);box-shadow:0 0 20px rgba(38,156,255,.15)}
+.btn.primary{background:linear-gradient(135deg,#087be0,#17b9ff);border-color:#37c7ff;color:white;font-weight:800;box-shadow:0 0 22px rgba(38,156,255,.24)}
+.btn.danger{border-color:#7e2940;color:#ff9eb0;background:#260e18}
+.btn.ghost{background:transparent}
+.btn.full{width:100%}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.stat{padding:12px;border:1px solid var(--line);border-radius:13px;background:#041326;text-align:center;min-width:0}
+.stat b{display:block;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.stat span{display:block;margin-top:3px;font-size:10px;letter-spacing:1.2px;color:var(--muted)}
+.roomBox{padding:13px;border:1px solid var(--line2);border-radius:14px;background:rgba(4,19,36,.8);margin-top:12px}
+.roomCode{font-size:29px;font-weight:950;letter-spacing:6px;color:var(--cyan);text-shadow:0 0 22px rgba(85,231,255,.35);text-align:center;padding:5px 0}
+.video{position:relative;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden;border:1px solid #12375b;box-shadow:0 0 40px rgba(0,0,0,.45)}
+.video video{width:100%;height:100%;display:block;background:#000}
+.emptyVideo{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px;background:radial-gradient(circle,#0a2948,#02060d 65%)}
+.emptyVideo b{font-size:20px;display:block;margin-bottom:5px}
+.controls{padding:12px 0 0}
+.range{width:100%;accent-color:var(--blue);cursor:pointer}
+.controlrow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}
+.time{font-size:12px;color:var(--muted);margin-left:auto}
+.people{display:grid;gap:7px}
+.person{display:flex;align-items:center;gap:9px;padding:9px;border-radius:11px;background:#041326;border:1px solid #0e2b49}
+.person img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#09233c}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);flex:none}
+.library{display:grid;gap:7px;max-height:380px;overflow:auto;padding-right:2px}
+.file{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px;border:1px solid #0e2d4c;border-radius:12px;background:#041326}
+.fileName{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fileMeta{font-size:11px;color:var(--muted)}
+.fileActions{display:flex;gap:5px}
+.fileActions .btn{padding:7px 8px;font-size:12px}
+.progress{height:7px;background:#03101f;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-top:8px}
+.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#178fff,#5beaff);box-shadow:0 0 15px #32bfff}
+.chat{height:520px;display:flex;flex-direction:column}
+.messages{flex:1;overflow:auto;padding:4px 1px 8px;display:flex;flex-direction:column;gap:7px}
+.msg{max-width:92%;padding:8px 10px;border-radius:12px;background:#041326;border:1px solid #0e2d4c}
+.msg b{font-size:11px;color:var(--cyan)}
+.msg p{margin:2px 0 0;white-space:pre-wrap;word-break:break-word}
+.chatbox{display:flex;gap:7px;border-top:1px solid var(--line);padding-top:9px}
+.chatbox .input{min-width:0}
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#06182b;border:1px solid var(--line2);box-shadow:0 0 35px rgba(38,156,255,.25);padding:11px 15px;border-radius:12px;z-index:100;color:var(--text);transition:.2s ease;max-width:min(90vw,560px);text-align:center}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+.error{color:#ff9aad;font-size:12px;min-height:18px}
+.ok{color:#73f0b7;font-size:12px;min-height:18px}
+.login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.loginCard{width:min(460px,100%);padding:28px;text-align:center}
+.logoMark{width:78px;height:78px;border-radius:24px;margin:0 auto 18px;display:grid;place-items:center;font-size:34px;font-weight:950;background:radial-gradient(circle at 35% 30%,#65efff,#1578dd 50%,#06172c 100%);box-shadow:0 0 45px rgba(38,156,255,.35);border:1px solid #48caff}
+.loginCard h1{margin:0 0 8px;font-size:31px}
+.loginCard p{color:var(--muted);margin:0 auto 20px;max-width:360px}
+.authError{margin-top:10px;color:#ff91a5;font-size:12px;word-break:break-word}
+.badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--muted);font-size:11px}
+.badge i{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good)}
+.drop{border:1px dashed #286493;border-radius:13px;padding:15px;text-align:center;background:#03101f;color:var(--muted);transition:.15s}
+.drop.drag{border-color:var(--cyan);background:#062342;color:var(--text)}
+.modal{position:fixed;inset:0;background:rgba(0,5,12,.78);backdrop-filter:blur(10px);z-index:90;display:grid;place-items:center;padding:16px}
+.modalCard{width:min(620px,100%);max-height:90vh;overflow:auto;padding:18px}
+.modalHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.hiddenText{display:none}
+.footerNote{padding:10px 0;color:var(--muted);font-size:11px;text-align:center}
+@media(max-width:1100px){.grid{grid-template-columns:270px minmax(0,1fr)}.grid>.side:last-child{grid-column:1/-1;min-height:unset}.chat{height:300px}}
+@media(max-width:760px){.app{padding:8px}.top{position:relative;top:0}.grid{grid-template-columns:1fr}.side,.main{min-height:unset}.stats{grid-template-columns:repeat(3,1fr)}.userText{display:none}.controlrow .time{width:100%;margin-left:0}.file{grid-template-columns:1fr}.fileActions{justify-content:flex-start}.chat{height:360px}}
+</style>
+</head>
+<body>
+<section id="login" class="login">
+  <div class="card loginCard">
+    <div class="logoMark">B</div>
+    <h1 class="glow">BlueRoom</h1>
+    <p>Private watch-together rooms with Google login, live synchronization, chat, and your Dosya video library.</p>
+    <button id="google" class="btn primary full">Continue with Google</button>
+    <div id="loginErr" class="authError"></div>
+    <div class="footerNote">Room synchronization uses Firebase. Video files use your Render → Dosya storage backend.</div>
+  </div>
+</section>
+
+<div id="app" class="app hidden">
+  <header class="card top">
+    <div class="brand"><span class="glow">Blue</span>Room</div>
+    <div class="row">
+      <span id="connectionBadge" class="badge"><i></i><span>Firebase connected</span></span>
+      <div class="user">
+        <img id="avatar" class="avatar" alt="">
+        <div class="userText">
+          <b id="name">User</b>
+          <span id="email"></span>
+        </div>
+      </div>
+      <button id="logout" class="btn ghost">Log out</button>
+    </div>
+  </header>
+
+  <main class="grid">
+    <aside class="card side">
+      <h3 class="sectionTitle">Room <span class="badge"><i></i>2 people max</span></h3>
+      <div class="stack">
+        <button id="create" class="btn primary full">Create private room</button>
+        <div class="row">
+          <input id="code" class="input" maxlength="6" autocomplete="off" placeholder="6-character code">
+          <button id="join" class="btn">Join</button>
+        </div>
+        <div id="roomErr" class="error"></div>
+      </div>
+      <div id="roomBox" class="roomBox hidden">
+        <div class="small muted" style="text-align:center">YOUR ROOM CODE</div>
+        <div id="roomCode" class="roomCode">------</div>
+        <div class="row">
+          <button id="copy" class="btn full">Copy invite</button>
+          <button id="leave" class="btn danger">Leave</button>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+      <h3 class="sectionTitle">Video library <span id="storageBadge" class="badge">Loading…</span></h3>
+      <input id="filePicker" type="file" accept="video/*" class="hidden">
+      <button id="chooseFile" class="btn primary full">Upload movie to Dosya</button>
+      <div id="drop" class="drop" style="margin-top:8px">Or drag a video here</div>
+      <div id="uploadStatus" class="small muted" style="margin-top:8px">No upload running.</div>
+      <div class="progress"><i id="uploadBar"></i></div>
+      <div class="row" style="margin-top:8px">
+        <input id="searchFiles" class="input" placeholder="Search your videos…">
+        <button id="refreshFiles" class="btn">↻</button>
+      </div>
+      <div id="library" class="library" style="margin-top:8px"></div>
+      <div id="storageError" class="error"></div>
+    </aside>
+
+    <section class="card main">
+      <div class="stats">
+        <div class="stat"><b id="online">0</b><span>CONNECTED</span></div>
+        <div class="stat"><b id="status">Not in room</b><span>ROOM</span></div>
+        <div class="stat"><b id="roomSmall">—</b><span>CODE</span></div>
+      </div>
+
+      <div class="video">
+        <video id="video" playsinline preload="metadata" controlslist="nodownload"></video>
+        <div id="emptyVideo" class="emptyVideo">
+          <div>
+            <b>Choose a movie from your library</b>
+            <span class="muted">Create or join a room first, then select an uploaded video.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <input id="seek" class="range" type="range" min="0" max="1000" value="0">
+        <div class="controlrow">
+          <button id="back" class="btn">−10s</button>
+          <button id="play" class="btn primary">Play</button>
+          <button id="forward" class="btn">+10s</button>
+          <button id="mute" class="btn">Mute</button>
+          <select id="speed" class="select" style="width:auto">
+            <option value="0.5">0.5×</option>
+            <option value="0.75">0.75×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.25">1.25×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+          <button id="full" class="btn">Fullscreen</button>
+          <span id="time" class="time">00:00 / 00:00</span>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+      <div class="sectionTitle">
+        <div><b id="movieTitle">No movie selected</b><div id="movieMeta" class="small muted">Select a file from the library to share it with the room.</div></div>
+        <span id="syncState" class="badge"><i></i>Waiting</span>
+      </div>
+    </section>
+
+    <aside class="card side">
+      <h3 class="sectionTitle">People <span id="peopleCount" class="muted">(0)</span></h3>
+      <div id="people" class="people"></div>
+      <div class="hr"></div>
+      <h3 class="sectionTitle">Room chat</h3>
+      <div class="chat">
+        <div id="messages" class="messages"></div>
+        <form id="chat" class="chatbox">
+          <input id="message" class="input" maxlength="500" placeholder="Message…">
+          <button class="btn primary">Send</button>
+        </form>
+      </div>
+      <div class="footerNote">Both devices watch the same Dosya-hosted file and share playback state through Firestore.</div>
+    </aside>
+  </main>
+</div>
+
+<div id="toast" class="toast"></div>
+
 <script type="module">
-import {initializeApp} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js';
-import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
-import {getFirestore,doc,getDoc,setDoc,updateDoc,deleteDoc,onSnapshot,collection,addDoc,serverTimestamp,query,orderBy,limit} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
-const cfg={apiKey:'AIzaSyAyw5c-W1BYIr8tmAqBEnLxw3zVEBUMxAw',authDomain:'our-universe-8229c.firebaseapp.com',projectId:'our-universe-8229c',storageBucket:'our-universe-8229c.firebasestorage.app',messagingSenderId:'23799640027',appId:'1:23799640027:web:ca783565b32c9fbfecc1fe',measurementId:'G-226GWG3N4M'};
-const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),provider=new GoogleAuthProvider();
-const $=id=>document.getElementById(id);let me=null,room=null,unsubs=[],applying=false,lastWrite=0;
-const toast=m=>{let t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.x);toast.x=setTimeout(()=>t.classList.remove('show'),2400)};
-function code(){return Math.random().toString(36).slice(2,8).toUpperCase()}
-function cleanup(){unsubs.forEach(x=>x&&x());unsubs=[];room=null;$('roomBox').classList.add('hidden');$('status').textContent='Not in room';$('roomSmall').textContent='—';$('online').textContent='0';$('people').innerHTML='';$('messages').innerHTML='';}
-$('google').onclick=async()=>{try{await signInWithPopup(auth,provider)}catch(e){$('loginErr').textContent=e.message}};
-$('logout').onclick=()=>signOut(auth);
-onAuthStateChanged(auth,u=>{me=u;if(u){$('login').classList.add('hidden');$('app').classList.remove('hidden');$('name').textContent=u.displayName||u.email||'User';$('avatar').src=u.photoURL||'';const q=new URLSearchParams(location.search).get('room');if(q&&!room)$('code').value=q.toUpperCase()}else{cleanup();$('app').classList.add('hidden');$('login').classList.remove('hidden')}});
-async function createRoom(){if(!me)return;cleanup();let c=code();let ref=doc(db,'blueRooms',c);let snap=await getDoc(ref);while(snap.exists()){c=code();ref=doc(db,'blueRooms',c);snap=await getDoc(ref)}await setDoc(ref,{host:me.uid,createdAt:serverTimestamp(),state:{playing:false,time:0,updatedAt:Date.now()},movie:{url:'',title:''},members:{[me.uid]:{name:me.displayName||me.email||'User',photo:me.photoURL||'',joinedAt:Date.now()}}});await enter(c);}
-async function enter(c){c=(c||'').trim().toUpperCase();if(!/^[A-Z0-9]{6}$/.test(c)){ $('roomErr').textContent='Enter a valid 6-character room code.';return}let ref=doc(db,'blueRooms',c),snap=await getDoc(ref);if(!snap.exists()){$('roomErr').textContent='Invalid room code. Room does not exist.';return}let d=snap.data(),members=d.members||{};if(!members[me.uid]&&Object.keys(members).length>=2){$('roomErr').textContent='Room is full (2 people maximum).';return}if(!members[me.uid])await updateDoc(ref,{['members.'+me.uid]:{name:me.displayName||me.email||'User',photo:me.photoURL||'',joinedAt:Date.now()}});room=c;$('roomErr').textContent='';$('roomCode').textContent=c;$('roomSmall').textContent=c;$('status').textContent='Connected';$('roomBox').classList.remove('hidden');history.replaceState(null,'','?room='+c);listen(c);}
-function listen(c){const ref=doc(db,'blueRooms',c);unsubs.push(onSnapshot(ref,s=>{if(!s.exists()){toast('Room closed');cleanup();return}let d=s.data(),members=d.members||{};let arr=Object.values(members);$('online').textContent=arr.length;$('peopleCount').textContent='('+arr.length+')';$('people').innerHTML=arr.map(p=>`<div class="person"><span class="dot"></span><span>${escapeHtml(p.name||'User')}</span></div>`).join('');let m=d.movie||{};if(m.url&&$('video').src!==m.url){applying=true;$('movieUrl').value=m.url;$('video').src=m.url;$('video').load();setTimeout(()=>applying=false,300)}let st=d.state||{};if(st.updatedAt&&Date.now()-st.updatedAt<86400000){syncState(st)}},e=>toast('Room sync error: '+e.message)));
-const mq=query(collection(db,'blueRooms',c,'messages'),orderBy('createdAt','asc'),limit(100));unsubs.push(onSnapshot(mq,s=>{$('messages').innerHTML='';s.forEach(x=>{let m=x.data();let el=document.createElement('div');el.className='msg';el.innerHTML='<b>'+escapeHtml(m.name||'User')+'</b><p>'+escapeHtml(m.text||'')+'</p>';$('messages').appendChild(el)});$('messages').scrollTop=$('messages').scrollHeight}));}
-function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-async function writeState(extra){if(!room||applying)return;let now=Date.now();if(now-lastWrite<120){return}lastWrite=now;await updateDoc(doc(db,'blueRooms',room),{state:{playing:extra.playing,time:extra.time,updatedAt:now}}).catch(()=>{});}
-function syncState(st){if(applying)return;applying=true;let drift=video.currentTime-st.time;if(Math.abs(drift)>0.7)video.currentTime=Math.max(0,st.time);if(video.paused!==!st.playing){if(st.playing)video.play().catch(()=>{});else video.pause()}setTimeout(()=>applying=false,180)}
-$('create').onclick=()=>createRoom().catch(e=>toast(e.message));$('join').onclick=()=>enter($('code').value).catch(e=>toast(e.message));$('leave').onclick=async()=>{if(room&&me){await updateDoc(doc(db,'blueRooms',room),{['members.'+me.uid]:null}).catch(()=>{});cleanup();history.replaceState(null,'',location.pathname)}};
-$('copy').onclick=async()=>{let u=location.origin+location.pathname+'?room='+room;await navigator.clipboard.writeText(u);toast('Invite copied')};
-$('setMovie').onclick=async()=>{if(!room){toast('Create or join a room first');return}let u=$('movieUrl').value.trim();if(!/^https?:\/\//i.test(u)){toast('Enter a valid video URL');return}await updateDoc(doc(db,'blueRooms',room),{movie:{url:u,title:u.split('/').pop()||'Movie'}});toast('Movie shared')};
-$('play').onclick=()=>{if(video.paused){video.play().catch(()=>{});writeState({playing:true,time:video.currentTime})}else{video.pause();writeState({playing:false,time:video.currentTime})}};
-video.onplay=()=>writeState({playing:true,time:video.currentTime});video.onpause=()=>writeState({playing:false,time:video.currentTime});video.onseeked=()=>writeState({playing:!video.paused,time:video.currentTime});
-$('seek').oninput=e=>{if(video.duration)video.currentTime=video.duration*(+e.target.value/1000)};$('back').onclick=()=>{video.currentTime=Math.max(0,video.currentTime-10);writeState({playing:!video.paused,time:video.currentTime})};$('forward').onclick=()=>{video.currentTime=Math.min(video.duration||Infinity,video.currentTime+10);writeState({playing:!video.paused,time:video.currentTime})};$('mute').onclick=()=>video.muted=!video.muted;$('speed').onchange=e=>video.playbackRate=+e.target.value;$('full').onclick=()=>video.requestFullscreen?.();
-video.ontimeupdate=()=>{if(video.duration){$('seek').value=Math.round(video.currentTime/video.duration*1000);$('time').textContent=fmt(video.currentTime)+' / '+fmt(video.duration)}};function fmt(x){x=Math.floor(x||0);return String(Math.floor(x/60)).padStart(2,'0')+':'+String(x%60).padStart(2,'0')}
-$('chat').onsubmit=async e=>{e.preventDefault();if(!room)return toast('Join a room first');let text=$('message').value.trim();if(!text)return;await addDoc(collection(db,'blueRooms',room,'messages'),{uid:me.uid,name:me.displayName||me.email||'User',text,createdAt:serverTimestamp()});$('message').value=''};
-</script></body></html>
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js';
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  onAuthStateChanged,
+  signOut
+} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  deleteField,
+  onSnapshot,
+  collection,
+  addDoc,
+  serverTimestamp,
+  query,
+  orderBy,
+  limit,
+  runTransaction
+} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
+
+/* ================================================================
+   1. Firebase configuration
+   ================================================================ */
+const firebaseConfig = {
+  apiKey: 'AIzaSyAyw5c-W1BYIr8tmAqBEnLxw3zVEBUMxAw',
+  authDomain: 'our-universe-8229c.firebaseapp.com',
+  projectId: 'our-universe-8229c',
+  storageBucket: 'our-universe-8229c.firebasestorage.app',
+  messagingSenderId: '23799640027',
+  appId: '1:23799640027:web:ca783565b32c9fbfecc1fe',
+  measurementId: 'G-226GWG3N4M'
+};
+
+/* This is the Render service you already deployed.              */
+/* It is used ONLY for Dosya storage. Room sync is Firestore.    */
+const STORAGE_BACKEND = 'https://backed-0szz.onrender.com';
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+const googleProvider = new GoogleAuthProvider();
+
+/* ================================================================
+   2. Small helpers
+   ================================================================ */
+const $ = (id) => document.getElementById(id);
+let me = null;
+let roomId = '';
+let roomData = null;
+let unsubscribeRoom = null;
+let unsubscribeMessages = null;
+let suppressVideoEvents = false;
+let lastStateWrite = 0;
+let storageWorkspaceId = '';
+let storageFiles = [];
+let currentMovieFileId = '';
+let uploadRunning = false;
+
+function toast(message) {
+  const node = $('toast');
+  node.textContent = message;
+  node.classList.add('show');
+  clearTimeout(toast.timer);
+  toast.timer = setTimeout(() => node.classList.remove('show'), 2800);
+}
+
+function setError(message) {
+  $('roomErr').textContent = message || '';
+}
+
+function setStorageError(message) {
+  $('storageError').textContent = message || '';
+}
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    "'": '&#39;',
+    '"': '&quot;'
+  })[char]);
+}
+
+function randomRoomCode() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let output = '';
+  for (let i = 0; i < 6; i += 1) {
+    output += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return output;
+}
+
+function validRoomCode(value) {
+  return /^[A-Z0-9]{6}$/.test(value);
+}
+
+function displayName(user) {
+  return user?.displayName || user?.email || 'User';
+}
+
+function formatBytes(bytes) {
+  const n = Number(bytes || 0);
+  if (!n) return '0 B';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  const index = Math.min(Math.floor(Math.log(n) / Math.log(1024)), units.length - 1);
+  return `${(n / Math.pow(1024, index)).toFixed(index ? 1 : 0)} ${units[index]}`;
+}
+
+function formatTime(value) {
+  const seconds = Math.max(0, Math.floor(Number(value) || 0));
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) {
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  }
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+}
+
+function roomReference(code) {
+  return doc(db, 'blueRooms', code);
+}
+
+function currentInviteUrl(code) {
+  const url = new URL(location.href);
+  url.search = '';
+  url.hash = '';
+  url.searchParams.set('room', code);
+  return url.toString();
+}
+
+/* ================================================================
+   3. Authentication
+   ================================================================ */
+$('google').addEventListener('click', async () => {
+  $('loginErr').textContent = '';
+  try {
+    await signInWithPopup(auth, googleProvider);
+  } catch (error) {
+    $('loginErr').textContent = error?.message || 'Google sign-in failed.';
+  }
+});
+
+$('logout').addEventListener('click', async () => {
+  await leaveRoom(false);
+  await signOut(auth);
+});
+
+onAuthStateChanged(auth, async (user) => {
+  me = user;
+
+  if (!user) {
+    cleanupRoomUI();
+    $('app').classList.add('hidden');
+    $('login').classList.remove('hidden');
+    return;
+  }
+
+  $('login').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  $('name').textContent = displayName(user);
+  $('email').textContent = user.email || '';
+  $('avatar').src = user.photoURL || '';
+
+  await initializeStorage();
+
+  const inviteCode = new URLSearchParams(location.search).get('room');
+  if (inviteCode && !roomId) {
+    const normalized = inviteCode.trim().toUpperCase();
+    $('code').value = normalized;
+    await enterRoom(normalized);
+  }
+});
+
+/* ================================================================
+   4. Room creation and joining
+   ================================================================ */
+async function createRoom() {
+  if (!me) {
+    toast('Sign in first.');
+    return;
+  }
+
+  setError('');
+  $('create').disabled = true;
+
+  try {
+    await leaveRoom(false);
+
+    let code = '';
+    let created = false;
+
+    for (let attempt = 0; attempt < 12 && !created; attempt += 1) {
+      const candidate = randomRoomCode();
+      const ref = roomReference(candidate);
+      const existing = await getDoc(ref);
+      if (existing.exists()) continue;
+
+      const member = {
+        name: displayName(me),
+        photo: me.photoURL || '',
+        joinedAt: Date.now()
+      };
+
+      await setDoc(ref, {
+        code: candidate,
+        host: me.uid,
+        createdAt: serverTimestamp(),
+        updatedAt: Date.now(),
+        members: {
+          [me.uid]: member
+        },
+        movie: {
+          fileId: '',
+          title: '',
+          url: ''
+        },
+        state: {
+          playing: false,
+          time: 0,
+          updatedAt: Date.now(),
+          by: me.uid
+        }
+      });
+
+      code = candidate;
+      created = true;
+    }
+
+    if (!created) throw new Error('Could not create a unique room. Try again.');
+
+    await enterRoom(code);
+    toast(`Room ${code} created.`);
+  } catch (error) {
+    setError(error?.message || 'Could not create room.');
+    toast(error?.message || 'Could not create room.');
+  } finally {
+    $('create').disabled = false;
+  }
+}
+
+async function enterRoom(rawCode) {
+  if (!me) return;
+
+  const code = String(rawCode || '').trim().toUpperCase();
+  setError('');
+
+  if (!validRoomCode(code)) {
+    setError('Enter exactly 6 letters/numbers.');
+    return;
+  }
+
+  $('join').disabled = true;
+
+  try {
+    await leaveRoom(false);
+
+    const ref = roomReference(code);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) {
+      setError('Invalid room code. That room does not exist.');
+      return;
+    }
+
+    await runTransaction(db, async (transaction) => {
+      const currentSnap = await transaction.get(ref);
+      if (!currentSnap.exists()) {
+        throw new Error('Invalid room code. That room does not exist.');
+      }
+
+      const data = currentSnap.data();
+      const members = data.members || {};
+      const alreadyMember = Boolean(members[me.uid]);
+      const memberCount = Object.keys(members).length;
+
+      if (!alreadyMember && memberCount >= 2) {
+        throw new Error('Room is full. Only two people can be connected.');
+      }
+
+      if (!alreadyMember) {
+        transaction.update(ref, {
+          [`members.${me.uid}`]: {
+            name: displayName(me),
+            photo: me.photoURL || '',
+            joinedAt: Date.now()
+          },
+          updatedAt: Date.now()
+        });
+      }
+    });
+
+    roomId = code;
+    $('code').value = code;
+    $('roomCode').textContent = code;
+    $('roomSmall').textContent = code;
+    $('status').textContent = 'Connected';
+    $('roomBox').classList.remove('hidden');
+    $('syncState').innerHTML = '<i></i>Live';
+    history.replaceState(null, '', `?room=${encodeURIComponent(code)}`);
+
+    subscribeToRoom(code);
+    toast(`Joined room ${code}.`);
+  } catch (error) {
+    setError(error?.message || 'Could not join room.');
+    toast(error?.message || 'Could not join room.');
+  } finally {
+    $('join').disabled = false;
+  }
+}
+
+async function leaveRoom(showToast = true) {
+  const oldRoom = roomId;
+
+  if (unsubscribeRoom) {
+    unsubscribeRoom();
+    unsubscribeRoom = null;
+  }
+
+  if (unsubscribeMessages) {
+    unsubscribeMessages();
+    unsubscribeMessages = null;
+  }
+
+  if (oldRoom && me) {
+    try {
+      const ref = roomReference(oldRoom);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = snap.data();
+        const members = data.members || {};
+        const count = Object.keys(members).length;
+
+        if (data.host === me.uid && count <= 1) {
+          await deleteDoc(ref);
+        } else if (members[me.uid]) {
+          await updateDoc(ref, {
+            [`members.${me.uid}`]: deleteField(),
+            updatedAt: Date.now()
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('Leave room cleanup failed:', error);
+    }
+  }
+
+  roomId = '';
+  roomData = null;
+  cleanupRoomUI();
+
+  if (location.search) {
+    history.replaceState(null, '', location.pathname);
+  }
+
+  if (showToast) toast('Left room.');
+}
+
+function cleanupRoomUI() {
+  $('roomBox').classList.add('hidden');
+  $('status').textContent = 'Not in room';
+  $('roomSmall').textContent = '—';
+  $('online').textContent = '0';
+  $('peopleCount').textContent = '(0)';
+  $('people').innerHTML = '';
+  $('messages').innerHTML = '';
+  $('syncState').innerHTML = '<i></i>Waiting';
+  $('movieTitle').textContent = 'No movie selected';
+  $('movieMeta').textContent = 'Select a file from the library to share it with the room.';
+  currentMovieFileId = '';
+  setVideoSource('');
+}
+
+$('create').addEventListener('click', createRoom);
+$('join').addEventListener('click', () => enterRoom($('code').value));
+$('code').addEventListener('input', () => {
+  $('code').value = $('code').value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+});
+$('code').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') enterRoom($('code').value);
+});
+$('leave').addEventListener('click', () => leaveRoom(true));
+$('copy').addEventListener('click', async () => {
+  if (!roomId) return;
+  const invite = currentInviteUrl(roomId);
+  try {
+    await navigator.clipboard.writeText(invite);
+    toast('Invite link copied.');
+  } catch {
+    window.prompt('Copy this invite link:', invite);
+  }
+});
+
+/* ================================================================
+   5. Firestore real-time room listener
+   ================================================================ */
+function subscribeToRoom(code) {
+  if (unsubscribeRoom) unsubscribeRoom();
+  if (unsubscribeMessages) unsubscribeMessages();
+
+  const ref = roomReference(code);
+
+  unsubscribeRoom = onSnapshot(ref, (snapshot) => {
+    if (!snapshot.exists()) {
+      toast('The room was closed.');
+      cleanupRoomUI();
+      roomId = '';
+      return;
+    }
+
+    roomData = snapshot.data();
+    renderMembers(roomData.members || {});
+    renderMovie(roomData.movie || {});
+    applyRemoteState(roomData.state || {});
+  }, (error) => {
+    console.error(error);
+    setError(`Room permission/sync error: ${error.message}`);
+    toast('Room sync permission error. Check Firestore Rules.');
+  });
+
+  const messagesQuery = query(
+    collection(db, 'blueRooms', code, 'messages'),
+    orderBy('createdAt', 'asc'),
+    limit(100)
+  );
+
+  unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
+    const messages = [];
+    snapshot.forEach((item) => messages.push({ id: item.id, ...item.data() }));
+    renderMessages(messages);
+  }, (error) => {
+    console.error(error);
+    toast(`Chat permission error: ${error.message}`);
+  });
+}
+
+function renderMembers(members) {
+  const entries = Object.entries(members || {});
+  $('online').textContent = String(entries.length);
+  $('peopleCount').textContent = `(${entries.length})`;
+
+  $('people').innerHTML = entries.map(([uid, member]) => {
+    const label = uid === me?.uid ? `${member.name || 'User'} (You)` : (member.name || 'User');
+    const photo = member.photo ? `<img src="${escapeHtml(member.photo)}" alt="">` : '<span style="width:30px;height:30px;border-radius:50%;background:#0a3154;display:block"></span>';
+    return `<div class="person"><span class="dot"></span>${photo}<span>${escapeHtml(label)}</span></div>`;
+  }).join('');
+}
+
+function renderMessages(messages) {
+  $('messages').innerHTML = '';
+
+  for (const message of messages) {
+    const item = document.createElement('div');
+    item.className = 'msg';
+    const mine = message.uid === me?.uid;
+    const name = mine ? 'You' : (message.name || 'User');
+    item.innerHTML = `<b>${escapeHtml(name)}</b><p>${escapeHtml(message.text || '')}</p>`;
+    $('messages').appendChild(item);
+  }
+
+  $('messages').scrollTop = $('messages').scrollHeight;
+}
+
+function renderMovie(movie) {
+  const fileId = movie.fileId || '';
+  currentMovieFileId = fileId;
+
+  if (!fileId) {
+    $('movieTitle').textContent = 'No movie selected';
+    $('movieMeta').textContent = 'Select a file from the library to share it with the room.';
+    setVideoSource('');
+    return;
+  }
+
+  $('movieTitle').textContent = movie.title || 'Movie';
+  $('movieMeta').textContent = 'Shared with everyone currently in this room.';
+
+  const source = movie.url || `${STORAGE_BACKEND}/api/storage/stream/${encodeURIComponent(fileId)}`;
+  if ($('video').dataset.source !== source) {
+    setVideoSource(source);
+  }
+}
+
+/* ================================================================
+   6. Video synchronization
+   ================================================================ */
+function setVideoSource(url) {
+  const video = $('video');
+
+  if (!url) {
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+    video.dataset.source = '';
+    $('emptyVideo').classList.remove('hidden');
+    return;
+  }
+
+  if (video.dataset.source === url) return;
+
+  suppressVideoEvents = true;
+  video.dataset.source = url;
+  video.src = url;
+  video.load();
+  $('emptyVideo').classList.add('hidden');
+  setTimeout(() => { suppressVideoEvents = false; }, 500);
+}
+
+function localPlaybackState() {
+  return {
+    playing: !$('video').paused,
+    time: Number($('video').currentTime || 0),
+    updatedAt: Date.now(),
+    by: me?.uid || ''
+  };
+}
+
+async function writePlaybackState(force = false) {
+  if (!roomId || !me || suppressVideoEvents) return;
+
+  const now = Date.now();
+  if (!force && now - lastStateWrite < 180) return;
+  lastStateWrite = now;
+
+  const state = localPlaybackState();
+
+  try {
+    await updateDoc(roomReference(roomId), {
+      state,
+      updatedAt: now
+    });
+  } catch (error) {
+    console.warn('Playback write failed:', error);
+  }
+}
+
+function applyRemoteState(state) {
+  if (!state || !state.updatedAt || state.by === me?.uid) return;
+  if (!$('video').dataset.source) return;
+
+  const age = Math.max(0, Date.now() - Number(state.updatedAt));
+  const target = Math.max(0, Number(state.time || 0) + (state.playing ? age / 1000 : 0));
+  const video = $('video');
+
+  suppressVideoEvents = true;
+
+  if (Number.isFinite(target) && Math.abs(video.currentTime - target) > 0.65) {
+    try { video.currentTime = target; } catch {}
+  }
+
+  if (state.playing && video.paused) {
+    video.play().catch(() => {
+      toast('Tap Play once on your phone to allow synchronized playback.');
+    });
+  } else if (!state.playing && !video.paused) {
+    video.pause();
+  }
+
+  setTimeout(() => { suppressVideoEvents = false; }, 260);
+}
+
+$('play').addEventListener('click', async () => {
+  const video = $('video');
+  if (!video.src) return toast('Choose a movie first.');
+  if (video.paused) {
+    try { await video.play(); } catch { return toast('Tap Play again to start the video.'); }
+  } else {
+    video.pause();
+  }
+  await writePlaybackState(true);
+});
+
+$('back').addEventListener('click', async () => {
+  const video = $('video');
+  video.currentTime = Math.max(0, video.currentTime - 10);
+  await writePlaybackState(true);
+});
+
+$('forward').addEventListener('click', async () => {
+  const video = $('video');
+  if (!Number.isFinite(video.duration)) return;
+  video.currentTime = Math.min(video.duration, video.currentTime + 10);
+  await writePlaybackState(true);
+});
+
+$('mute').addEventListener('click', () => {
+  $('video').muted = !$('video').muted;
+  $('mute').textContent = $('video').muted ? 'Unmute' : 'Mute';
+});
+
+$('speed').addEventListener('change', () => {
+  $('video').playbackRate = Number($('speed').value);
+});
+
+$('full').addEventListener('click', () => {
+  $('video').requestFullscreen?.();
+});
+
+$('video').addEventListener('play', () => writePlaybackState(true));
+$('video').addEventListener('pause', () => writePlaybackState(true));
+$('video').addEventListener('seeked', () => writePlaybackState(true));
+
+$('video').addEventListener('loadedmetadata', () => {
+  $('emptyVideo').classList.add('hidden');
+});
+
+$('video').addEventListener('error', () => {
+  if ($('video').src) toast('Video could not be loaded. Check the Render storage backend.');
+});
+
+$('video').addEventListener('timeupdate', () => {
+  const video = $('video');
+  if (!Number.isFinite(video.duration) || video.duration <= 0) return;
+  $('seek').value = String(Math.round((video.currentTime / video.duration) * 1000));
+  $('time').textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
+});
+
+$('seek').addEventListener('input', () => {
+  const video = $('video');
+  if (!Number.isFinite(video.duration)) return;
+  video.currentTime = video.duration * (Number($('seek').value) / 1000);
+});
+
+$('seek').addEventListener('change', () => writePlaybackState(true));
+
+/* ================================================================
+   7. Room chat
+   ================================================================ */
+$('chat').addEventListener('submit', async (event) => {
+  event.preventDefault();
+
+  if (!roomId || !me) {
+    toast('Join a room first.');
+    return;
+  }
+
+  const text = $('message').value.trim();
+  if (!text) return;
+
+  $('message').disabled = true;
+
+  try {
+    await addDoc(collection(db, 'blueRooms', roomId, 'messages'), {
+      uid: me.uid,
+      name: displayName(me),
+      text: text.slice(0, 500),
+      createdAt: serverTimestamp()
+    });
+    $('message').value = '';
+  } catch (error) {
+    toast(`Chat failed: ${error.message}`);
+  } finally {
+    $('message').disabled = false;
+    $('message').focus();
+  }
+});
+
+/* ================================================================
+   8. Dosya backend client
+   ================================================================ */
+async function storageRequest(path, options = {}) {
+  const response = await fetch(`${STORAGE_BACKEND}${path}`, options);
+  const contentType = response.headers.get('content-type') || '';
+  const data = contentType.includes('application/json')
+    ? await response.json()
+    : await response.text();
+
+  if (!response.ok) {
+    const message = typeof data === 'object' ? data.error : data;
+    throw new Error(message || `Storage request failed (${response.status})`);
+  }
+
+  return data;
+}
+
+async function initializeStorage() {
+  setStorageError('');
+  $('storageBadge').textContent = 'Connecting…';
+
+  try {
+    const config = await storageRequest('/api/storage/config');
+    storageWorkspaceId = config.workspaceId;
+    $('storageBadge').textContent = 'Dosya 5 GB';
+    await refreshFiles();
+  } catch (error) {
+    $('storageBadge').textContent = 'Offline';
+    setStorageError(`Storage: ${error.message}`);
+  }
+}
+
+async function refreshFiles() {
+  if (!storageWorkspaceId) return;
+
+  try {
+    const data = await storageRequest(`/api/storage/files?workspace_id=${encodeURIComponent(storageWorkspaceId)}&per_page=500`);
+    storageFiles = Array.isArray(data.files) ? data.files : [];
+    renderLibrary();
+  } catch (error) {
+    setStorageError(`Could not load library: ${error.message}`);
+  }
+}
+
+function renderLibrary() {
+  const search = $('searchFiles').value.trim().toLowerCase();
+  const files = storageFiles.filter((file) => {
+    const name = String(file.name || '').toLowerCase();
+    return !search || name.includes(search);
+  });
+
+  if (!files.length) {
+    $('library').innerHTML = '<div class="small muted">No videos found. Upload your first movie.</div>';
+    return;
+  }
+
+  $('library').innerHTML = files.map((file) => `
+    <div class="file">
+      <div>
+        <div class="fileName" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
+        <div class="fileMeta">${formatBytes(file.size_bytes)} · ${escapeHtml(file.mime_type || 'video')}</div>
+      </div>
+      <div class="fileActions">
+        <button class="btn useFile" data-id="${escapeHtml(file.id)}">Use</button>
+        <button class="btn danger deleteFile" data-id="${escapeHtml(file.id)}">Delete</button>
+      </div>
+    </div>
+  `).join('');
+
+  document.querySelectorAll('.useFile').forEach((button) => {
+    button.addEventListener('click', () => useLibraryFile(button.dataset.id));
+  });
+
+  document.querySelectorAll('.deleteFile').forEach((button) => {
+    button.addEventListener('click', () => deleteLibraryFile(button.dataset.id));
+  });
+}
+
+async function useLibraryFile(fileId) {
+  if (!roomId) {
+    toast('Create or join a room first.');
+    return;
+  }
+
+  const file = storageFiles.find((item) => item.id === fileId);
+  if (!file) return;
+
+  const movie = {
+    fileId: file.id,
+    title: file.name,
+    url: `${STORAGE_BACKEND}/api/storage/stream/${encodeURIComponent(file.id)}`
+  };
+
+  try {
+    await updateDoc(roomReference(roomId), {
+      movie,
+      state: {
+        playing: false,
+        time: 0,
+        updatedAt: Date.now(),
+        by: me.uid
+      },
+      updatedAt: Date.now()
+    });
+    toast(`${file.name} shared with the room.`);
+  } catch (error) {
+    toast(`Could not share movie: ${error.message}`);
+  }
+}
+
+async function deleteLibraryFile(fileId) {
+  const file = storageFiles.find((item) => item.id === fileId);
+  if (!file) return;
+
+  const yes = confirm(`Move "${file.name}" to Dosya trash?`);
+  if (!yes) return;
+
+  try {
+    await storageRequest(`/api/storage/files/${encodeURIComponent(fileId)}`, { method: 'DELETE' });
+    if (currentMovieFileId === fileId && roomId) {
+      await updateDoc(roomReference(roomId), {
+        movie: { fileId: '', title: '', url: '' },
+        state: { playing: false, time: 0, updatedAt: Date.now(), by: me.uid }
+      });
+    }
+    toast('Video deleted from storage.');
+    await refreshFiles();
+  } catch (error) {
+    toast(`Delete failed: ${error.message}`);
+  }
+}
+
+$('searchFiles').addEventListener('input', renderLibrary);
+$('refreshFiles').addEventListener('click', refreshFiles);
+$('chooseFile').addEventListener('click', () => $('filePicker').click());
+$('filePicker').addEventListener('change', () => {
+  const file = $('filePicker').files?.[0];
+  if (file) uploadVideo(file);
+  $('filePicker').value = '';
+});
+
+/* ================================================================
+   9. Dosya uploads
+   ================================================================ */
+function setUploadProgress(percent, text) {
+  $('uploadBar').style.width = `${Math.max(0, Math.min(100, percent))}%`;
+  $('uploadStatus').textContent = text;
+}
+
+async function uploadVideo(file) {
+  if (uploadRunning) {
+    toast('An upload is already running.');
+    return;
+  }
+
+  if (!storageWorkspaceId) {
+    toast('Storage backend is not connected.');
+    return;
+  }
+
+  if (!file.type.startsWith('video/')) {
+    toast('Please choose a video file.');
+    return;
+  }
+
+  uploadRunning = true;
+  setStorageError('');
+  setUploadProgress(0, `Preparing ${file.name}…`);
+
+  try {
+    const init = await storageRequest('/api/storage/upload/init', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        file_name: file.name,
+        file_size: file.size,
+        mime_type: file.type || 'video/mp4',
+        workspace_id: storageWorkspaceId
+      })
+    });
+
+    let result;
+
+    if (!init.resumable) {
+      result = await uploadSingleRequest(init.session_id, file);
+    } else {
+      result = await uploadResumable(init, file);
+    }
+
+    const uploadedFile = result?.file;
+    if (!uploadedFile?.id) {
+      throw new Error('Upload finished without a file id.');
+    }
+
+    setUploadProgress(100, `Uploaded ${file.name}`);
+    toast('Movie uploaded successfully.');
+    await refreshFiles();
+  } catch (error) {
+    console.error(error);
+    setUploadProgress(0, `Upload failed: ${error.message}`);
+    setStorageError(error.message);
+    toast(`Upload failed: ${error.message}`);
+  } finally {
+    uploadRunning = false;
+  }
+}
+
+async function uploadSingleRequest(sessionId, file) {
+  const response = await fetch(`${STORAGE_BACKEND}/api/storage/upload/${encodeURIComponent(sessionId)}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': file.type || 'application/octet-stream' },
+    body: file
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.error || `Upload failed (${response.status})`);
+  return data;
+}
+
+async function uploadResumable(init, file) {
+  const partSize = Number(init.resumable.part_size || 10 * 1024 * 1024);
+  const totalParts = Number(init.resumable.total_parts || Math.ceil(file.size / partSize));
+  const sessionId = init.session_id;
+
+  for (let index = 0; index < totalParts; index += 1) {
+    const partNumber = index + 1;
+    const start = index * partSize;
+    const end = Math.min(file.size, start + partSize);
+    const blob = file.slice(start, end);
+
+    let attempt = 0;
+    while (true) {
+      attempt += 1;
+      try {
+        const response = await fetch(
+          `${STORAGE_BACKEND}/api/storage/upload/${encodeURIComponent(sessionId)}/part?part_number=${partNumber}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/octet-stream' },
+            body: blob
+          }
+        );
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(data.error || `Part ${partNumber} failed (${response.status})`);
+        break;
+      } catch (error) {
+        if (attempt >= 3) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 1200 * attempt));
+      }
+    }
+
+    const percent = (end / file.size) * 100;
+    setUploadProgress(percent, `Uploading part ${partNumber}/${totalParts} · ${percent.toFixed(0)}%`);
+  }
+
+  setUploadProgress(99, 'Finalizing upload…');
+
+  const complete = await storageRequest(`/api/storage/upload/${encodeURIComponent(sessionId)}/complete`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({})
+  });
+
+  return complete;
+}
+
+/* ================================================================
+   10. Drag and drop upload
+   ================================================================ */
+const drop = $('drop');
+
+['dragenter', 'dragover'].forEach((eventName) => {
+  drop.addEventListener(eventName, (event) => {
+    event.preventDefault();
+    drop.classList.add('drag');
+  });
+});
+
+['dragleave', 'drop'].forEach((eventName) => {
+  drop.addEventListener(eventName, (event) => {
+    event.preventDefault();
+    drop.classList.remove('drag');
+  });
+});
+
+drop.addEventListener('drop', (event) => {
+  const file = event.dataTransfer?.files?.[0];
+  if (file) uploadVideo(file);
+});
+
+/* ================================================================
+   11. Helpful startup checks
+   ================================================================ */
+window.addEventListener('online', () => {
+  $('connectionBadge').innerHTML = '<i></i><span>Online</span>';
+});
+
+window.addEventListener('offline', () => {
+  $('connectionBadge').innerHTML = '<i style="background:var(--bad)"></i><span>Offline</span>';
+});
+
+window.addEventListener('beforeunload', () => {
+  // Firestore handles the active connection. We intentionally do not perform
+  // asynchronous writes here because browsers may terminate them immediately.
+});
+
+/* If an old page left an invalid room parameter, the user can still use the
+   normal Create/Join controls. Nothing is automatically created for them. */
+if (new URLSearchParams(location.search).get('room')) {
+  $('code').value = String(new URLSearchParams(location.search).get('room')).toUpperCase().slice(0, 6);
+}
+</script>
+</body>
+</html>
