@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#03101f">
-<meta name="description" content="BlueRoom private watch-together room">
-<title>BlueRoom — Watch Together</title>
+<meta name="description" content="VSF private watch-together room">
+<title>VSF 💝</title>
 <style>
 :root{
   --bg:#020711;
@@ -118,18 +118,18 @@ button:disabled{cursor:not-allowed;opacity:.5}
 <body>
 <section id="login" class="login">
   <div class="card loginCard">
-    <div class="logoMark">B</div>
-    <h1 class="glow">BlueRoom</h1>
-    <p>Private watch-together rooms with Google login, live synchronization, chat, and your Dosya video library.</p>
+    <div class="logoMark">♥</div>
+    <h1 class="glow">VSF ♥</h1>
+    <p>A private little space for watching together.</p>
     <button id="google" class="btn primary full">Continue with Google</button>
     <div id="loginErr" class="authError"></div>
-    <div class="footerNote">Room synchronization uses Firebase. Video files use your Render → Dosya storage backend.</div>
+    
   </div>
 </section>
 
 <div id="app" class="app hidden">
   <header class="card top">
-    <div class="brand"><span class="glow">Blue</span>Room</div>
+    <div class="brand"><span class="glow">VSF</span> ♥</div>
     <div class="row">
       <span id="connectionBadge" class="badge"><i></i><span>Firebase connected</span></span>
       <div class="user">
@@ -234,7 +234,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
           <button class="btn primary">Send</button>
         </form>
       </div>
-      <div class="footerNote">Both devices watch the same Dosya-hosted file and share playback state through Firestore.</div>
+      
     </aside>
   </main>
 </div>
@@ -1119,16 +1119,37 @@ async function uploadVideo(file) {
   }
 }
 
-async function uploadSingleRequest(sessionId, file) {
-  const response = await fetch(`${STORAGE_BACKEND}/api/storage/upload/${encodeURIComponent(sessionId)}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': file.type || 'application/octet-stream' },
-    body: file
+function uploadRequestWithProgress(url, fileOrBlob, contentType, onProgress) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', url, true);
+    xhr.setRequestHeader('Content-Type', contentType || 'application/octet-stream');
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      onProgress?.(event.loaded, event.total);
+    };
+    xhr.onload = () => {
+      let data = {};
+      try { data = JSON.parse(xhr.responseText || '{}'); } catch {}
+      if (xhr.status >= 200 && xhr.status < 300) resolve(data);
+      else reject(new Error(data.error || `Upload failed (${xhr.status})`));
+    };
+    xhr.onerror = () => reject(new Error('Network error during upload.'));
+    xhr.onabort = () => reject(new Error('Upload was cancelled.'));
+    xhr.send(fileOrBlob);
   });
+}
 
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || `Upload failed (${response.status})`);
-  return data;
+async function uploadSingleRequest(sessionId, file) {
+  return uploadRequestWithProgress(
+    `${STORAGE_BACKEND}/api/storage/upload/${encodeURIComponent(sessionId)}`,
+    file,
+    file.type || 'application/octet-stream',
+    (loaded, total) => {
+      const percent = total ? (loaded / total) * 100 : 0;
+      setUploadProgress(percent, `Uploading · ${percent.toFixed(1)}%`);
+    }
+  );
 }
 
 async function uploadResumable(init, file) {
@@ -1146,17 +1167,17 @@ async function uploadResumable(init, file) {
     while (true) {
       attempt += 1;
       try {
-        const response = await fetch(
+        const response = await uploadRequestWithProgress(
           `${STORAGE_BACKEND}/api/storage/upload/${encodeURIComponent(sessionId)}/part?part_number=${partNumber}`,
-          {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/octet-stream' },
-            body: blob
+          blob,
+          'application/octet-stream',
+          (loaded, total) => {
+            const completedBefore = start;
+            const overallLoaded = completedBefore + Math.min(loaded, blob.size);
+            const percent = file.size ? (overallLoaded / file.size) * 100 : 0;
+            setUploadProgress(percent, `Uploading · ${percent.toFixed(1)}%`);
           }
         );
-
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) throw new Error(data.error || `Part ${partNumber} failed (${response.status})`);
         break;
       } catch (error) {
         if (attempt >= 3) throw error;
@@ -1165,10 +1186,10 @@ async function uploadResumable(init, file) {
     }
 
     const percent = (end / file.size) * 100;
-    setUploadProgress(percent, `Uploading part ${partNumber}/${totalParts} · ${percent.toFixed(0)}%`);
+    setUploadProgress(percent, `Uploading · ${percent.toFixed(1)}%`);
   }
 
-  setUploadProgress(99, 'Finalizing upload…');
+  setUploadProgress(99, 'Finalizing · 99.0%');
 
   const complete = await storageRequest(`/api/storage/upload/${encodeURIComponent(sessionId)}/complete`, {
     method: 'POST',
