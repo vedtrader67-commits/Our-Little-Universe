@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#03101f">
 <meta name="description" content="VSF private watch-together room">
-<title>VSF ♥</title>
+<title>VSF 😼</title>
 <style>
 :root{
   --bg:#020711;
@@ -107,17 +107,32 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .drop{border:1px dashed #286493;border-radius:13px;padding:15px;text-align:center;background:#03101f;color:var(--muted);transition:.15s}
 .drop.drag{border-color:var(--cyan);background:#062342;color:var(--text)}
 
-/* Fullscreen chat overlay */
-.fullscreenChat{position:absolute;right:12px;top:12px;width:min(280px,34vw);max-height:55%;display:flex;flex-direction:column;gap:7px;z-index:12;pointer-events:none}
+/* Fullscreen chat + custom touch controls */
+.fullscreenChat{position:absolute;right:12px;top:12px;width:min(270px,34vw);max-height:55%;display:flex;flex-direction:column;gap:7px;z-index:20;pointer-events:none}
 .fullscreenMsg{background:rgba(2,12,25,.82);border:1px solid rgba(85,231,255,.5);box-shadow:0 0 18px rgba(38,156,255,.2);backdrop-filter:blur(8px);border-radius:11px;padding:7px 9px;color:var(--text);font-size:12px;line-height:1.3;animation:chatIn .2s ease}
-.fullscreenMsg b{display:block;color:var(--cyan);font-size:10px;margin-bottom:2px}
-.fullscreenMsg p{margin:0;white-space:pre-wrap;word-break:break-word;max-height:42px;overflow:hidden}
+.fullscreenMsg p{margin:0;white-space:pre-wrap;word-break:break-word;max-height:48px;overflow:hidden}
 @keyframes chatIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.fullscreenControls{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:12px;z-index:25;opacity:0;pointer-events:none;transition:opacity .18s ease}
+.fullscreenControls.show{opacity:1;pointer-events:auto}
+.fsBtn{width:54px;height:54px;border-radius:50%;border:1px solid rgba(85,231,255,.8);background:rgba(3,16,31,.78);color:#fff;display:grid;place-items:center;font-size:23px;font-weight:900;box-shadow:0 0 22px rgba(38,156,255,.45),inset 0 0 12px rgba(85,231,255,.08);backdrop-filter:blur(8px)}
+.fsBtn.small{width:48px;height:48px;font-size:20px}
+.fsBtn:active{transform:scale(.94)}
 .video:fullscreen,.video:-webkit-full-screen{width:100vw;height:100vh;aspect-ratio:auto;border:0;border-radius:0;display:flex;align-items:center;justify-content:center;background:#000}
 .video:fullscreen video,.video:-webkit-full-screen video{width:100%;height:100%;object-fit:contain}
 .video:fullscreen .fullscreenChat,.video:-webkit-full-screen .fullscreenChat{display:flex}
 .video:not(:fullscreen) .fullscreenChat{display:none}
-@media(max-width:760px){.fullscreenChat{right:8px;top:8px;width:min(235px,42vw);gap:5px}.fullscreenMsg{font-size:11px;padding:6px 8px}}
+.video:not(:fullscreen) .fullscreenControls{display:none}
+@media(max-width:760px){
+  .fullscreenChat{right:8px;top:8px;width:min(235px,48vw);gap:5px}
+  .fullscreenMsg{font-size:11px;padding:6px 8px}
+  .fullscreenControls{bottom:18px;gap:9px}
+  .fsBtn{width:50px;height:50px}
+  .fsBtn.small{width:44px;height:44px}
+}
+@media(orientation:landscape) and (max-width:900px){
+  .fullscreenChat{right:10px;top:10px;width:min(260px,30vw)}
+  .fullscreenControls{bottom:16px}
+}
 .btn{box-shadow:0 0 10px rgba(38,156,255,.14),inset 0 0 8px rgba(85,231,255,.04)}
 .btn:hover,.btn:focus-visible{box-shadow:0 0 22px rgba(38,156,255,.45),0 0 8px rgba(85,231,255,.22),inset 0 0 10px rgba(85,231,255,.08)}
 .btn.primary{box-shadow:0 0 24px rgba(38,156,255,.38),inset 0 0 12px rgba(255,255,255,.06)}
@@ -206,6 +221,11 @@ button:disabled{cursor:not-allowed;opacity:.5}
       <div class="video">
         <video id="video" playsinline preload="metadata" controlslist="nodownload"></video>
         <div id="fullscreenChat" class="fullscreenChat" aria-live="polite"></div>
+        <div id="fullscreenControls" class="fullscreenControls" aria-hidden="true">
+          <button id="fsBack" class="fsBtn small" type="button" aria-label="Back 10 seconds">↶</button>
+          <button id="fsPlay" class="fsBtn" type="button" aria-label="Play or pause">▶</button>
+          <button id="fsForward" class="fsBtn small" type="button" aria-label="Forward 10 seconds">↷</button>
+        </div>
         <div id="emptyVideo" class="emptyVideo">
           <div>
             <b>Choose a movie from your library</b>
@@ -316,6 +336,8 @@ let storageWorkspaceId = '';
 let storageFiles = [];
 let currentMovieFileId = '';
 let uploadRunning = false;
+let fullscreenControlTimer = null;
+const fullscreenMessageTimers = new Map();
 
 function toast(message) {
   const node = $('toast');
@@ -716,7 +738,6 @@ function renderMembers(members) {
 function renderMessages(messages) {
   $('messages').innerHTML = '';
   const popup = $('fullscreenChat');
-  popup.innerHTML = '';
 
   for (const message of messages) {
     const mine = message.uid === me?.uid;
@@ -728,18 +749,29 @@ function renderMessages(messages) {
     $('messages').appendChild(item);
   }
 
-  messages.slice(-3).forEach((message) => {
-    const mine = message.uid === me?.uid;
-    const name = mine ? 'You' : (message.name || 'User');
+  // Only the newest incoming message is shown as a temporary fullscreen popup.
+  // The popup contains no sender name and disappears automatically after 2 seconds.
+  const latest = messages[messages.length - 1];
+  if (latest) {
+    const messageId = latest.id || `${latest.createdAt?.seconds || Date.now()}-${latest.uid || ''}`;
     const item = document.createElement('div');
     item.className = 'fullscreenMsg';
-    item.innerHTML = `<b>${escapeHtml(name)}</b><p>${escapeHtml(message.text || '')}</p>`;
+    item.dataset.messageId = messageId;
+    item.innerHTML = `<p>${escapeHtml(latest.text || '')}</p>`;
     popup.appendChild(item);
-  });
+
+    // Keep only one temporary popup visible.
+    while (popup.children.length > 1) popup.removeChild(popup.firstChild);
+
+    clearTimeout(fullscreenMessageTimers.get('latest'));
+    fullscreenMessageTimers.set('latest', setTimeout(() => {
+      item.remove();
+      fullscreenMessageTimers.delete('latest');
+    }, 2000));
+  }
 
   $('messages').scrollTop = $('messages').scrollHeight;
 }
-
 function renderMovie(movie) {
   const fileId = movie.fileId || '';
   currentMovieFileId = fileId;
@@ -868,12 +900,89 @@ $('mute').addEventListener('click', () => {
 });
 
 
+function isFullscreen() {
+  return document.fullscreenElement === $('video').parentElement ||
+    document.webkitFullscreenElement === $('video').parentElement;
+}
+
+function updateFullscreenControls() {
+  const controls = $('fullscreenControls');
+  const active = isFullscreen();
+  controls.setAttribute('aria-hidden', active ? 'false' : 'true');
+  if (!active) {
+    controls.classList.remove('show');
+    clearTimeout(fullscreenControlTimer);
+  }
+  $('fsPlay').textContent = $('video').paused ? '▶' : '⏸';
+}
+
+function showFullscreenControls() {
+  if (!isFullscreen()) return;
+  const controls = $('fullscreenControls');
+  controls.classList.add('show');
+  clearTimeout(fullscreenControlTimer);
+  fullscreenControlTimer = setTimeout(() => controls.classList.remove('show'), 3000);
+}
+
+function toggleFullscreenControls(event) {
+  if (!isFullscreen()) return;
+  // Touching the video itself reveals the controls; buttons handle their own clicks.
+  if (event?.target?.closest?.('.fullscreenControls')) return;
+  showFullscreenControls();
+}
+
 $('full').addEventListener('click', () => {
   $('video').parentElement.requestFullscreen?.();
 });
 
-$('video').addEventListener('play', () => writePlaybackState(true));
-$('video').addEventListener('pause', () => writePlaybackState(true));
+$('fsBack').addEventListener('click', async (event) => {
+  event.stopPropagation();
+  const video = $('video');
+  video.currentTime = Math.max(0, video.currentTime - 10);
+  await writePlaybackState(true);
+  showFullscreenControls();
+});
+
+$('fsForward').addEventListener('click', async (event) => {
+  event.stopPropagation();
+  const video = $('video');
+  if (!Number.isFinite(video.duration)) return;
+  video.currentTime = Math.min(video.duration, video.currentTime + 10);
+  await writePlaybackState(true);
+  showFullscreenControls();
+});
+
+$('fsPlay').addEventListener('click', async (event) => {
+  event.stopPropagation();
+  const video = $('video');
+  if (!video.src) return;
+  if (video.paused) {
+    try { await video.play(); } catch { return; }
+  } else {
+    video.pause();
+  }
+  await writePlaybackState(true);
+  showFullscreenControls();
+});
+
+$('video').addEventListener('click', toggleFullscreenControls);
+$('video').addEventListener('touchstart', showFullscreenControls, {passive:true});
+
+document.addEventListener('fullscreenchange', () => {
+  updateFullscreenControls();
+  if (isFullscreen()) showFullscreenControls();
+});
+document.addEventListener('webkitfullscreenchange', () => {
+  updateFullscreenControls();
+  if (isFullscreen()) showFullscreenControls();
+});
+
+$('video').addEventListener('play', () => {
+  $('fsPlay').textContent = '⏸';
+  writePlaybackState(true);
+});
+
+$('video').addEventListener('pause', () => { $('fsPlay').textContent = '▶'; writePlaybackState(true); });
 $('video').addEventListener('seeked', () => writePlaybackState(true));
 
 $('video').addEventListener('loadedmetadata', () => {
