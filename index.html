@@ -553,8 +553,13 @@ async function enterRoom(rawCode) {
     subscribeToRoom(code);
     toast(`Joined room ${code}.`);
   } catch (error) {
-    setError(error?.message || 'Could not join room.');
-    toast(error?.message || 'Could not join room.');
+    const message = error?.message || 'Could not join room.';
+    setError(message.includes('permission-denied') || message.includes('Missing or insufficient permissions')
+      ? 'Firebase denied access to this room. The Firestore rules must allow signed-in users to read/update blueRooms.'
+      : message);
+    toast(message.includes('permission-denied') || message.includes('Missing or insufficient permissions')
+      ? 'Firestore denied room access.'
+      : message);
   } finally {
     $('join').disabled = false;
   }
@@ -665,8 +670,8 @@ function subscribeToRoom(code) {
     applyRemoteState(roomData.state || {});
   }, (error) => {
     console.error(error);
-    setError(`Room permission/sync error: ${error.message}`);
-    toast('Room sync permission error. Check Firestore Rules.');
+    setError(`Room sync failed: ${error.message}`);
+    toast('Room access was denied. Publish the matching blueRooms Firestore rules.');
   });
 
   const messagesQuery = query(
