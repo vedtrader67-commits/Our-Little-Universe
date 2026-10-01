@@ -219,7 +219,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
       </div>
 
       <div class="video">
-        <video id="video" playsinline preload="metadata" controlslist="nodownload"></video>
+        <video id="video" playsinline preload="auto" controlslist="nodownload"></video>
         <div id="fullscreenChat" class="fullscreenChat" aria-live="polite"></div>
         <div id="fullscreenControls" class="fullscreenControls" aria-hidden="true">
           <button id="fsBack" class="fsBtn small" type="button" aria-label="Back 10 seconds">↶</button>
@@ -332,6 +332,12 @@ let unsubscribeRoom = null;
 let unsubscribeMessages = null;
 let suppressVideoEvents = false;
 let lastStateWrite = 0;
+let syncHeartbeatTimer = null;
+let syncCorrectionTimer = null;
+let lastRemoteStateKey = '';
+let syncControllerId = '';
+let lastUserActionAt = 0;
+let localSyncReady = false;
 let storageWorkspaceId = '';
 let storageFiles = [];
 let currentMovieFileId = '';
@@ -647,6 +653,11 @@ async function leaveRoom(showToast = true) {
 }
 
 function cleanupRoomUI() {
+  stopSyncHeartbeat();
+  stopSyncCorrection();
+  syncControllerId = '';
+  lastRemoteStateKey = '';
+
   $('roomBox').classList.add('hidden');
   $('status').textContent = 'Not in room';
   $('roomSmall').textContent = '—';
@@ -703,9 +714,12 @@ function subscribeToRoom(code) {
     }
 
     roomData = snapshot.data();
+    syncControllerId = roomData.state?.controller || roomData.state?.by || syncControllerId;
     renderMembers(roomData.members || {});
     renderMovie(roomData.movie || {});
     applyRemoteState(roomData.state || {});
+    startSyncHeartbeat();
+    startSyncCorrection();
   }, (error) => {
     console.error(error);
     setError(`Room sync failed: ${error.message}`);
@@ -815,6 +829,7 @@ function setVideoSource(url) {
     video.removeAttribute('src');
     video.load();
     video.dataset.source = '';
+    video.dataset.streamRetries = '0';
     $('emptyVideo').classList.remove('hidden');
     return;
   }
@@ -823,29 +838,64 @@ function setVideoSource(url) {
 
   suppressVideoEvents = true;
   video.dataset.source = url;
+  video.dataset.streamRetries = '0';
+  video.preload = 'auto';
   video.src = url;
   video.load();
   $('emptyVideo').classList.add('hidden');
-  setTimeout(() => { suppressVideoEvents = false; }, 500);
+  setTimeout(() => { suppressVideoEvents = false; }, 700);
 }
 
-function localPlaybackState() {
+function localPlaybackState(overrides = {}) {
+  const video = $('video');
   return {
-    playing: !$('video').paused,
-    time: Number($('video').currentTime || 0),
+    playing: !video.paused,
+    time: Number(video.currentTime || 0),
     updatedAt: Date.now(),
-    by: me?.uid || ''
+    by: me?.uid || '',
+    controller: syncControllerId || me?.uid || '',
+    ...overrides
   };
 }
 
-async function writePlaybackState(force = false) {
+function roomTargetTime(state, now = Date.now()) {
+  if (!state) return 0;
+  const base = Number(state.time || 0);
+  if (!state.playing) return Math.max(0, base);
+  const updated = Number(state.updatedAt || now);
+  const elapsed = Math.max(0, now - updated) / 1000;
+  return Math.max(0, base + elapsed);
+}
+
+function setSyncBadge(label, kind = 'ok') {
+  if (!roomId) return;
+  const badge = $('syncState');
+  badge.innerHTML = `<i${kind === 'warn' ? ' style="background:var(--warn)' : kind === 'bad' ? ' style="background:var(--bad)' : ''}"></i>${label}`;
+}
+
+function markLocalPlaybackAction() {
+  lastUserActionAt = Date.now();
+  localSyncReady = true;
+}
+
+async function writePlaybackState(force = false, overrides = {}) {
   if (!roomId || !me || suppressVideoEvents) return;
 
   const now = Date.now();
-  if (!force && now - lastStateWrite < 180) return;
+  const minInterval = force ? 0 : 900;
+  if (!force && now - lastStateWrite < minInterval) return;
   lastStateWrite = now;
 
-  const state = localPlaybackState();
+  // Whoever explicitly presses Play/Pause/Seek becomes the temporary room
+  // controller. This prevents two phones from fighting over the clock.
+  if (overrides.takeControl !== false) syncControllerId = me.uid;
+
+  const state = localPlaybackState({
+    ...overrides,
+    controller: syncControllerId || me.uid,
+    updatedAt: now,
+    by: me.uid
+  });
 
   try {
     await updateDoc(roomReference(roomId), {
@@ -858,31 +908,120 @@ async function writePlaybackState(force = false) {
 }
 
 function applyRemoteState(state) {
-  if (!state || !state.updatedAt || state.by === me?.uid) return;
+  if (!state || !state.updatedAt || !roomId || !me) return;
   if (!$('video').dataset.source) return;
 
-  const age = Math.max(0, Date.now() - Number(state.updatedAt));
-  const target = Math.max(0, Number(state.time || 0) + (state.playing ? age / 1000 : 0));
+  // Ignore our own snapshot, but still remember who owns the room clock.
+  syncControllerId = state.controller || state.by || syncControllerId;
+  if (state.by === me.uid && state.controller === me.uid) return;
+
   const video = $('video');
+  const stateKey = `${state.updatedAt}:${state.time}:${state.playing}:${state.controller || state.by || ''}`;
+  const isNewRemoteState = stateKey !== lastRemoteStateKey;
+  lastRemoteStateKey = stateKey;
+
+  const target = roomTargetTime(state);
+  if (!Number.isFinite(target)) return;
+
+  // Don't fight the user's own tap/seek while the Firestore snapshot is
+  // travelling back to this device.
+  if (Date.now() - lastUserActionAt < 900 && state.by === me.uid) return;
 
   suppressVideoEvents = true;
 
-  if (Number.isFinite(target) && Math.abs(video.currentTime - target) > 0.65) {
+  if (Number.isFinite(video.duration)) {
+    const safeTarget = Math.min(Math.max(0, target), Math.max(0, video.duration - 0.05));
+    const drift = safeTarget - video.currentTime;
+
+    // Small drift: adjust playback speed very briefly instead of jumping.
+    // Large drift: seek directly so a device that was offline catches up.
+    if (Math.abs(drift) >= 1.25) {
+      try { video.currentTime = safeTarget; } catch {}
+    } else if (Math.abs(drift) >= 0.35 && state.playing && !video.paused && !video.seeking) {
+      try {
+        video.playbackRate = drift > 0 ? 1.08 : 0.92;
+        setTimeout(() => {
+          if (!video.paused) video.playbackRate = 1;
+        }, 700);
+      } catch {}
+    }
+  } else {
     try { video.currentTime = target; } catch {}
   }
 
-  if (state.playing && video.paused) {
-    video.play().catch(() => {
-      toast('Tap Play once on your phone to allow synchronized playback.');
-    });
-  } else if (!state.playing && !video.paused) {
+  if (state.playing) {
+    if (video.paused && video.readyState >= 2) {
+      video.play().catch(() => {
+        setSyncBadge('Tap Play to sync', 'warn');
+        toast('Tap Play once to allow synchronized playback on this phone.');
+      });
+    }
+  } else if (!video.paused) {
     video.pause();
   }
 
-  setTimeout(() => { suppressVideoEvents = false; }, 260);
+  if (isNewRemoteState) {
+    setSyncBadge(Math.abs(target - video.currentTime) < 0.6 ? 'Synced' : 'Catching up…');
+  }
+
+  setTimeout(() => {
+    suppressVideoEvents = false;
+    if (!video.paused) video.playbackRate = 1;
+  }, 260);
+}
+
+function startSyncHeartbeat() {
+  if (syncHeartbeatTimer) return;
+  syncHeartbeatTimer = setInterval(() => {
+    if (!roomId || !me || !roomData || !syncControllerId) return;
+    if (syncControllerId !== me.uid) return;
+    const video = $('video');
+    if (!video.dataset.source || video.paused || video.seeking || !Number.isFinite(video.currentTime)) return;
+
+    // The controller periodically publishes the room clock. Other devices
+    // use updatedAt to calculate where the movie should be right now.
+    writePlaybackState(false, { takeControl: false });
+  }, 1200);
+}
+
+function stopSyncHeartbeat() {
+  if (syncHeartbeatTimer) clearInterval(syncHeartbeatTimer);
+  syncHeartbeatTimer = null;
+}
+
+function startSyncCorrection() {
+  if (syncCorrectionTimer) return;
+  syncCorrectionTimer = setInterval(() => {
+    if (!roomId || !roomData || !me || !$('video').dataset.source) return;
+    const state = roomData.state;
+    if (!state || !state.playing || state.controller === me.uid) return;
+
+    const video = $('video');
+    if (video.paused || video.seeking || !Number.isFinite(video.currentTime)) return;
+
+    const target = roomTargetTime(state);
+    const drift = target - video.currentTime;
+    if (Math.abs(drift) >= 1.25 && video.readyState >= 2) {
+      suppressVideoEvents = true;
+      try { video.currentTime = Math.max(0, target); } catch {}
+      setSyncBadge('Catching up…');
+      setTimeout(() => { suppressVideoEvents = false; }, 180);
+    } else if (Math.abs(drift) >= 0.35) {
+      try { video.playbackRate = drift > 0 ? 1.08 : 0.92; } catch {}
+    } else {
+      try { video.playbackRate = 1; } catch {}
+      setSyncBadge('Synced');
+    }
+  }, 650);
+}
+
+function stopSyncCorrection() {
+  if (syncCorrectionTimer) clearInterval(syncCorrectionTimer);
+  syncCorrectionTimer = null;
 }
 
 $('play').addEventListener('click', async () => {
+  markLocalPlaybackAction();
   const video = $('video');
   if (!video.src) return toast('Choose a movie first.');
   if (video.paused) {
@@ -894,12 +1033,14 @@ $('play').addEventListener('click', async () => {
 });
 
 $('back').addEventListener('click', async () => {
+  markLocalPlaybackAction();
   const video = $('video');
   video.currentTime = Math.max(0, video.currentTime - 10);
   await writePlaybackState(true);
 });
 
 $('forward').addEventListener('click', async () => {
+  markLocalPlaybackAction();
   const video = $('video');
   if (!Number.isFinite(video.duration)) return;
   video.currentTime = Math.min(video.duration, video.currentTime + 10);
@@ -968,6 +1109,7 @@ $('full').addEventListener('click', async () => {
 });
 
 $('fsBack').addEventListener('click', async (event) => {
+  markLocalPlaybackAction();
   event.stopPropagation();
   const video = $('video');
   video.currentTime = Math.max(0, video.currentTime - 10);
@@ -976,6 +1118,7 @@ $('fsBack').addEventListener('click', async (event) => {
 });
 
 $('fsForward').addEventListener('click', async (event) => {
+  markLocalPlaybackAction();
   event.stopPropagation();
   const video = $('video');
   if (!Number.isFinite(video.duration)) return;
@@ -985,6 +1128,7 @@ $('fsForward').addEventListener('click', async (event) => {
 });
 
 $('fsPlay').addEventListener('click', async (event) => {
+  markLocalPlaybackAction();
   event.stopPropagation();
   const video = $('video');
   if (!video.src) return;
@@ -1034,11 +1178,11 @@ document.addEventListener('keydown', async (event) => {
 
 $('video').addEventListener('play', () => {
   $('fsPlay').textContent = '⏸';
-  writePlaybackState(true);
+  if (!suppressVideoEvents) { markLocalPlaybackAction(); writePlaybackState(true); }
 });
 
-$('video').addEventListener('pause', () => { $('fsPlay').textContent = '▶'; writePlaybackState(true); });
-$('video').addEventListener('seeked', () => writePlaybackState(true));
+$('video').addEventListener('pause', () => { $('fsPlay').textContent = '▶'; if (!suppressVideoEvents) { markLocalPlaybackAction(); writePlaybackState(true); } });
+$('video').addEventListener('seeked', () => { if (!suppressVideoEvents) { markLocalPlaybackAction(); writePlaybackState(true); } });
 
 $('video').addEventListener('loadedmetadata', () => {
   $('emptyVideo').classList.add('hidden');
@@ -1057,8 +1201,60 @@ $('video').addEventListener('playing', () => {
   if (roomId) $('syncState').innerHTML = '<i></i>Live';
 });
 
+let streamRecoveryTimer = null;
+
+function recoverLongVideoStream(reason = 'network') {
+  const video = $('video');
+  const source = video.dataset.source;
+  if (!source) return;
+
+  const retries = Number(video.dataset.streamRetries || 0);
+  if (retries >= 4) {
+    if (roomId) setSyncBadge('Stream unavailable', 'bad');
+    toast('The video stream is unavailable. The Render/Dosya backend must support HTTP Range requests for long videos.');
+    return;
+  }
+
+  clearTimeout(streamRecoveryTimer);
+  streamRecoveryTimer = setTimeout(() => {
+    const wasPlaying = !video.paused;
+    const wantedTime = Number(video.currentTime || 0);
+    video.dataset.streamRetries = String(retries + 1);
+    suppressVideoEvents = true;
+
+    try {
+      video.pause();
+      // Re-request the same stream instead of downloading the whole movie from
+      // byte zero. A Range-capable backend lets the browser resume near this
+      // position, which is essential for 2+ hour files.
+      video.removeAttribute('src');
+      video.load();
+      video.src = source;
+      video.load();
+      video.addEventListener('loadedmetadata', () => {
+        try {
+          if (Number.isFinite(wantedTime) && wantedTime > 0 && Number.isFinite(video.duration)) {
+            video.currentTime = Math.min(wantedTime, Math.max(0, video.duration - 0.05));
+          }
+        } catch {}
+        suppressVideoEvents = false;
+        if (wasPlaying) video.play().catch(() => {});
+      }, { once: true });
+    } catch {
+      suppressVideoEvents = false;
+    }
+  }, reason === 'offline' ? 1500 : 800);
+}
+
 $('video').addEventListener('error', () => {
-  if ($('video').src) toast('Video could not be loaded. Check the Render storage backend.');
+  if ($('video').src) recoverLongVideoStream('error');
+});
+
+$('video').addEventListener('stalled', () => {
+  if ($('video').src && !$('video').paused) {
+    if (roomId) setSyncBadge('Recovering stream…', 'warn');
+    recoverLongVideoStream('stalled');
+  }
 });
 
 $('video').addEventListener('timeupdate', () => {
@@ -1069,12 +1265,13 @@ $('video').addEventListener('timeupdate', () => {
 });
 
 $('seek').addEventListener('input', () => {
+  markLocalPlaybackAction();
   const video = $('video');
   if (!Number.isFinite(video.duration)) return;
   video.currentTime = video.duration * (Number($('seek').value) / 1000);
 });
 
-$('seek').addEventListener('change', () => writePlaybackState(true));
+$('seek').addEventListener('change', () => { markLocalPlaybackAction(); writePlaybackState(true); });
 
 /* ================================================================
    7. Room chat
@@ -1426,10 +1623,17 @@ drop.addEventListener('drop', (event) => {
    ================================================================ */
 window.addEventListener('online', () => {
   $('connectionBadge').innerHTML = '<i></i><span>Online</span>';
+  if ($('video').dataset.source) {
+    recoverLongVideoStream('network');
+    setTimeout(() => {
+      if (roomData?.state) applyRemoteState(roomData.state);
+    }, 1000);
+  }
 });
 
 window.addEventListener('offline', () => {
   $('connectionBadge').innerHTML = '<i style="background:var(--bad)"></i><span>Offline</span>';
+  if (roomId) setSyncBadge('Offline — buffering', 'warn');
 });
 
 window.addEventListener('beforeunload', () => {
