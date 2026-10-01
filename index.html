@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#03101f">
 <meta name="description" content="VSF private watch-together room">
-<title>VSF 😼</title>
+<title>VSF ♥</title>
 <style>
 :root{
   --bg:#020711;
@@ -337,6 +337,7 @@ let storageFiles = [];
 let currentMovieFileId = '';
 let uploadRunning = false;
 let fullscreenControlTimer = null;
+let lastFullscreenMessageId = '';
 const fullscreenMessageTimers = new Map();
 
 function toast(message) {
@@ -653,6 +654,10 @@ function cleanupRoomUI() {
   $('peopleCount').textContent = '(0)';
   $('people').innerHTML = '';
   $('messages').innerHTML = '';
+  $('fullscreenChat').replaceChildren();
+  lastFullscreenMessageId = '';
+  clearTimeout(fullscreenMessageTimers.get('latest'));
+  fullscreenMessageTimers.delete('latest');
   $('syncState').innerHTML = '<i></i>Waiting';
   $('movieTitle').textContent = 'No movie selected';
   $('movieMeta').textContent = 'Select a file from the library to share it with the room.';
@@ -749,25 +754,32 @@ function renderMessages(messages) {
     $('messages').appendChild(item);
   }
 
-  // Only the newest incoming message is shown as a temporary fullscreen popup.
-  // The popup contains no sender name and disappears automatically after 2 seconds.
+  // Show only genuinely new chat messages in fullscreen. Existing messages loaded
+  // when the room opens must not pop up again every time Firestore sends a snapshot.
   const latest = messages[messages.length - 1];
   if (latest) {
     const messageId = latest.id || `${latest.createdAt?.seconds || Date.now()}-${latest.uid || ''}`;
-    const item = document.createElement('div');
-    item.className = 'fullscreenMsg';
-    item.dataset.messageId = messageId;
-    item.innerHTML = `<p>${escapeHtml(latest.text || '')}</p>`;
-    popup.appendChild(item);
 
-    // Keep only one temporary popup visible.
-    while (popup.children.length > 1) popup.removeChild(popup.firstChild);
+    if (!lastFullscreenMessageId) {
+      lastFullscreenMessageId = messageId;
+    } else if (messageId !== lastFullscreenMessageId) {
+      lastFullscreenMessageId = messageId;
 
-    clearTimeout(fullscreenMessageTimers.get('latest'));
-    fullscreenMessageTimers.set('latest', setTimeout(() => {
-      item.remove();
-      fullscreenMessageTimers.delete('latest');
-    }, 2000));
+      const item = document.createElement('div');
+      item.className = 'fullscreenMsg';
+      item.dataset.messageId = messageId;
+      item.innerHTML = `<p>${escapeHtml(latest.text || '')}</p>`;
+      popup.replaceChildren(item);
+
+      clearTimeout(fullscreenMessageTimers.get('latest'));
+      fullscreenMessageTimers.set('latest', setTimeout(() => {
+        item.remove();
+        fullscreenMessageTimers.delete('latest');
+      }, 2000));
+    }
+  } else {
+    lastFullscreenMessageId = '';
+    popup.replaceChildren();
   }
 
   $('messages').scrollTop = $('messages').scrollHeight;
@@ -931,8 +943,28 @@ function toggleFullscreenControls(event) {
   showFullscreenControls();
 }
 
-$('full').addEventListener('click', () => {
-  $('video').parentElement.requestFullscreen?.();
+$('full').addEventListener('click', async () => {
+  const target = $('video').parentElement;
+  try {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen?.();
+      return;
+    }
+    if (target.requestFullscreen) {
+      await target.requestFullscreen();
+      return;
+    }
+    if (target.webkitRequestFullscreen) {
+      target.webkitRequestFullscreen();
+      return;
+    }
+    // iPhone/iPad Safari exposes fullscreen on the video itself.
+    if ($('video').webkitEnterFullscreen) {
+      $('video').webkitEnterFullscreen();
+    }
+  } catch (error) {
+    console.warn('Fullscreen request failed:', error);
+  }
 });
 
 $('fsBack').addEventListener('click', async (event) => {
@@ -967,6 +999,11 @@ $('fsPlay').addEventListener('click', async (event) => {
 
 $('video').addEventListener('click', toggleFullscreenControls);
 $('video').addEventListener('touchstart', showFullscreenControls, {passive:true});
+$('video').parentElement.addEventListener('pointerup', (event) => {
+  if (!isFullscreen()) return;
+  if (event.target.closest?.('.fullscreenControls')) return;
+  showFullscreenControls();
+});
 
 document.addEventListener('fullscreenchange', () => {
   updateFullscreenControls();
@@ -975,6 +1012,24 @@ document.addEventListener('fullscreenchange', () => {
 document.addEventListener('webkitfullscreenchange', () => {
   updateFullscreenControls();
   if (isFullscreen()) showFullscreenControls();
+});
+
+document.addEventListener('keydown', async (event) => {
+  if (!isFullscreen()) return;
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    $('video').currentTime = Math.max(0, $('video').currentTime - 10);
+    await writePlaybackState(true);
+    showFullscreenControls();
+  } else if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    if (Number.isFinite($('video').duration)) $('video').currentTime = Math.min($('video').duration, $('video').currentTime + 10);
+    await writePlaybackState(true);
+    showFullscreenControls();
+  } else if (event.key === ' ' || event.key === 'Enter') {
+    event.preventDefault();
+    $('fsPlay').click();
+  }
 });
 
 $('video').addEventListener('play', () => {
@@ -987,6 +1042,19 @@ $('video').addEventListener('seeked', () => writePlaybackState(true));
 
 $('video').addEventListener('loadedmetadata', () => {
   $('emptyVideo').classList.add('hidden');
+  $('time').textContent = `${formatTime($('video').currentTime)} / ${formatTime($('video').duration)}`;
+});
+
+$('video').addEventListener('canplay', () => {
+  $('emptyVideo').classList.add('hidden');
+});
+
+$('video').addEventListener('waiting', () => {
+  if (roomId) $('syncState').innerHTML = '<i></i>Buffering…';
+});
+
+$('video').addEventListener('playing', () => {
+  if (roomId) $('syncState').innerHTML = '<i></i>Live';
 });
 
 $('video').addEventListener('error', () => {
