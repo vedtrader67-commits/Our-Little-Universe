@@ -81,6 +81,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .person img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#09233c}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);flex:none}
 .library{display:grid;gap:7px;max-height:380px;overflow:auto;padding-right:2px}
+.libraryGate{padding:11px;border:1px solid var(--line2);border-radius:13px;background:rgba(3,16,31,.8);box-shadow:0 0 18px rgba(38,156,255,.12)}
 .file{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px;border:1px solid #0e2d4c;border-radius:12px;background:#041326}
 .fileName{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fileMeta{font-size:11px;color:var(--muted)}
@@ -228,7 +229,16 @@ button:disabled{cursor:not-allowed;opacity:.5}
       </div>
 
       <div class="hr"></div>
-      <h3 class="sectionTitle">Video library <span id="storageBadge" class="badge">Loading…</span></h3>
+      <h3 class="sectionTitle">Video library <span id="storageBadge" class="badge">Admin locked</span></h3>
+      <div id="libraryGate" class="libraryGate">
+        <div class="small muted">Library access is restricted to the admin.</div>
+        <div class="row" style="margin-top:8px">
+          <input id="adminCode" class="input" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Admin code">
+          <button id="unlockLibrary" class="btn primary">Unlock</button>
+        </div>
+        <div id="adminError" class="error"></div>
+      </div>
+      <div id="libraryAdminArea" class="hidden">
       <input id="filePicker" type="file" accept="video/*" class="hidden">
       <button id="chooseFile" class="btn primary full">Upload movie to Dosya</button>
       <div id="drop" class="drop" style="margin-top:8px">Or drag a video here</div>
@@ -240,6 +250,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
       </div>
       <div id="library" class="library" style="margin-top:8px"></div>
       <div id="storageError" class="error"></div>
+      </div>
     </aside>
 
     <section class="card main">
@@ -373,7 +384,11 @@ let storageWorkspaceId = '';
 let storageFiles = [];
 let currentMovieFileId = '';
 let uploadRunning = false;
+let libraryUnlocked = false;
 let fullscreenControlTimer = null;
+let lastVideoProgressAt = Date.now();
+let lastVideoTime = 0;
+let stallRecoveryTimer = null;
 let lastFullscreenMessageId = '';
 const fullscreenMessageTimers = new Map();
 
@@ -484,7 +499,8 @@ onAuthStateChanged(auth, async (user) => {
   $('email').textContent = user.email || '';
   $('avatar').src = user.photoURL || '';
 
-  await initializeStorage();
+  // Library is admin-only; ordinary room members do not load its listing.
+  if (sessionStorage.getItem('vsf_library_admin') === '1') unlockLibrary(true);
 
   const inviteCode = new URLSearchParams(location.search).get('room');
   if (inviteCode && !roomId) {
@@ -1061,7 +1077,7 @@ function startSyncCorrection() {
       setSyncBadge('Syncing…');
     } else {
       try { video.playbackRate = 1; } catch {}
-      setSyncBadge(Math.abs(drift) < 0.35 ? 'Synced' : 'Buffering…', Math.abs(drift) < 0.35 ? 'ok' : 'warn');
+      setSyncBadge(Math.abs(drift) < 0.35 ? 'Synced' : 'Syncing…', Math.abs(drift) < 0.35 ? 'ok' : 'warn');
     }
   }, 500);
 }
@@ -1244,6 +1260,13 @@ $('video').addEventListener('loadedmetadata', () => {
 
 $('video').addEventListener('canplay', () => {
   $('emptyVideo').classList.add('hidden');
+  lastVideoProgressAt = Date.now();
+  if (roomData?.state && roomId) setTimeout(() => applyRemoteState(roomData.state), 0);
+});
+
+$('video').addEventListener('loadeddata', () => {
+  lastVideoProgressAt = Date.now();
+  if (roomData?.state && roomId) applyRemoteState(roomData.state);
 });
 
 $('video').addEventListener('waiting', () => {
@@ -1254,6 +1277,8 @@ $('video').addEventListener('playing', () => {
   if (roomId) $('syncState').innerHTML = '<i></i>Live';
 });
 $('video').addEventListener('progress', () => {
+  lastVideoProgressAt = Date.now();
+  lastVideoTime = Number($('video').currentTime || 0);
   if (roomId && !$('video').paused && $('video').readyState >= 3) setSyncBadge('Live');
 });
 
@@ -1316,22 +1341,22 @@ $('video').addEventListener('error', () => {
   if ($('video').src) recoverLongVideoStream('error');
 });
 
-let lastStallAt = 0;
 $('video').addEventListener('stalled', () => {
   const video = $('video');
   if (!video.src || video.paused) return;
-  const now = Date.now();
-  if (now - lastStallAt < 5000) return;
-  lastStallAt = now;
   if (roomId) setSyncBadge('Buffering…', 'warn');
-  // Give the browser a chance to satisfy a normal range request first.
-  setTimeout(() => {
-    if (!video.paused && video.readyState < 3) recoverLongVideoStream('stalled');
-  }, 2500);
+  clearTimeout(stallRecoveryTimer);
+  stallRecoveryTimer = setTimeout(() => {
+    const unchanged = Math.abs(Number(video.currentTime || 0) - lastVideoTime) < 0.05;
+    const noProgress = Date.now() - lastVideoProgressAt > 9000;
+    if (!video.paused && video.readyState < 3 && unchanged && noProgress) recoverLongVideoStream('stalled');
+  }, 9000);
 });
 
 $('video').addEventListener('timeupdate', () => {
   const video = $('video');
+  lastVideoProgressAt = Date.now();
+  lastVideoTime = Number(video.currentTime || 0);
   if (!Number.isFinite(video.duration) || video.duration <= 0) return;
   $('seek').value = String(Math.round((video.currentTime / video.duration) * 1000));
   $('time').textContent = `${formatTime(video.currentTime)} / ${formatTime(video.duration)}`;
@@ -1396,6 +1421,24 @@ async function storageRequest(path, options = {}) {
   return data;
 }
 
+function unlockLibrary(silent = false) {
+  const code = silent ? '9995' : String($('adminCode')?.value || '').trim();
+  if (code !== '9995') {
+    if (!silent) { $('adminError').textContent = 'Incorrect admin code.'; $('adminCode').value = ''; $('adminCode').focus(); }
+    return false;
+  }
+  libraryUnlocked = true;
+  sessionStorage.setItem('vsf_library_admin', '1');
+  $('libraryGate').classList.add('hidden');
+  $('libraryAdminArea').classList.remove('hidden');
+  $('storageBadge').textContent = 'Admin unlocked';
+  initializeStorage();
+  return true;
+}
+
+$('unlockLibrary').addEventListener('click', () => unlockLibrary(false));
+$('adminCode').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlockLibrary(false); });
+
 async function initializeStorage() {
   setStorageError('');
   $('storageBadge').textContent = 'Connecting…';
@@ -1412,7 +1455,7 @@ async function initializeStorage() {
 }
 
 async function refreshFiles() {
-  if (!storageWorkspaceId) return;
+  if (!libraryUnlocked || !storageWorkspaceId) return;
 
   try {
     const data = await storageRequest(`/api/storage/files?workspace_id=${encodeURIComponent(storageWorkspaceId)}&per_page=500`);
@@ -1424,6 +1467,7 @@ async function refreshFiles() {
 }
 
 function renderLibrary() {
+  if (!libraryUnlocked) return;
   const search = $('searchFiles').value.trim().toLowerCase();
   const files = storageFiles.filter((file) => {
     const name = String(file.name || '').toLowerCase();
@@ -1458,6 +1502,7 @@ function renderLibrary() {
 }
 
 async function useLibraryFile(fileId) {
+  if (!libraryUnlocked) return toast('Admin library access required.');
   if (!roomId) {
     toast('Create or join a room first.');
     return;
@@ -1491,6 +1536,7 @@ async function useLibraryFile(fileId) {
 }
 
 async function deleteLibraryFile(fileId) {
+  if (!libraryUnlocked) return toast('Admin library access required.');
   const file = storageFiles.find((item) => item.id === fileId);
   if (!file) return;
 
@@ -1513,8 +1559,8 @@ async function deleteLibraryFile(fileId) {
 }
 
 $('searchFiles').addEventListener('input', renderLibrary);
-$('refreshFiles').addEventListener('click', refreshFiles);
-$('chooseFile').addEventListener('click', () => $('filePicker').click());
+$('refreshFiles').addEventListener('click', () => { if (libraryUnlocked) refreshFiles(); });
+$('chooseFile').addEventListener('click', () => { if (libraryUnlocked) $('filePicker').click(); else toast('Enter the admin code to access the library.'); });
 $('filePicker').addEventListener('change', () => {
   const file = $('filePicker').files?.[0];
   if (file) uploadVideo(file);
