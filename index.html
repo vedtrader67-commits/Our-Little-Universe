@@ -504,8 +504,9 @@ onAuthStateChanged(auth, async (user) => {
   $('email').textContent = user.email || '';
   $('avatar').src = user.photoURL || '';
 
-  // Library is admin-only; ordinary room members do not load its listing.
-  if (sessionStorage.getItem('vsf_library_admin') === '1') unlockLibrary(true);
+  // Library always starts locked after every page load/refresh.
+  // Do not persist admin access in local/session storage.
+  libraryUnlocked = false;
 
   const inviteCode = new URLSearchParams(location.search).get('room');
   if (inviteCode && !roomId) {
@@ -1195,6 +1196,15 @@ $('chat').addEventListener('submit', async (event) => {
   }
 });
 
+$('mute').addEventListener('click', () => {
+  const video = $('video');
+  video.muted = !video.muted;
+  $('mute').textContent = video.muted ? 'Unmute' : 'Mute';
+});
+$('video').addEventListener('volumechange', () => {
+  $('mute').textContent = $('video').muted ? 'Unmute' : 'Mute';
+});
+
 /* ================================================================
    8. Mux video library client
    ================================================================ */
@@ -1214,18 +1224,15 @@ async function muxRequest(path, options = {}) {
   return data;
 }
 
-function unlockLibrary(silent = false) {
-  const code = silent ? ADMIN_CODE : String($('adminCode')?.value || '').trim();
+function unlockLibrary() {
+  const code = String($('adminCode')?.value || '').trim();
   if (code !== ADMIN_CODE) {
-    if (!silent) {
-      $('adminError').textContent = 'Incorrect admin code.';
-      $('adminCode').value = '';
-      $('adminCode').focus();
-    }
+    $('adminError').textContent = 'Incorrect admin code.';
+    $('adminCode').value = '';
+    $('adminCode').focus();
     return false;
   }
   libraryUnlocked = true;
-  sessionStorage.setItem('vsf_library_admin', '1');
   $('libraryGate').classList.add('hidden');
   $('libraryAdminArea').classList.remove('hidden');
   $('storageBadge').textContent = 'Mux library unlocked';
@@ -1233,8 +1240,8 @@ function unlockLibrary(silent = false) {
   return true;
 }
 
-$('unlockLibrary').addEventListener('click', () => unlockLibrary(false));
-$('adminCode').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlockLibrary(false); });
+$('unlockLibrary').addEventListener('click', unlockLibrary);
+$('adminCode').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlockLibrary(); });
 
 async function initializeStorage() {
   setStorageError('');
