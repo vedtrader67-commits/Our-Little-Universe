@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="en">
 <head>
+<link rel="preconnect" href="https://backed-0szz.onrender.com" crossorigin>
+<link rel="preconnect" href="https://stream.mux.com" crossorigin>
+<link rel="preconnect" href="https://image.mux.com" crossorigin>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#03101f">
@@ -80,7 +83,17 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .person{display:flex;align-items:center;gap:9px;padding:9px;border-radius:11px;background:#041326;border:1px solid #0e2b49}
 .person img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#09233c}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);flex:none}
-.library{display:grid;gap:7px;max-height:380px;overflow:auto;padding-right:2px}
+.library{display:grid;gap:8px;max-height:380px;overflow:auto;padding-right:2px;scroll-behavior:smooth}
+.libraryTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 8px}
+.libraryHeading{font-size:16px;letter-spacing:.1px}
+.file{position:relative;display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px;border:1px solid #0e2d4c;border-radius:14px;background:linear-gradient(135deg,rgba(4,19,38,.98),rgba(3,13,27,.94));transition:.16s ease;overflow:hidden}
+.file:hover{transform:translateY(-1px);border-color:#1d6596;box-shadow:0 0 20px rgba(38,156,255,.13)}
+.fileThumb{width:54px;height:40px;border-radius:9px;object-fit:cover;background:#020913;border:1px solid #12375b;display:block}
+.fileMain{min-width:0}
+.fileMeta{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fileActions{display:flex;gap:5px;align-items:center}
+.fileActions .selectFile{min-width:66px}
+.file.isSelected{border-color:#38cfff;box-shadow:0 0 22px rgba(38,156,255,.18),inset 0 0 18px rgba(38,156,255,.05)}
 .libraryGate{padding:11px;border:1px solid var(--line2);border-radius:13px;background:rgba(3,16,31,.8);box-shadow:0 0 18px rgba(38,156,255,.12)}
 .file{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px;border:1px solid #0e2d4c;border-radius:12px;background:#041326}
 .fileName{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -258,14 +271,19 @@ button:disabled{cursor:not-allowed;opacity:.5}
         <div id="adminError" class="error"></div>
       </div>
       <div id="libraryAdminArea" class="hidden">
+      <div class="libraryTop">
+        <div><b class="libraryHeading">Your library</b><div id="libraryCount" class="small muted">Ready to watch</div></div>
+        <span id="libraryLoadState" class="badge">Ready</span>
+      </div>
       <input id="filePicker" type="file" accept="video/*" class="hidden">
       <button id="chooseFile" class="btn primary full">Add movie</button>
       <div id="drop" class="drop" style="margin-top:8px">Drag a video here to add it</div>
       <div id="uploadStatus" class="small muted" style="margin-top:8px">No upload running.</div>
       <div class="progress"><i id="uploadBar"></i></div>
       <div class="row" style="margin-top:8px">
-        <input id="searchFiles" class="input" placeholder="Search your videos…">
-        <button id="refreshFiles" class="btn">↻</button>
+        <input id="searchFiles" class="input" placeholder="Search videos…">
+        <select id="sortFiles" class="select" style="max-width:145px"><option value="newest">Newest</option><option value="name">A–Z</option><option value="oldest">Oldest</option></select>
+        <button id="refreshFiles" class="btn" aria-label="Refresh library">↻</button>
       </div>
       <div id="library" class="library" style="margin-top:8px"></div>
       <div id="storageError" class="error"></div>
@@ -1637,7 +1655,9 @@ function unlockLibrary() {
   libraryUnlocked = true;
   $('libraryGate').classList.add('hidden');
   $('libraryAdminArea').classList.remove('hidden');
-  $('storageBadge').textContent = 'Library unlocked';
+  $('storageBadge').textContent = 'Library';
+  $('libraryLoadState').textContent = 'Loading';
+  $('library').innerHTML = '<div class="small muted" style="padding:14px;text-align:center">Loading your library…</div>';
   initializeStorage();
   return true;
 }
@@ -1648,22 +1668,40 @@ $('adminCode').addEventListener('keydown', (event) => { if (event.key === 'Enter
 async function initializeStorage() {
   setStorageError('');
   $('storageBadge').textContent = 'Loading…';
+  $('libraryLoadState').textContent = 'Loading';
+  const started = performance.now();
   try {
     await refreshFiles();
     $('storageBadge').textContent = 'Library';
+    $('libraryLoadState').textContent = `${storageFiles.length} ready`;
+    // Keep the loading state from flashing on very fast connections.
+    const elapsed = performance.now() - started;
+    if (elapsed < 180) await new Promise(r => setTimeout(r, 180 - elapsed));
   } catch (error) {
     $('storageBadge').textContent = 'Unavailable';
-    setStorageError(`Library: ${error.message}`);
+    $('libraryLoadState').textContent = 'Unavailable';
+    setStorageError(`Could not load library: ${error.message}`);
   }
 }
 
 async function refreshFiles() {
   if (!libraryUnlocked) return;
+  const started = performance.now();
   try {
-    const data = await muxRequest('/api/mux/videos?limit=100');
-    storageFiles = Array.isArray(data.videos) ? data.videos : [];
+    $('libraryLoadState').textContent = 'Refreshing…';
+    const data = await muxRequest('/api/mux/videos?limit=100', {
+      method: 'GET',
+      cache: 'no-store',
+      headers: { 'Cache-Control': 'no-cache' }
+    });
+    storageFiles = Array.isArray(data.videos) ? data.videos.filter(v => v && v.playback_id && v.status !== 'errored') : [];
     renderLibrary();
+    $('libraryCount').textContent = storageFiles.length ? `${storageFiles.length} video${storageFiles.length === 1 ? '' : 's'} ready` : 'No videos yet';
+    $('libraryLoadState').textContent = `${storageFiles.length} ready`;
+    const elapsed = performance.now() - started;
+    if (elapsed < 120) await new Promise(r => setTimeout(r, 120 - elapsed));
   } catch (error) {
+    $('libraryLoadState').textContent = 'Error';
     setStorageError(`Could not load library: ${error.message}`);
   }
 }
@@ -1671,30 +1709,42 @@ async function refreshFiles() {
 function renderLibrary() {
   if (!libraryUnlocked) return;
   const search = $('searchFiles').value.trim().toLowerCase();
+  const sort = $('sortFiles').value;
   const files = storageFiles.filter((file) => {
     const name = String(file.name || '').toLowerCase();
     return !search || name.includes(search);
+  }).sort((a,b) => {
+    if (sort === 'name') return String(a.name || '').localeCompare(String(b.name || ''));
+    const at = Number(a.created_at || a.createdAt || 0);
+    const bt = Number(b.created_at || b.createdAt || 0);
+    return sort === 'oldest' ? at - bt : bt - at;
   });
 
+  $('libraryCount').textContent = search ? `${files.length} result${files.length === 1 ? '' : 's'}` : `${storageFiles.length} video${storageFiles.length === 1 ? '' : 's'} ready`;
   if (!files.length) {
-    $('library').innerHTML = '<div class="small muted">No ready videos found. Upload your first movie.</div>';
+    $('library').innerHTML = '<div class="small muted" style="padding:16px;text-align:center">No matching videos.</div>';
     return;
   }
 
-  $('library').innerHTML = files.map((file) => `
-    <div class="file">
-      <div>
+  const activeId = currentMovieFileId;
+  $('library').innerHTML = files.map((file) => {
+    const thumb = file.playback_id ? `https://image.mux.com/${encodeURIComponent(file.playback_id)}/thumbnail.jpg?width=240&height=135&fit_mode=smartcrop` : '';
+    const selected = activeId === file.id;
+    return `
+    <div class="file${selected ? ' isSelected' : ''}" data-file-row="${escapeHtml(file.id)}">
+      ${thumb ? `<img class="fileThumb" loading="lazy" decoding="async" src="${thumb}" alt="">` : '<div class="fileThumb"></div>'}
+      <div class="fileMain">
         <div class="fileName" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
-        <div class="fileMeta">${formatBytes(file.size_bytes || 0)} · ${escapeHtml(file.status || 'ready')}</div>
+        <div class="fileMeta">${formatBytes(file.size_bytes || 0)} · Ready</div>
       </div>
       <div class="fileActions">
-        <button class="btn useFile" data-id="${escapeHtml(file.id)}">Use</button>
-        <button class="btn danger deleteFile" data-id="${escapeHtml(file.id)}">Delete</button>
+        <button class="btn primary selectFile" data-id="${escapeHtml(file.id)}">${selected ? 'Selected' : 'Select'}</button>
+        <button class="btn danger deleteFile" data-id="${escapeHtml(file.id)}" aria-label="Delete video">Delete</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 
-  document.querySelectorAll('.useFile').forEach((button) => button.addEventListener('click', () => useLibraryFile(button.dataset.id)));
+  document.querySelectorAll('.selectFile').forEach((button) => button.addEventListener('click', () => useLibraryFile(button.dataset.id)));
   document.querySelectorAll('.deleteFile').forEach((button) => button.addEventListener('click', () => deleteLibraryFile(button.dataset.id)));
 }
 
@@ -1712,15 +1762,21 @@ async function useLibraryFile(fileId) {
     url: MUX_HLS(file.playback_id)
   };
 
+  // Start loading locally immediately instead of waiting for Firestore round-trip.
+  initialRoomMovieKey = `${movie.fileId}:${movie.playbackId}`;
+  renderMovie(movie);
+  setSyncState('Loading…');
+  renderLibrary();
+
   try {
     await updateDoc(roomReference(roomId), {
       movie,
       state: { playing: false, time: 0, updatedAt: Date.now(), by: me.uid, controller: me.uid },
       updatedAt: Date.now()
     });
-    toast(`${file.name} shared with the room.`);
+    toast(`${file.name} selected.`);
   } catch (error) {
-    toast(`Could not share movie: ${error.message}`);
+    toast(`Could not select movie: ${error.message}`);
   }
 }
 
@@ -1746,6 +1802,7 @@ async function deleteLibraryFile(fileId) {
 }
 
 $('searchFiles').addEventListener('input', renderLibrary);
+$('sortFiles').addEventListener('change', renderLibrary);
 $('refreshFiles').addEventListener('click', () => { if (libraryUnlocked) refreshFiles(); });
 $('chooseFile').addEventListener('click', () => { if (libraryUnlocked) $('filePicker').click(); else toast('Enter the code to continue.'); });
 $('filePicker').addEventListener('change', () => {
