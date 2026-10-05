@@ -424,7 +424,7 @@ import {
    1. Firebase configuration
    ================================================================ */
 const firebaseConfig = {
-  apiKey: 'AIzaSyAyw5c-W1BYIr8tmAqBEnLxw3zVEBUMxAw',
+  apiKey: 'AIzaSyAy5c-W1BYIr8tmAqBEnLxw3zVEBUMx0',
   authDomain: 'our-universe-8229c.firebaseapp.com',
   projectId: 'our-universe-8229c',
   storageBucket: 'our-universe-8229c.firebasestorage.app',
@@ -482,6 +482,8 @@ let typingWriteTimer = null;
 let typingVisibleTimer = null;
 let lastTypingSignature = "";
 let initialRoomMovieKey = null;
+let roomReconnectTimer = null;
+let roomReconnectAttempts = 0;
 
 function toast(message) {
   const node = $('toast');
@@ -746,6 +748,8 @@ async function enterRoom(rawCode) {
 
 async function leaveRoom(showToast = true) {
   const oldRoom = roomId;
+  clearTimeout(roomReconnectTimer);
+  roomReconnectAttempts = 0;
 
   if (unsubscribeRoom) {
     unsubscribeRoom();
@@ -852,6 +856,7 @@ $('copy').addEventListener('click', async () => {
    5. Firestore real-time room listener
    ================================================================ */
 function subscribeToRoom(code) {
+  clearTimeout(roomReconnectTimer);
   initialRoomMovieKey = null;
   if (unsubscribeRoom) unsubscribeRoom();
   if (unsubscribeMessages) unsubscribeMessages();
@@ -866,7 +871,12 @@ function subscribeToRoom(code) {
       return;
     }
 
+    roomReconnectAttempts = 0;
+    clearTimeout(roomReconnectTimer);
     roomData = snapshot.data();
+    $('status').textContent = 'Connected';
+    $('syncState').innerHTML = '<i></i>Live';
+    setError('');
     if (chatMessagesCache.length || roomData.chatClearedAt) renderMessages(chatMessagesCache);
     syncControllerId = roomData.state?.controller || roomData.state?.by || syncControllerId;
     renderMembers(roomData.members || {});
@@ -885,9 +895,27 @@ function subscribeToRoom(code) {
     startSyncHeartbeat();
     startSyncCorrection();
   }, (error) => {
-    console.error(error);
-    setError(`Room sync failed: ${error.message}`);
-    toast('Room access was denied. Publish the matching blueRooms Firestore rules.');
+    console.error('Room listener error:', error);
+    stopSyncHeartbeat();
+    stopSyncCorrection();
+    const message = String(error?.message || 'Room connection lost.');
+    const permissionDenied = error?.code === 'permission-denied' || message.includes('Missing or insufficient permissions');
+    if (permissionDenied) {
+      setError('Room access was denied. Check the published Firestore rules.');
+      $('status').textContent = 'Connection denied';
+      $('syncState').innerHTML = '<i></i>Denied';
+      toast('Room access was denied.');
+      return;
+    }
+    $('status').textContent = 'Reconnecting…';
+    $('syncState').innerHTML = '<i></i>Reconnecting';
+    setError('Connection interrupted. Reconnecting automatically…');
+    clearTimeout(roomReconnectTimer);
+    roomReconnectAttempts = Math.min(roomReconnectAttempts + 1, 6);
+    const delay = Math.min(1000 * Math.pow(2, roomReconnectAttempts - 1), 10000);
+    roomReconnectTimer = setTimeout(() => {
+      if (roomId === code) subscribeToRoom(code);
+    }, delay);
   });
 
   const messagesQuery = query(
