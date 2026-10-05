@@ -1,9 +1,6 @@
 <!doctype html>
 <html lang="en">
 <head>
-<link rel="preconnect" href="https://backed-0szz.onrender.com" crossorigin>
-<link rel="preconnect" href="https://stream.mux.com" crossorigin>
-<link rel="preconnect" href="https://image.mux.com" crossorigin>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#03101f">
@@ -11,20 +8,20 @@
 <title>Holly Cow</title>
 <style>
 :root{
-  --bg:#09070d;
-  --bg2:#120b1d;
-  --panel:#171022;
-  --panel2:#20132e;
-  --line:#332044;
-  --line2:#56336f;
-  --blue:#a855f7;
-  --cyan:#d8ff57;
-  --text:#faf7ff;
-  --muted:#a99ab8;
-  --good:#7dff9a;
-  --warn:#ffe66d;
-  --bad:#ff6b91;
-  --shadow:0 0 45px rgba(168,85,247,.14);
+  --bg:#020711;
+  --bg2:#061325;
+  --panel:#07172b;
+  --panel2:#0a1e36;
+  --line:#17406b;
+  --line2:#1c5b92;
+  --blue:#269cff;
+  --cyan:#55e7ff;
+  --text:#ecf8ff;
+  --muted:#8ca9c7;
+  --good:#35e69b;
+  --warn:#ffd166;
+  --bad:#ff6685;
+  --shadow:0 0 45px rgba(24,144,255,.16);
   --radius:18px;
 }
 *{box-sizing:border-box}
@@ -32,7 +29,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 body{-webkit-text-size-adjust:100%;touch-action:pan-y;overscroll-behavior-x:none}
 button,.btn,input,.select{touch-action:manipulation}
 html{background:var(--bg);scroll-behavior:smooth}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% -10%,#3a1656 0,#180d27 30%,#09070d 70%),radial-gradient(circle at 100% 20%,rgba(216,255,87,.08),transparent 30%);color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:inset 0 0 120px rgba(168,85,247,.10)}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -15%,#0c3d70 0,#061528 34%,#020711 72%);color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:inset 0 0 120px rgba(38,156,255,.10)}
 button,input,select{font:inherit}
 button{cursor:pointer}
 button:disabled{cursor:not-allowed;opacity:.5}
@@ -83,17 +80,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .person{display:flex;align-items:center;gap:9px;padding:9px;border-radius:11px;background:#041326;border:1px solid #0e2b49}
 .person img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#09233c}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);flex:none}
-.library{display:grid;gap:8px;max-height:380px;overflow:auto;padding-right:2px;scroll-behavior:smooth}
-.libraryTop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 8px}
-.libraryHeading{font-size:16px;letter-spacing:.1px}
-.file{position:relative;display:grid;grid-template-columns:54px minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px;border:1px solid #0e2d4c;border-radius:14px;background:linear-gradient(135deg,rgba(4,19,38,.98),rgba(3,13,27,.94));transition:.16s ease;overflow:hidden}
-.file:hover{transform:translateY(-1px);border-color:#1d6596;box-shadow:0 0 20px rgba(38,156,255,.13)}
-.fileThumb{width:54px;height:40px;border-radius:9px;object-fit:cover;background:#020913;border:1px solid #12375b;display:block}
-.fileMain{min-width:0}
-.fileMeta{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fileActions{display:flex;gap:5px;align-items:center}
-.fileActions .selectFile{min-width:66px}
-.file.isSelected{border-color:#38cfff;box-shadow:0 0 22px rgba(38,156,255,.18),inset 0 0 18px rgba(38,156,255,.05)}
+.library{display:grid;gap:7px;max-height:380px;overflow:auto;padding-right:2px}
 .libraryGate{padding:11px;border:1px solid var(--line2);border-radius:13px;background:rgba(3,16,31,.8);box-shadow:0 0 18px rgba(38,156,255,.12)}
 .file{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px;border:1px solid #0e2d4c;border-radius:12px;background:#041326}
 .fileName{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -210,27 +197,6 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .footerNote{padding:10px 0;color:var(--muted);font-size:11px;text-align:center}
 @media(max-width:1100px){.grid{grid-template-columns:270px minmax(0,1fr)}.grid>.side:last-child{grid-column:1/-1;min-height:unset}.chat{height:300px}}
 @media(max-width:760px){.app{padding:8px}.top{position:relative;top:0}.grid{grid-template-columns:1fr}.side,.main{min-height:unset}.stats{grid-template-columns:repeat(3,1fr)}.userText{display:none}.controlrow .time{width:100%;margin-left:0}.file{grid-template-columns:1fr}.fileActions{justify-content:flex-start}.chat{height:360px}}
-
-/* Gen-Z theme refresh */
-.card{border-color:rgba(168,85,247,.28);background:linear-gradient(145deg,rgba(23,16,34,.97),rgba(10,8,15,.97));}
-.glow{color:var(--cyan);text-shadow:0 0 18px rgba(216,255,87,.28)}
-.btn{border-color:rgba(168,85,247,.48);background:linear-gradient(145deg,#241431,#130c1c);box-shadow:0 0 15px rgba(168,85,247,.16)}
-.btn.primary{background:linear-gradient(135deg,#7c3aed,#b44cff);border-color:#c084fc;box-shadow:0 0 26px rgba(168,85,247,.34)}
-.btn:hover,.btn:focus-visible{border-color:var(--cyan);box-shadow:0 0 22px rgba(216,255,87,.20),0 0 18px rgba(168,85,247,.25)}
-.input,.select{background:#0c0812;border-color:#342142}
-.library{max-height:430px;gap:9px}
-.file{grid-template-columns:74px minmax(0,1fr) auto;min-height:66px;border-color:#2d1b3d;background:linear-gradient(145deg,#171021,#0d0912);border-radius:16px}
-.fileThumb{width:74px;height:46px;border-radius:11px;border-color:#38204b}
-.file:hover{border-color:#9b5bd3;box-shadow:0 0 22px rgba(168,85,247,.16)}
-.file.isSelected{border-color:var(--cyan);box-shadow:0 0 24px rgba(216,255,87,.10),inset 0 0 18px rgba(216,255,87,.035)}
-.drop{border-color:#4b2c61;background:#0d0914}.drop.drag{border-color:var(--cyan);background:#171d12}
-.progress>i{background:linear-gradient(90deg,#8b5cf6,#d8ff57);box-shadow:0 0 14px rgba(216,255,87,.45)}
-.roomCode{color:var(--cyan);text-shadow:0 0 18px rgba(216,255,87,.22)}
-.logoMark{background:radial-gradient(circle at 35% 30%,#d8ff57,#8b5cf6 52%,#160c20 100%);border-color:#c084fc}
-.video{border-color:#321d45;box-shadow:0 0 42px rgba(168,85,247,.12)}
-.fullscreenChatPanel{border-color:rgba(216,255,87,.48);background:rgba(10,7,15,.94);box-shadow:0 0 28px rgba(168,85,247,.28)}
-.fullscreenMsg,.typingPopup{border-color:rgba(216,255,87,.42);background:rgba(10,7,15,.84)}
-.fsBtn{border-color:rgba(216,255,87,.62);background:rgba(12,8,17,.82);box-shadow:0 0 22px rgba(168,85,247,.34)}
 </style>
 </head>
 <body>
@@ -292,19 +258,14 @@ button:disabled{cursor:not-allowed;opacity:.5}
         <div id="adminError" class="error"></div>
       </div>
       <div id="libraryAdminArea" class="hidden">
-      <div class="libraryTop">
-        <div><b class="libraryHeading">Library</b><div id="libraryCount" class="small muted">Ready to watch</div></div>
-        <span id="libraryLoadState" class="badge">Ready</span>
-      </div>
       <input id="filePicker" type="file" accept="video/*" class="hidden">
-      <button id="chooseFile" class="btn primary full">Add video</button>
-      <div id="drop" class="drop" style="margin-top:8px">Drop a video here or tap Add video</div>
+      <button id="chooseFile" class="btn primary full">Add movie</button>
+      <div id="drop" class="drop" style="margin-top:8px">Drag a video here to add it</div>
       <div id="uploadStatus" class="small muted" style="margin-top:8px">No upload running.</div>
       <div class="progress"><i id="uploadBar"></i></div>
       <div class="row" style="margin-top:8px">
-        <input id="searchFiles" class="input" placeholder="Search your library…">
-        <select id="sortFiles" class="select" style="max-width:145px"><option value="newest">Newest</option><option value="name">A–Z</option><option value="oldest">Oldest</option></select>
-        <button id="refreshFiles" class="btn" aria-label="Refresh library">↻</button>
+        <input id="searchFiles" class="input" placeholder="Search your videos…">
+        <button id="refreshFiles" class="btn">↻</button>
       </div>
       <div id="library" class="library" style="margin-top:8px"></div>
       <div id="storageError" class="error"></div>
@@ -424,7 +385,7 @@ import {
    1. Firebase configuration
    ================================================================ */
 const firebaseConfig = {
-  apiKey: 'AIzaSyAy5c-W1BYIr8tmAqBEnLxw3zVEBUMx0',
+  apiKey: 'AIzaSyAyw5c-W1BYIr8tmAqBEnLxw3zVEBUMxAw',
   authDomain: 'our-universe-8229c.firebaseapp.com',
   projectId: 'our-universe-8229c',
   storageBucket: 'our-universe-8229c.firebasestorage.app',
@@ -482,8 +443,6 @@ let typingWriteTimer = null;
 let typingVisibleTimer = null;
 let lastTypingSignature = "";
 let initialRoomMovieKey = null;
-let roomReconnectTimer = null;
-let roomReconnectAttempts = 0;
 
 function toast(message) {
   const node = $('toast');
@@ -748,8 +707,6 @@ async function enterRoom(rawCode) {
 
 async function leaveRoom(showToast = true) {
   const oldRoom = roomId;
-  clearTimeout(roomReconnectTimer);
-  roomReconnectAttempts = 0;
 
   if (unsubscribeRoom) {
     unsubscribeRoom();
@@ -856,7 +813,6 @@ $('copy').addEventListener('click', async () => {
    5. Firestore real-time room listener
    ================================================================ */
 function subscribeToRoom(code) {
-  clearTimeout(roomReconnectTimer);
   initialRoomMovieKey = null;
   if (unsubscribeRoom) unsubscribeRoom();
   if (unsubscribeMessages) unsubscribeMessages();
@@ -871,12 +827,7 @@ function subscribeToRoom(code) {
       return;
     }
 
-    roomReconnectAttempts = 0;
-    clearTimeout(roomReconnectTimer);
     roomData = snapshot.data();
-    $('status').textContent = 'Connected';
-    $('syncState').innerHTML = '<i></i>Live';
-    setError('');
     if (chatMessagesCache.length || roomData.chatClearedAt) renderMessages(chatMessagesCache);
     syncControllerId = roomData.state?.controller || roomData.state?.by || syncControllerId;
     renderMembers(roomData.members || {});
@@ -895,27 +846,9 @@ function subscribeToRoom(code) {
     startSyncHeartbeat();
     startSyncCorrection();
   }, (error) => {
-    console.error('Room listener error:', error);
-    stopSyncHeartbeat();
-    stopSyncCorrection();
-    const message = String(error?.message || 'Room connection lost.');
-    const permissionDenied = error?.code === 'permission-denied' || message.includes('Missing or insufficient permissions');
-    if (permissionDenied) {
-      setError('Room access was denied. Check the published Firestore rules.');
-      $('status').textContent = 'Connection denied';
-      $('syncState').innerHTML = '<i></i>Denied';
-      toast('Room access was denied.');
-      return;
-    }
-    $('status').textContent = 'Reconnecting…';
-    $('syncState').innerHTML = '<i></i>Reconnecting';
-    setError('Connection interrupted. Reconnecting automatically…');
-    clearTimeout(roomReconnectTimer);
-    roomReconnectAttempts = Math.min(roomReconnectAttempts + 1, 6);
-    const delay = Math.min(1000 * Math.pow(2, roomReconnectAttempts - 1), 10000);
-    roomReconnectTimer = setTimeout(() => {
-      if (roomId === code) subscribeToRoom(code);
-    }, delay);
+    console.error(error);
+    setError(`Room sync failed: ${error.message}`);
+    toast('Room access was denied. Publish the matching blueRooms Firestore rules.');
   });
 
   const messagesQuery = query(
@@ -1683,7 +1616,7 @@ function adminHeaders(extra = {}) {
 
 async function muxRequest(path, options = {}) {
   const headers = adminHeaders(options.headers || {});
-  let response; try { response = await fetch(`${STORAGE_BACKEND}${path}`, { ...options, headers }); } catch { throw new Error('Server is waking up or temporarily unreachable. Please retry.'); }
+  const response = await fetch(`${STORAGE_BACKEND}${path}`, { ...options, headers });
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
   if (!response.ok) {
@@ -1704,9 +1637,7 @@ function unlockLibrary() {
   libraryUnlocked = true;
   $('libraryGate').classList.add('hidden');
   $('libraryAdminArea').classList.remove('hidden');
-  $('storageBadge').textContent = 'Library';
-  $('libraryLoadState').textContent = 'Loading';
-  $('library').innerHTML = '<div class="small muted" style="padding:14px;text-align:center">Loading your library…</div>';
+  $('storageBadge').textContent = 'Library unlocked';
   initializeStorage();
   return true;
 }
@@ -1714,79 +1645,56 @@ function unlockLibrary() {
 $('unlockLibrary').addEventListener('click', unlockLibrary);
 $('adminCode').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlockLibrary(); });
 
-function libraryCacheKey() { return 'holly_cow_library_v2'; }
-function readLibraryCache() { try { const raw=sessionStorage.getItem(libraryCacheKey()); const parsed=raw?JSON.parse(raw):null; return Array.isArray(parsed)?parsed:[]; } catch { return []; } }
-function writeLibraryCache(files) { try { sessionStorage.setItem(libraryCacheKey(), JSON.stringify(files.slice(0,100))); } catch {} }
-async function fetchLibraryOnce() {
-  const data = await muxRequest('/api/mux/videos?limit=100', { method:'GET', cache:'no-store', headers:{'Cache-Control':'no-cache'} });
-  return Array.isArray(data.videos) ? data.videos.filter(v => v && v.playback_id && v.status !== 'errored') : [];
-}
-async function refreshFiles({silent=false} = {}) {
-  if (!libraryUnlocked) return;
-  const cached=readLibraryCache();
-  if (cached.length && !storageFiles.length) { storageFiles=cached; renderLibrary(); $('libraryCount').textContent=`${cached.length} video${cached.length===1?'':'s'}`; $('libraryLoadState').textContent='Ready'; }
-  if (!silent) $('libraryLoadState').textContent=cached.length?'Updating…':'Loading…';
-  setStorageError('');
-  let lastError=null;
-  for (let attempt=0; attempt<3; attempt++) {
-    try {
-      if (attempt) await new Promise(r=>setTimeout(r,700*attempt));
-      storageFiles=await fetchLibraryOnce(); writeLibraryCache(storageFiles); renderLibrary();
-      $('libraryCount').textContent=storageFiles.length?`${storageFiles.length} video${storageFiles.length===1?'':'s'}`:'No videos yet';
-      $('libraryLoadState').textContent=`${storageFiles.length} ready`; return;
-    } catch(error) { lastError=error; }
-  }
-  $('libraryLoadState').textContent=cached.length?'Offline copy':'Unavailable';
-  setStorageError(cached.length?'Showing the last library copy. Tap refresh when the connection returns.':'Library is temporarily unavailable. Tap refresh to try again.');
-  console.warn('Library refresh failed:', lastError);
-}
 async function initializeStorage() {
-  setStorageError(''); $('storageBadge').textContent='Library';
-  const cached=readLibraryCache();
-  if (cached.length) { storageFiles=cached; renderLibrary(); $('libraryCount').textContent=`${cached.length} video${cached.length===1?'':'s'}`; $('libraryLoadState').textContent='Ready'; } else $('libraryLoadState').textContent='Loading…';
-  fetch(`${STORAGE_BACKEND}/api/health`,{cache:'no-store'}).catch(()=>{});
-  await refreshFiles({silent:!!cached.length});
+  setStorageError('');
+  $('storageBadge').textContent = 'Loading…';
+  try {
+    await refreshFiles();
+    $('storageBadge').textContent = 'Library';
+  } catch (error) {
+    $('storageBadge').textContent = 'Unavailable';
+    setStorageError(`Library: ${error.message}`);
+  }
+}
+
+async function refreshFiles() {
+  if (!libraryUnlocked) return;
+  try {
+    const data = await muxRequest('/api/mux/videos?limit=100');
+    storageFiles = Array.isArray(data.videos) ? data.videos : [];
+    renderLibrary();
+  } catch (error) {
+    setStorageError(`Could not load library: ${error.message}`);
+  }
 }
 
 function renderLibrary() {
   if (!libraryUnlocked) return;
   const search = $('searchFiles').value.trim().toLowerCase();
-  const sort = $('sortFiles').value;
   const files = storageFiles.filter((file) => {
     const name = String(file.name || '').toLowerCase();
     return !search || name.includes(search);
-  }).sort((a,b) => {
-    if (sort === 'name') return String(a.name || '').localeCompare(String(b.name || ''));
-    const at = Number(a.created_at || a.createdAt || 0);
-    const bt = Number(b.created_at || b.createdAt || 0);
-    return sort === 'oldest' ? at - bt : bt - at;
   });
 
-  $('libraryCount').textContent = search ? `${files.length} result${files.length === 1 ? '' : 's'}` : `${storageFiles.length} video${storageFiles.length === 1 ? '' : 's'} ready`;
   if (!files.length) {
-    $('library').innerHTML = '<div class="small muted" style="padding:16px;text-align:center">No matching videos.</div>';
+    $('library').innerHTML = '<div class="small muted">No ready videos found. Upload your first movie.</div>';
     return;
   }
 
-  const activeId = currentMovieFileId;
-  $('library').innerHTML = files.map((file) => {
-    const thumb = file.playback_id ? `https://image.mux.com/${encodeURIComponent(file.playback_id)}/thumbnail.jpg?width=240&height=135&fit_mode=smartcrop` : '';
-    const selected = activeId === file.id;
-    return `
-    <div class="file${selected ? ' isSelected' : ''}" data-file-row="${escapeHtml(file.id)}">
-      ${thumb ? `<img class="fileThumb" loading="lazy" decoding="async" src="${thumb}" alt="">` : '<div class="fileThumb"></div>'}
-      <div class="fileMain">
+  $('library').innerHTML = files.map((file) => `
+    <div class="file">
+      <div>
         <div class="fileName" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
-        <div class="fileMeta">${formatBytes(file.size_bytes || 0)} · Ready</div>
+        <div class="fileMeta">${formatBytes(file.size_bytes || 0)} · ${escapeHtml(file.status || 'ready')}</div>
       </div>
       <div class="fileActions">
-        <button class="btn primary selectFile" data-id="${escapeHtml(file.id)}">${selected ? 'Selected' : 'Select'}</button>
-        <button class="btn danger deleteFile" data-id="${escapeHtml(file.id)}" aria-label="Delete video">Delete</button>
+        <button class="btn useFile" data-id="${escapeHtml(file.id)}">Use</button>
+        <button class="btn danger deleteFile" data-id="${escapeHtml(file.id)}">Delete</button>
       </div>
-    </div>`;
-  }).join('');
+    </div>
+  `).join('');
 
-  document.querySelectorAll('.selectFile').forEach((button) => button.addEventListener('click', () => useLibraryFile(button.dataset.id)));
+  document.querySelectorAll('.useFile').forEach((button) => button.addEventListener('click', () => useLibraryFile(button.dataset.id)));
   document.querySelectorAll('.deleteFile').forEach((button) => button.addEventListener('click', () => deleteLibraryFile(button.dataset.id)));
 }
 
@@ -1804,21 +1712,15 @@ async function useLibraryFile(fileId) {
     url: MUX_HLS(file.playback_id)
   };
 
-  // Start loading locally immediately instead of waiting for Firestore round-trip.
-  initialRoomMovieKey = `${movie.fileId}:${movie.playbackId}`;
-  renderMovie(movie);
-  setSyncState('Loading…');
-  renderLibrary();
-
   try {
     await updateDoc(roomReference(roomId), {
       movie,
       state: { playing: false, time: 0, updatedAt: Date.now(), by: me.uid, controller: me.uid },
       updatedAt: Date.now()
     });
-    toast(`${file.name} selected.`);
+    toast(`${file.name} shared with the room.`);
   } catch (error) {
-    toast(`Could not select movie: ${error.message}`);
+    toast(`Could not share movie: ${error.message}`);
   }
 }
 
@@ -1836,18 +1738,14 @@ async function deleteLibraryFile(fileId) {
         state: { playing: false, time: 0, updatedAt: Date.now(), by: me.uid }
       });
     }
-    storageFiles = storageFiles.filter((item) => item.id !== fileId);
-    writeLibraryCache(storageFiles);
-    renderLibrary();
     toast('Video deleted.');
-    await refreshFiles({silent:true});
+    await refreshFiles();
   } catch (error) {
     toast(`Delete failed: ${error.message}`);
   }
 }
 
 $('searchFiles').addEventListener('input', renderLibrary);
-$('sortFiles').addEventListener('change', renderLibrary);
 $('refreshFiles').addEventListener('click', () => { if (libraryUnlocked) refreshFiles(); });
 $('chooseFile').addEventListener('click', () => { if (libraryUnlocked) $('filePicker').click(); else toast('Enter the code to continue.'); });
 $('filePicker').addEventListener('change', () => {
@@ -1920,7 +1818,6 @@ async function uploadVideo(file) {
     setUploadProgress(91, 'Upload complete · processing…');
     const readyVideo = await waitForMuxVideo(init.uploadId, file.name);
     storageFiles = [readyVideo, ...storageFiles.filter((item) => item.id !== readyVideo.id)];
-    writeLibraryCache(storageFiles);
     renderLibrary();
     toast('Movie is ready to stream.');
   } catch (error) {
