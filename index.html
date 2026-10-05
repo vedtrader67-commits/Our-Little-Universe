@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#03101f">
-<meta name="description" content="VSF private watch-together room">
-<title>VSF ♥</title>
+<meta name="description" content="Holly Cow watch-together room">
+<title>Holly Cow</title>
 <style>
 :root{
   --bg:#020711;
@@ -100,11 +100,11 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .toast.show{opacity:1;transform:translate(-50%,0)}
 .error{color:#ff9aad;font-size:12px;min-height:18px}
 .ok{color:#73f0b7;font-size:12px;min-height:18px}
-.login{min-height:100vh;display:grid;place-items:center;padding:20px}
-.loginCard{width:min(460px,100%);padding:28px;text-align:center}
-.logoMark{width:78px;height:78px;border-radius:24px;margin:0 auto 18px;display:grid;place-items:center;font-size:34px;font-weight:950;background:radial-gradient(circle at 35% 30%,#65efff,#1578dd 50%,#06172c 100%);box-shadow:0 0 45px rgba(38,156,255,.35);border:1px solid #48caff}
-.loginCard h1{margin:0 0 8px;font-size:31px}
-.loginCard p{color:var(--muted);margin:0 auto 20px;max-width:360px}
+.login{min-height:100vh;display:grid;place-items:center;padding:16px 12px}
+.loginCard{width:min(420px,100%);padding:22px 20px;text-align:center}
+.logoMark{width:68px;height:68px;border-radius:20px;margin:0 auto 12px;display:grid;place-items:center;font-size:34px;font-weight:950;background:radial-gradient(circle at 35% 30%,#65efff,#1578dd 50%,#06172c 100%);box-shadow:0 0 45px rgba(38,156,255,.35);border:1px solid #48caff}
+.loginCard h1{margin:0 0 6px;font-size:29px}
+.loginCard p{color:var(--muted);margin:0 auto 14px;max-width:360px}
 .authError{margin-top:10px;color:#ff91a5;font-size:12px;word-break:break-word}
 .badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--muted);font-size:11px}
 .badge i{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good)}
@@ -115,6 +115,12 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .fullscreenChat{position:absolute;right:12px;top:12px;width:min(270px,34vw);max-height:55%;display:flex;flex-direction:column;gap:7px;z-index:20;pointer-events:none}
 .fullscreenMsg{background:rgba(2,12,25,.82);border:1px solid rgba(85,231,255,.5);box-shadow:0 0 18px rgba(38,156,255,.2);backdrop-filter:blur(8px);border-radius:11px;padding:7px 9px;color:var(--text);font-size:12px;line-height:1.3;animation:chatIn .2s ease}
 .fullscreenMsg p{margin:0;white-space:pre-wrap;word-break:break-word;max-height:48px;overflow:hidden}
+.typingPopup{position:absolute;right:12px;bottom:94px;z-index:32;max-width:min(230px,55vw);padding:7px 10px;border:1px solid rgba(85,231,255,.55);border-radius:11px;background:rgba(2,12,25,.84);backdrop-filter:blur(9px);box-shadow:0 0 20px rgba(38,156,255,.24);font-size:11px;color:var(--text);opacity:0;transform:translateY(7px);pointer-events:none;transition:.18s ease}
+.typingPopup.show{opacity:1;transform:translateY(0)}
+.typingLine{min-height:18px;padding:3px 2px;color:var(--cyan);font-size:11px;opacity:0;transition:.15s ease}
+.typingLine.show{opacity:1}
+.fullscreenTyping{padding:4px 8px;color:var(--cyan);font-size:10px;min-height:17px}
+
 @keyframes chatIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
 .fullscreenControls{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px;z-index:35;opacity:0;pointer-events:none;transition:opacity .18s ease}
 .fullscreenControls.show{opacity:1;pointer-events:auto}
@@ -196,9 +202,9 @@ button:disabled{cursor:not-allowed;opacity:.5}
 <body>
 <section id="login" class="login">
   <div class="card loginCard">
-    <div class="logoMark">♥</div>
-    <h1 class="glow">VSF ♥</h1>
-    <p>A private little space for watching together.</p>
+    <div class="logoMark">●</div>
+    <h1 class="glow">Holly Cow</h1>
+    <p>Watch together.</p>
     <button id="google" class="btn primary full">Continue with Google</button>
     <div id="loginErr" class="authError"></div>
     
@@ -207,9 +213,9 @@ button:disabled{cursor:not-allowed;opacity:.5}
 
 <div id="app" class="app hidden">
   <header class="card top">
-    <div class="brand"><span class="glow">VSF</span> ♥</div>
+    <div class="brand"><span class="glow">Holly Cow</span></div>
     <div class="row">
-      <span id="connectionBadge" class="badge"><i></i><span>Firebase connected</span></span>
+      <span id="connectionBadge" class="badge"><i></i><span>Online</span></span>
       <div class="user">
         <img id="avatar" class="avatar" alt="">
         <div class="userText">
@@ -225,7 +231,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
     <aside class="card side">
       <h3 class="sectionTitle">Room <span class="badge"><i></i>4 people max</span></h3>
       <div class="stack">
-        <button id="create" class="btn primary full">Create private room</button>
+        <button id="create" class="btn primary full">Create room</button>
         <div class="row">
           <input id="code" class="input" maxlength="6" autocomplete="off" placeholder="6-character code">
           <button id="join" class="btn">Join</button>
@@ -242,9 +248,9 @@ button:disabled{cursor:not-allowed;opacity:.5}
       </div>
 
       <div class="hr"></div>
-      <h3 class="sectionTitle">Video library <span id="storageBadge" class="badge">Admin locked</span></h3>
+      <h3 class="sectionTitle">Library <span id="storageBadge" class="badge">Locked</span></h3>
       <div id="libraryGate" class="libraryGate">
-        <div class="small muted">Library access is restricted to the admin.</div>
+        <div class="small muted">Enter the code to access the library.</div>
         <div class="row" style="margin-top:8px">
           <input id="adminCode" class="input" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Admin code">
           <button id="unlockLibrary" class="btn primary">Unlock</button>
@@ -253,8 +259,8 @@ button:disabled{cursor:not-allowed;opacity:.5}
       </div>
       <div id="libraryAdminArea" class="hidden">
       <input id="filePicker" type="file" accept="video/*" class="hidden">
-      <button id="chooseFile" class="btn primary full">Upload movie to Mux</button>
-      <div id="drop" class="drop" style="margin-top:8px">Or drag a video here — it uploads directly to Mux</div>
+      <button id="chooseFile" class="btn primary full">Add movie</button>
+      <div id="drop" class="drop" style="margin-top:8px">Drag a video here to add it</div>
       <div id="uploadStatus" class="small muted" style="margin-top:8px">No upload running.</div>
       <div class="progress"><i id="uploadBar"></i></div>
       <div class="row" style="margin-top:8px">
@@ -276,11 +282,13 @@ button:disabled{cursor:not-allowed;opacity:.5}
       <div id="videoWrap" class="video">
         <video id="video" playsinline webkit-playsinline preload="auto" controlslist="nodownload noplaybackrate" disablepictureinpicture disableremoteplayback></video>
         <div id="fullscreenChat" class="fullscreenChat" aria-live="polite"></div>
+        <div id="typingPopup" class="typingPopup" aria-live="polite"></div>
         <div id="fullscreenChatPanel" class="fullscreenChatPanel" aria-hidden="true">
           <div class="fullscreenChatHead">
-            <span>Our Chat</span>
+            <span>Chat</span>
             <button id="fsClearChat" class="btn ghost" type="button">Clear</button>
           </div>
+          <div id="fullscreenTyping" class="fullscreenTyping" aria-live="polite"></div>
           <div id="fullscreenChatMessages" class="fullscreenChatMessages"></div>
           <form id="fullscreenChatForm" class="fullscreenChatForm">
             <input id="fullscreenMessage" class="input" maxlength="500" autocomplete="off" placeholder="Message…">
@@ -295,8 +303,8 @@ button:disabled{cursor:not-allowed;opacity:.5}
         </div>
         <div id="emptyVideo" class="emptyVideo">
           <div>
-            <b>Choose a movie from your library</b>
-            <span class="muted">Create or join a room first, then select an uploaded video.</span>
+            <b>Choose a movie</b>
+            <span class="muted">Create or join a room, then choose a movie.</span>
           </div>
         </div>
       </div>
@@ -315,7 +323,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
 
       <div class="hr"></div>
       <div class="sectionTitle">
-        <div><b id="movieTitle">No movie selected</b><div id="movieMeta" class="small muted">Select a file from the library to share it with the room.</div></div>
+        <div><b id="movieTitle">No movie selected</b><div id="movieMeta" class="small muted">Choose a movie to share with the room.</div></div>
         <span id="syncState" class="badge"><i></i>Waiting</span>
       </div>
     </section>
@@ -330,6 +338,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
       </div>
       <div class="chat">
         <div id="messages" class="messages"></div>
+        <div id="typingLine" class="typingLine" aria-live="polite"></div>
         <form id="chat" class="chatbox">
           <input id="message" class="input" maxlength="500" placeholder="Message…">
           <button class="btn primary">Send</button>
@@ -429,6 +438,11 @@ const fullscreenMessageTimers = new Map();
 let fullscreenChatOpen = false;
 let chatMessagesCache = [];
 let clearingChat = false;
+let typingStopTimer = null;
+let typingWriteTimer = null;
+let typingVisibleTimer = null;
+let lastTypingSignature = "";
+let initialRoomMovieKey = null;
 
 function toast(message) {
   const node = $('toast');
@@ -681,7 +695,7 @@ async function enterRoom(rawCode) {
   } catch (error) {
     const message = error?.message || 'Could not join room.';
     setError(message.includes('permission-denied') || message.includes('Missing or insufficient permissions')
-      ? 'Firebase denied access to this room. The Firestore rules must allow signed-in users to read/update blueRooms.'
+      ? 'Could not access this room. Check the room code and try again.'
       : message);
     toast(message.includes('permission-denied') || message.includes('Missing or insufficient permissions')
       ? 'Firestore denied room access.'
@@ -753,6 +767,14 @@ function cleanupRoomUI() {
   $('messages').innerHTML = '';
   $('fullscreenChat').replaceChildren();
   $('fullscreenChatMessages').replaceChildren();
+  $('fullscreenTyping').textContent = '';
+  $('typingLine').textContent = '';
+  $('typingLine').classList.remove('show');
+  $('typingPopup').textContent = '';
+  $('typingPopup').classList.remove('show');
+  clearTimeout(typingStopTimer);
+  clearTimeout(typingWriteTimer);
+  clearTimeout(typingVisibleTimer);
   setFullscreenChatOpen(false);
   chatMessagesCache = [];
   roomData = null;
@@ -761,8 +783,9 @@ function cleanupRoomUI() {
   fullscreenMessageTimers.delete('latest');
   $('syncState').innerHTML = '<i></i>Waiting';
   $('movieTitle').textContent = 'No movie selected';
-  $('movieMeta').textContent = 'Select a file from the library to share it with the room.';
+  $('movieMeta').textContent = 'Choose a movie to share with the room.';
   currentMovieFileId = '';
+  initialRoomMovieKey = null;
   setVideoSource('');
 }
 
@@ -790,6 +813,7 @@ $('copy').addEventListener('click', async () => {
    5. Firestore real-time room listener
    ================================================================ */
 function subscribeToRoom(code) {
+  initialRoomMovieKey = null;
   if (unsubscribeRoom) unsubscribeRoom();
   if (unsubscribeMessages) unsubscribeMessages();
 
@@ -807,7 +831,17 @@ function subscribeToRoom(code) {
     if (chatMessagesCache.length || roomData.chatClearedAt) renderMessages(chatMessagesCache);
     syncControllerId = roomData.state?.controller || roomData.state?.by || syncControllerId;
     renderMembers(roomData.members || {});
-    renderMovie(roomData.movie || {});
+    renderTyping(roomData.typing || {});
+    const incomingMovie = roomData.movie || {};
+    const incomingMovieKey = `${incomingMovie.fileId || ''}:${incomingMovie.playbackId || ''}`;
+    if (initialRoomMovieKey === null) {
+      initialRoomMovieKey = incomingMovieKey;
+      // Never auto-load a movie that was already selected before this login/join/refresh.
+      renderMovie({});
+    } else if (incomingMovieKey !== initialRoomMovieKey) {
+      initialRoomMovieKey = incomingMovieKey;
+      renderMovie(incomingMovie);
+    }
     applyRemoteState(roomData.state || {});
     startSyncHeartbeat();
     startSyncCorrection();
@@ -914,13 +948,13 @@ function renderMovie(movie) {
 
   if (!fileId) {
     $('movieTitle').textContent = 'No movie selected';
-    $('movieMeta').textContent = 'Select a file from the library to share it with the room.';
+    $('movieMeta').textContent = 'Choose a movie to share with the room.';
     setVideoSource('');
     return;
   }
 
   $('movieTitle').textContent = movie.title || 'Movie';
-  $('movieMeta').textContent = 'Shared with everyone currently in this room.';
+  $('movieMeta').textContent = 'Playing for everyone in this room.';
 
   const source = movie.url || (movie.playbackId ? MUX_HLS(movie.playbackId) : '');
   muxPlaybackId = movie.playbackId || '';
@@ -949,14 +983,14 @@ function setVideoSource(url) {
   if (video.dataset.source === url) return;
   suppressVideoEvents = true; video.dataset.source = url; video.dataset.streamRetries = '0'; video.preload = 'auto'; $('emptyVideo').classList.add('hidden');
   if (url.includes('.m3u8') && window.Hls && window.Hls.isSupported()) {
-    muxPlayer = new window.Hls({ enableWorker:true, lowLatencyMode:false, backBufferLength:30, maxBufferLength:30, maxMaxBufferLength:60, startLevel:-1, capLevelToPlayerSize:true, abrEwmaDefaultEstimate:900000 });
+    muxPlayer = new window.Hls({ enableWorker:true, lowLatencyMode:false, backBufferLength:30, maxBufferLength:60, maxMaxBufferLength:120, maxBufferSize:60*1000*1000, maxBufferHole:0.5, startLevel:-1, capLevelToPlayerSize:true, abrEwmaDefaultEstimate:1600000, abrBandWidthFactor:0.85, abrBandWidthUpFactor:0.7, fragLoadingMaxRetry:6, manifestLoadingMaxRetry:6, levelLoadingMaxRetry:6, fragLoadingRetryDelay:800, levelLoadingRetryDelay:800 });
     muxPlayer.loadSource(url); muxPlayer.attachMedia(video);
     muxPlayer.on(window.Hls.Events.MANIFEST_PARSED, () => { suppressVideoEvents=false; applyLatestRoomState(); });
     muxPlayer.on(window.Hls.Events.ERROR, (_event, data) => {
       if (!data?.fatal) return;
       if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR) { try { muxPlayer.startLoad(); } catch {} }
       else if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) { try { muxPlayer.recoverMediaError(); } catch {} }
-      else { setSyncState('Stream error'); toast('The Mux stream could not be recovered.'); }
+      else { setSyncState('Stream error'); toast('The video stream could not be recovered.'); }
     });
   } else {
     video.src=url; video.load();
@@ -1115,6 +1149,19 @@ function stopSyncCorrection() {
   syncCorrectionTimer = null;
 }
 
+function startLongVideoWatchdog() {
+  clearInterval(window.__hollyCowVideoWatchdog);
+  window.__hollyCowVideoWatchdog = setInterval(() => {
+    const video = $('video');
+    if (!video.dataset.source || video.paused || video.ended) return;
+    const now = Date.now();
+    const noProgress = now - lastVideoProgressAt > 7000;
+    if (noProgress && video.readyState < 3) recoverLongVideoStream('network');
+  }, 2500);
+}
+
+startLongVideoWatchdog();
+
 function recoverLongVideoStream(reason = 'stall') {
   const video = $('video');
   if (!video.dataset.source) return;
@@ -1195,6 +1242,8 @@ $('video').addEventListener('seeked', () => {
   writePlaybackState(true, me.uid);
 });
 $('video').addEventListener('timeupdate', () => {
+  lastVideoProgressAt = Date.now();
+  lastVideoTime = Number($('video').currentTime || 0);
   const video = $('video');
   if (Number.isFinite(video.duration) && video.duration > 0) $('seek').value = String(Math.round((video.currentTime / video.duration) * 1000));
 });
@@ -1203,7 +1252,10 @@ $('video').addEventListener('loadedmetadata', () => {
   if (Number.isFinite(video.duration) && video.duration > 0) $('seek').value = String(Math.round((video.currentTime / video.duration) * 1000));
 });
 $('video').addEventListener('waiting', () => {
-  setSyncState('Buffering…');
+  clearTimeout(stallRecoveryTimer);
+  stallRecoveryTimer = setTimeout(() => {
+    if (!$('video').paused && $('video').readyState < 3) setSyncState('Buffering…');
+  }, 1200);
 });
 $('video').addEventListener('stalled', () => {
   clearTimeout(stallRecoveryTimer);
@@ -1213,8 +1265,19 @@ $('video').addEventListener('stalled', () => {
 });
 $('video').addEventListener('playing', () => {
   clearTimeout(stallRecoveryTimer);
+  lastVideoProgressAt = Date.now();
+  lastVideoTime = Number($('video').currentTime || 0);
   if (roomData?.state && !isPlaybackController()) applyRemoteState(roomData.state, true);
   else setSyncState('Live');
+});
+
+$('video').addEventListener('error', () => {
+  const video = $('video');
+  if (!video.dataset.source || video.paused) return;
+  clearTimeout(stallRecoveryTimer);
+  stallRecoveryTimer = setTimeout(() => {
+    if (!video.paused && video.error) recoverLongVideoStream('network');
+  }, 2500);
 });
 $('video').addEventListener('canplay', () => {
   if (roomData?.state && !isPlaybackController()) applyRemoteState(roomData.state, true);
@@ -1222,8 +1285,74 @@ $('video').addEventListener('canplay', () => {
 
 
 /* ================================================================
+   Realtime typing presence
+   ================================================================ */
+function getActiveTypers(typing) {
+  const now = Date.now();
+  return Object.entries(typing || {}).filter(([uid, value]) => {
+    if (uid === me?.uid) return false;
+    return value && Number(value.at || 0) > now - 3500;
+  }).map(([, value]) => value.name || 'Someone');
+}
+
+function renderTyping(typing) {
+  const names = getActiveTypers(typing);
+  const text = names.length === 1 ? `${names[0]} is typing…` : names.length > 1 ? `${names.slice(0, 2).join(' and ')} are typing…` : '';
+  const line = $('typingLine');
+  const fsLine = $('fullscreenTyping');
+  line.textContent = text;
+  line.classList.toggle('show', !!text);
+  fsLine.textContent = text;
+
+  if (text && text !== lastTypingSignature) {
+    lastTypingSignature = text;
+    const popup = $('typingPopup');
+    popup.textContent = text;
+    popup.classList.add('show');
+    clearTimeout(typingVisibleTimer);
+    typingVisibleTimer = setTimeout(() => popup.classList.remove('show'), 3000);
+  } else if (!text) {
+    lastTypingSignature = '';
+    $('typingPopup').classList.remove('show');
+  }
+}
+
+function scheduleTypingPresence(input) {
+  if (!roomId || !me) return;
+  const hasText = String(input.value || '').trim().length > 0;
+  clearTimeout(typingStopTimer);
+  clearTimeout(typingWriteTimer);
+  if (!hasText) {
+    clearTypingPresence();
+    return;
+  }
+  typingWriteTimer = setTimeout(async () => {
+    try {
+      await updateDoc(roomReference(roomId), {
+        [`typing.${me.uid}`]: { name: displayName(me), at: Date.now() }
+      });
+    } catch {}
+  }, 120);
+  typingStopTimer = setTimeout(clearTypingPresence, 3000);
+}
+
+async function clearTypingPresence() {
+  clearTimeout(typingStopTimer);
+  clearTimeout(typingWriteTimer);
+  if (!roomId || !me) return;
+  try {
+    await updateDoc(roomReference(roomId), { [`typing.${me.uid}`]: deleteField() });
+  } catch {}
+}
+
+/* ================================================================
    7. Room chat
    ================================================================ */
+$('message').addEventListener('input', () => scheduleTypingPresence($('message')));
+$('fullscreenMessage').addEventListener('input', () => scheduleTypingPresence($('fullscreenMessage')));
+$('message').addEventListener('blur', clearTypingPresence);
+$('fullscreenMessage').addEventListener('blur', clearTypingPresence);
+
 $('chat').addEventListener('submit', async (event) => {
   event.preventDefault();
   const input = $('message');
@@ -1231,7 +1360,7 @@ $('chat').addEventListener('submit', async (event) => {
   if (!text) return;
   input.disabled = true;
   try {
-    if (await sendChatMessage(text)) input.value = '';
+    if (await sendChatMessage(text)) { input.value = ''; await clearTypingPresence(); }
   } finally {
     input.disabled = false;
     input.focus();
@@ -1245,7 +1374,7 @@ $('fullscreenChatForm').addEventListener('submit', async (event) => {
   if (!text) return;
   input.disabled = true;
   try {
-    if (await sendChatMessage(text)) input.value = '';
+    if (await sendChatMessage(text)) { input.value = ''; await clearTypingPresence(); }
   } finally {
     input.disabled = false;
     input.focus();
@@ -1508,7 +1637,7 @@ function unlockLibrary() {
   libraryUnlocked = true;
   $('libraryGate').classList.add('hidden');
   $('libraryAdminArea').classList.remove('hidden');
-  $('storageBadge').textContent = 'Mux library unlocked';
+  $('storageBadge').textContent = 'Library unlocked';
   initializeStorage();
   return true;
 }
@@ -1518,13 +1647,13 @@ $('adminCode').addEventListener('keydown', (event) => { if (event.key === 'Enter
 
 async function initializeStorage() {
   setStorageError('');
-  $('storageBadge').textContent = 'Connecting to Mux…';
+  $('storageBadge').textContent = 'Loading…';
   try {
     await refreshFiles();
-    $('storageBadge').textContent = 'Mux library';
+    $('storageBadge').textContent = 'Library';
   } catch (error) {
-    $('storageBadge').textContent = 'Offline';
-    setStorageError(`Mux: ${error.message}`);
+    $('storageBadge').textContent = 'Unavailable';
+    setStorageError(`Library: ${error.message}`);
   }
 }
 
@@ -1570,7 +1699,7 @@ function renderLibrary() {
 }
 
 async function useLibraryFile(fileId) {
-  if (!libraryUnlocked) return toast('Admin library access required.');
+  if (!libraryUnlocked) return toast('Access required.');
   if (!roomId) return toast('Create or join a room first.');
   const file = storageFiles.find((item) => item.id === fileId);
   if (!file || !file.playback_id) return toast('This video is not ready yet.');
@@ -1596,10 +1725,10 @@ async function useLibraryFile(fileId) {
 }
 
 async function deleteLibraryFile(fileId) {
-  if (!libraryUnlocked) return toast('Admin library access required.');
+  if (!libraryUnlocked) return toast('Access required.');
   const file = storageFiles.find((item) => item.id === fileId);
   if (!file) return;
-  if (!confirm(`Delete "${file.name}" from the Mux library?`)) return;
+  if (!confirm(`Delete "${file.name}" from the Library?`)) return;
 
   try {
     await muxRequest(`/api/mux/assets/${encodeURIComponent(fileId)}`, { method: 'DELETE' });
@@ -1609,7 +1738,7 @@ async function deleteLibraryFile(fileId) {
         state: { playing: false, time: 0, updatedAt: Date.now(), by: me.uid }
       });
     }
-    toast('Video deleted from Mux.');
+    toast('Video deleted.');
     await refreshFiles();
   } catch (error) {
     toast(`Delete failed: ${error.message}`);
@@ -1618,7 +1747,7 @@ async function deleteLibraryFile(fileId) {
 
 $('searchFiles').addEventListener('input', renderLibrary);
 $('refreshFiles').addEventListener('click', () => { if (libraryUnlocked) refreshFiles(); });
-$('chooseFile').addEventListener('click', () => { if (libraryUnlocked) $('filePicker').click(); else toast('Enter the admin code to access the library.'); });
+$('chooseFile').addEventListener('click', () => { if (libraryUnlocked) $('filePicker').click(); else toast('Enter the code to continue.'); });
 $('filePicker').addEventListener('change', () => {
   const file = $('filePicker').files?.[0];
   if (file) uploadVideo(file);
@@ -1641,9 +1770,9 @@ function uploadDirectWithProgress(url, file, onProgress) {
     xhr.upload.onprogress = (event) => { if (event.lengthComputable) onProgress?.(event.loaded, event.total); };
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Mux upload failed (${xhr.status})`));
+      else reject(new Error(`Upload failed (${xhr.status})`));
     };
-    xhr.onerror = () => reject(new Error('Network error during Mux upload.'));
+    xhr.onerror = () => reject(new Error('Network error during upload.'));
     xhr.onabort = () => reject(new Error('Upload was cancelled.'));
     xhr.send(file);
   });
@@ -1657,17 +1786,17 @@ async function waitForMuxVideo(uploadId, fileName) {
       setUploadProgress(100, `Ready · ${fileName}`);
       return data.video;
     }
-    if (data.status === 'errored') throw new Error(data.error || 'Mux could not process this video.');
+    if (data.status === 'errored') throw new Error(data.error || 'The video could not be processed.');
     const pct = data.status === 'uploading' ? Math.min(95, Number(data.progress || 90)) : Math.min(98, Number(data.progress || 96));
-    setUploadProgress(pct, data.status === 'processing' ? `Processing on Mux · ${pct.toFixed(0)}%` : `Finalizing · ${pct.toFixed(0)}%`);
+    setUploadProgress(pct, data.status === 'processing' ? `Processing · ${pct.toFixed(0)}%` : `Finalizing · ${pct.toFixed(0)}%`);
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
-  throw new Error('Mux processing is taking longer than expected. Refresh the library later.');
+  throw new Error('Processing is taking longer than expected. Refresh the library later.');
 }
 
 async function uploadVideo(file) {
   if (uploadRunning) return toast('An upload is already running.');
-  if (!libraryUnlocked) return toast('Admin library access required.');
+  if (!libraryUnlocked) return toast('Access required.');
   if (!file.type.startsWith('video/')) return toast('Please choose a video file.');
 
   uploadRunning = true;
@@ -1683,10 +1812,10 @@ async function uploadVideo(file) {
 
     await uploadDirectWithProgress(init.uploadUrl, file, (loaded, total) => {
       const percent = total ? (loaded / total) * 90 : 0;
-      setUploadProgress(percent, `Uploading to Mux · ${percent.toFixed(1)}%`);
+      setUploadProgress(percent, `Uploading · ${percent.toFixed(1)}%`);
     });
 
-    setUploadProgress(91, 'Upload complete · Mux is processing…');
+    setUploadProgress(91, 'Upload complete · processing…');
     const readyVideo = await waitForMuxVideo(init.uploadId, file.name);
     storageFiles = [readyVideo, ...storageFiles.filter((item) => item.id !== readyVideo.id)];
     renderLibrary();
@@ -1748,8 +1877,8 @@ window.addEventListener('online', () => {
 });
 
 window.addEventListener('offline', () => {
-  $('connectionBadge').innerHTML = '<i style="background:var(--bad)"></i><span>Offline</span>';
-  if (roomId) setSyncBadge('Offline — buffering', 'warn');
+  $('connectionBadge').innerHTML = '<i style="background:var(--bad)"></i><span>Unavailable</span>';
+  if (roomId) setSyncBadge('Unavailable — buffering', 'warn');
 });
 
 window.addEventListener('beforeunload', () => {
