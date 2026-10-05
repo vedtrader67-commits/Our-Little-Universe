@@ -260,7 +260,7 @@ button:disabled{cursor:not-allowed;opacity:.5}
         <div class="stat"><b id="roomSmall">—</b><span>CODE</span></div>
       </div>
 
-      <div class="video">
+      <div id="videoWrap" class="video">
         <video id="video" playsinline webkit-playsinline preload="auto" controlslist="nodownload noplaybackrate" disablepictureinpicture disableremoteplayback></video>
         <div id="fullscreenChat" class="fullscreenChat" aria-live="polite"></div>
         <div id="fullscreenControls" class="fullscreenControls" aria-hidden="true">
@@ -1204,6 +1204,115 @@ $('mute').addEventListener('click', () => {
 $('video').addEventListener('volumechange', () => {
   $('mute').textContent = $('video').muted ? 'Unmute' : 'Mute';
 });
+
+/* ================================================================
+   Fullscreen player controls
+   ================================================================ */
+function isFullscreen() {
+  return document.fullscreenElement === $('videoWrap') || document.webkitFullscreenElement === $('videoWrap');
+}
+
+function showFullscreenControls() {
+  if (!isFullscreen()) return;
+  const controls = $('fullscreenControls');
+  controls.classList.add('show');
+  controls.setAttribute('aria-hidden', 'false');
+  clearTimeout(fullscreenControlTimer);
+  fullscreenControlTimer = setTimeout(() => {
+    controls.classList.remove('show');
+    controls.setAttribute('aria-hidden', 'true');
+  }, 2600);
+}
+
+function hideFullscreenControls() {
+  clearTimeout(fullscreenControlTimer);
+  fullscreenControlTimer = null;
+  $('fullscreenControls').classList.remove('show');
+  $('fullscreenControls').setAttribute('aria-hidden', 'true');
+}
+
+async function toggleFullscreen() {
+  const wrap = $('videoWrap');
+  const video = $('video');
+  if (!video.dataset.source) {
+    toast('Choose a movie first.');
+    return;
+  }
+
+  try {
+    if (!isFullscreen()) {
+      if (wrap.requestFullscreen) await wrap.requestFullscreen();
+      else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
+      else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+      else {
+        toast('Fullscreen is not supported by this browser.');
+        return;
+      }
+      showFullscreenControls();
+    } else {
+      if (document.exitFullscreen) await document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  } catch (error) {
+    console.warn('Fullscreen failed:', error);
+    toast('Fullscreen could not be opened. Tap the button again.');
+  }
+}
+
+async function fullscreenSeek(delta) {
+  if (!roomId || !me || !$('video').dataset.source) return;
+  await takePlaybackControl();
+  const video = $('video');
+  const duration = Number(video.duration || Infinity);
+  suppressVideoEvents = true;
+  video.currentTime = Math.max(0, Math.min(duration, video.currentTime + delta));
+  suppressVideoEvents = false;
+  await writePlaybackState(true, me.uid);
+  showFullscreenControls();
+}
+
+$('full').addEventListener('click', toggleFullscreen);
+$('fsBack').addEventListener('click', () => fullscreenSeek(-10));
+$('fsForward').addEventListener('click', () => fullscreenSeek(10));
+$('fsPlay').addEventListener('click', async () => {
+  if (!roomId || !me || !$('video').dataset.source) return;
+  await takePlaybackControl();
+  const video = $('video');
+  suppressVideoEvents = true;
+  if (video.paused) await video.play().catch(() => toast('Tap Play again to allow video playback.'));
+  else video.pause();
+  suppressVideoEvents = false;
+  await writePlaybackState(true, me.uid);
+  showFullscreenControls();
+});
+
+function syncFullscreenPlayIcon() {
+  const paused = $('video').paused;
+  $('fsPlay').textContent = paused ? '▶' : 'Ⅱ';
+  $('fsPlay').setAttribute('aria-label', paused ? 'Play' : 'Pause');
+}
+$('video').addEventListener('play', syncFullscreenPlayIcon);
+$('video').addEventListener('pause', syncFullscreenPlayIcon);
+
+$('videoWrap').addEventListener('pointerup', (event) => {
+  if (!isFullscreen()) return;
+  if (event.target.closest('.fullscreenControls') || event.target.closest('.fullscreenChat')) return;
+  showFullscreenControls();
+});
+
+function handleFullscreenChange() {
+  const active = isFullscreen();
+  $('full').textContent = active ? 'Exit Fullscreen' : 'Fullscreen';
+  if (active) {
+    syncFullscreenPlayIcon();
+    showFullscreenControls();
+  } else {
+    hideFullscreenControls();
+  }
+}
+
+document.addEventListener('fullscreenchange', handleFullscreenChange);
+document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
 
 /* ================================================================
    8. Mux video library client
