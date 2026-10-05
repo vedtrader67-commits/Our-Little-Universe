@@ -324,7 +324,10 @@ button:disabled{cursor:not-allowed;opacity:.5}
       <h3 class="sectionTitle">People <span id="peopleCount" class="muted">(0)</span></h3>
       <div id="people" class="people"></div>
       <div class="hr"></div>
-      <h3 class="sectionTitle">Room chat</h3>
+      <div class="sectionTitle">
+        <h3 style="margin:0">Room chat</h3>
+        <button id="clearChat" class="btn ghost" type="button" style="min-height:36px;padding:6px 10px;font-size:11px">Clear</button>
+      </div>
       <div class="chat">
         <div id="messages" class="messages"></div>
         <form id="chat" class="chatbox">
@@ -360,6 +363,8 @@ import {
   onSnapshot,
   collection,
   addDoc,
+  getDocs,
+  writeBatch,
   serverTimestamp,
   query,
   orderBy,
@@ -423,7 +428,7 @@ let lastFullscreenMessageId = '';
 const fullscreenMessageTimers = new Map();
 let fullscreenChatOpen = false;
 let chatMessagesCache = [];
-const clearedChatMessageIds = new Set();
+let clearingChat = false;
 
 function toast(message) {
   const node = $('toast');
@@ -750,7 +755,7 @@ function cleanupRoomUI() {
   $('fullscreenChatMessages').replaceChildren();
   setFullscreenChatOpen(false);
   chatMessagesCache = [];
-  clearedChatMessageIds.clear();
+  roomData = null;
   lastFullscreenMessageId = '';
   clearTimeout(fullscreenMessageTimers.get('latest'));
   fullscreenMessageTimers.delete('latest');
@@ -799,6 +804,7 @@ function subscribeToRoom(code) {
     }
 
     roomData = snapshot.data();
+    if (chatMessagesCache.length || roomData.chatClearedAt) renderMessages(chatMessagesCache);
     syncControllerId = roomData.state?.controller || roomData.state?.by || syncControllerId;
     renderMembers(roomData.members || {});
     renderMovie(roomData.movie || {});
@@ -844,9 +850,14 @@ function renderMessages(messages) {
   $('messages').innerHTML = '';
   const popup = $('fullscreenChat');
   const panel = $('fullscreenChatMessages');
+  const clearedAt = roomData?.chatClearedAt;
+  const clearedMillis = clearedAt?.toMillis ? clearedAt.toMillis() : Number(clearedAt || 0);
+  const visibleMessages = messages.filter((message) => {
+    const createdMillis = message.createdAt?.toMillis ? message.createdAt.toMillis() : 0;
+    return !clearedMillis || !createdMillis || createdMillis > clearedMillis;
+  });
 
-  for (const message of messages) {
-    if (clearedChatMessageIds.has(message.id)) continue;
+  for (const message of visibleMessages) {
     const mine = message.uid === me?.uid;
     const name = mine ? 'You' : (message.name || 'User');
 
@@ -857,8 +868,7 @@ function renderMessages(messages) {
   }
 
   panel.replaceChildren();
-  for (const message of messages) {
-    if (clearedChatMessageIds.has(message.id)) continue;
+  for (const message of visibleMessages) {
     const mine = message.uid === me?.uid;
     const item = document.createElement('div');
     item.className = `fullscreenChatItem${mine ? ' mine' : ''}`;
@@ -869,7 +879,6 @@ function renderMessages(messages) {
 
   // Show only genuinely new chat messages in fullscreen. Existing messages loaded
   // when the room opens must not pop up again every time Firestore sends a snapshot.
-  const visibleMessages = messages.filter((m) => !clearedChatMessageIds.has(m.id));
   const latest = visibleMessages[visibleMessages.length - 1];
   if (latest) {
     const messageId = latest.id || `${latest.createdAt?.seconds || Date.now()}-${latest.uid || ''}`;
@@ -1243,6 +1252,7 @@ $('fullscreenChatForm').addEventListener('submit', async (event) => {
   }
 });
 $('fsClearChat').addEventListener('click', clearChatView);
+$('clearChat').addEventListener('click', clearChatView);
 
 
 $('mute').addEventListener('click', () => {
@@ -1324,13 +1334,62 @@ async function sendChatMessage(text) {
 }
 
 async function clearChatView() {
-  // Keep Firestore history intact so the room's chat remains shared and reliable.
-  // This clears the chat display on this device; newly sent messages still appear.
-  for (const message of chatMessagesCache) clearedChatMessageIds.add(message.id);
-  renderMessages(chatMessagesCache);
-  $('fullscreenMessage').value = '';
-  $('message').value = '';
-  toast('Chat cleared on this device.');
+  if (!roomId || !me || clearingChat) {
+    if (!roomId || !me) toast('Join a room first.');
+    return;
+  }
+
+  if (!chatMessagesCache.length) {
+    toast('Chat is already empty.');
+    return;
+  }
+
+  const confirmed = window.confirm('Clear the chat for everyone on every screen?');
+  if (!confirmed) return;
+
+  clearingChat = true;
+  $('clearChat').disabled = true;
+  $('fsClearChat').disabled = true;
+
+  try {
+    const messagesRef = collection(db, 'blueRooms', roomId, 'messages');
+    const snapshot = await getDocs(messagesRef);
+
+    // Firestore batches support up to 500 writes. Delete in chunks so a long chat
+    // is cleared completely rather than only deleting the first page of messages.
+    let batch = writeBatch(db);
+    let count = 0;
+    for (const message of snapshot.docs) {
+      batch.delete(message.ref);
+      count += 1;
+      if (count === 500) {
+        await batch.commit();
+        batch = writeBatch(db);
+        count = 0;
+      }
+    }
+    if (count > 0) await batch.commit();
+
+    // This marker also makes every connected client hide any message that may
+    // still be arriving from a snapshot while the deletes propagate.
+    await updateDoc(roomReference(roomId), { chatClearedAt: serverTimestamp() });
+
+    $('fullscreenMessage').value = '';
+    $('message').value = '';
+    chatMessagesCache = [];
+    $('messages').innerHTML = '';
+    $('fullscreenChatMessages').replaceChildren();
+    $('fullscreenChat').replaceChildren();
+    lastFullscreenMessageId = '';
+    toast(`Chat cleared for everyone${snapshot.size ? ` (${snapshot.size} messages)` : ''}.`);
+  } catch (error) {
+    console.error('Clear chat failed:', error);
+    toast(`Could not clear chat: ${error.message}`);
+  } finally {
+    clearingChat = false;
+    $('clearChat').disabled = false;
+    $('fsClearChat').disabled = false;
+  }
 }
 
 async function toggleFullscreen() {
