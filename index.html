@@ -11,20 +11,20 @@
 <title>Holly Cow</title>
 <style>
 :root{
-  --bg:#020711;
-  --bg2:#061325;
-  --panel:#07172b;
-  --panel2:#0a1e36;
-  --line:#17406b;
-  --line2:#1c5b92;
-  --blue:#269cff;
-  --cyan:#55e7ff;
-  --text:#ecf8ff;
-  --muted:#8ca9c7;
-  --good:#35e69b;
-  --warn:#ffd166;
-  --bad:#ff6685;
-  --shadow:0 0 45px rgba(24,144,255,.16);
+  --bg:#09070d;
+  --bg2:#120b1d;
+  --panel:#171022;
+  --panel2:#20132e;
+  --line:#332044;
+  --line2:#56336f;
+  --blue:#a855f7;
+  --cyan:#d8ff57;
+  --text:#faf7ff;
+  --muted:#a99ab8;
+  --good:#7dff9a;
+  --warn:#ffe66d;
+  --bad:#ff6b91;
+  --shadow:0 0 45px rgba(168,85,247,.14);
   --radius:18px;
 }
 *{box-sizing:border-box}
@@ -32,7 +32,7 @@ html,body{width:100%;max-width:100%;overflow-x:hidden}
 body{-webkit-text-size-adjust:100%;touch-action:pan-y;overscroll-behavior-x:none}
 button,.btn,input,.select{touch-action:manipulation}
 html{background:var(--bg);scroll-behavior:smooth}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -15%,#0c3d70 0,#061528 34%,#020711 72%);color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:inset 0 0 120px rgba(38,156,255,.10)}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% -10%,#3a1656 0,#180d27 30%,#09070d 70%),radial-gradient(circle at 100% 20%,rgba(216,255,87,.08),transparent 30%);color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:inset 0 0 120px rgba(168,85,247,.10)}
 button,input,select{font:inherit}
 button{cursor:pointer}
 button:disabled{cursor:not-allowed;opacity:.5}
@@ -210,6 +210,27 @@ button:disabled{cursor:not-allowed;opacity:.5}
 .footerNote{padding:10px 0;color:var(--muted);font-size:11px;text-align:center}
 @media(max-width:1100px){.grid{grid-template-columns:270px minmax(0,1fr)}.grid>.side:last-child{grid-column:1/-1;min-height:unset}.chat{height:300px}}
 @media(max-width:760px){.app{padding:8px}.top{position:relative;top:0}.grid{grid-template-columns:1fr}.side,.main{min-height:unset}.stats{grid-template-columns:repeat(3,1fr)}.userText{display:none}.controlrow .time{width:100%;margin-left:0}.file{grid-template-columns:1fr}.fileActions{justify-content:flex-start}.chat{height:360px}}
+
+/* Gen-Z theme refresh */
+.card{border-color:rgba(168,85,247,.28);background:linear-gradient(145deg,rgba(23,16,34,.97),rgba(10,8,15,.97));}
+.glow{color:var(--cyan);text-shadow:0 0 18px rgba(216,255,87,.28)}
+.btn{border-color:rgba(168,85,247,.48);background:linear-gradient(145deg,#241431,#130c1c);box-shadow:0 0 15px rgba(168,85,247,.16)}
+.btn.primary{background:linear-gradient(135deg,#7c3aed,#b44cff);border-color:#c084fc;box-shadow:0 0 26px rgba(168,85,247,.34)}
+.btn:hover,.btn:focus-visible{border-color:var(--cyan);box-shadow:0 0 22px rgba(216,255,87,.20),0 0 18px rgba(168,85,247,.25)}
+.input,.select{background:#0c0812;border-color:#342142}
+.library{max-height:430px;gap:9px}
+.file{grid-template-columns:74px minmax(0,1fr) auto;min-height:66px;border-color:#2d1b3d;background:linear-gradient(145deg,#171021,#0d0912);border-radius:16px}
+.fileThumb{width:74px;height:46px;border-radius:11px;border-color:#38204b}
+.file:hover{border-color:#9b5bd3;box-shadow:0 0 22px rgba(168,85,247,.16)}
+.file.isSelected{border-color:var(--cyan);box-shadow:0 0 24px rgba(216,255,87,.10),inset 0 0 18px rgba(216,255,87,.035)}
+.drop{border-color:#4b2c61;background:#0d0914}.drop.drag{border-color:var(--cyan);background:#171d12}
+.progress>i{background:linear-gradient(90deg,#8b5cf6,#d8ff57);box-shadow:0 0 14px rgba(216,255,87,.45)}
+.roomCode{color:var(--cyan);text-shadow:0 0 18px rgba(216,255,87,.22)}
+.logoMark{background:radial-gradient(circle at 35% 30%,#d8ff57,#8b5cf6 52%,#160c20 100%);border-color:#c084fc}
+.video{border-color:#321d45;box-shadow:0 0 42px rgba(168,85,247,.12)}
+.fullscreenChatPanel{border-color:rgba(216,255,87,.48);background:rgba(10,7,15,.94);box-shadow:0 0 28px rgba(168,85,247,.28)}
+.fullscreenMsg,.typingPopup{border-color:rgba(216,255,87,.42);background:rgba(10,7,15,.84)}
+.fsBtn{border-color:rgba(216,255,87,.62);background:rgba(12,8,17,.82);box-shadow:0 0 22px rgba(168,85,247,.34)}
 </style>
 </head>
 <body>
@@ -272,16 +293,16 @@ button:disabled{cursor:not-allowed;opacity:.5}
       </div>
       <div id="libraryAdminArea" class="hidden">
       <div class="libraryTop">
-        <div><b class="libraryHeading">Your library</b><div id="libraryCount" class="small muted">Ready to watch</div></div>
+        <div><b class="libraryHeading">Library</b><div id="libraryCount" class="small muted">Ready to watch</div></div>
         <span id="libraryLoadState" class="badge">Ready</span>
       </div>
       <input id="filePicker" type="file" accept="video/*" class="hidden">
-      <button id="chooseFile" class="btn primary full">Add movie</button>
-      <div id="drop" class="drop" style="margin-top:8px">Drag a video here to add it</div>
+      <button id="chooseFile" class="btn primary full">Add video</button>
+      <div id="drop" class="drop" style="margin-top:8px">Drop a video here or tap Add video</div>
       <div id="uploadStatus" class="small muted" style="margin-top:8px">No upload running.</div>
       <div class="progress"><i id="uploadBar"></i></div>
       <div class="row" style="margin-top:8px">
-        <input id="searchFiles" class="input" placeholder="Search videos…">
+        <input id="searchFiles" class="input" placeholder="Search your library…">
         <select id="sortFiles" class="select" style="max-width:145px"><option value="newest">Newest</option><option value="name">A–Z</option><option value="oldest">Oldest</option></select>
         <button id="refreshFiles" class="btn" aria-label="Refresh library">↻</button>
       </div>
@@ -1634,7 +1655,7 @@ function adminHeaders(extra = {}) {
 
 async function muxRequest(path, options = {}) {
   const headers = adminHeaders(options.headers || {});
-  const response = await fetch(`${STORAGE_BACKEND}${path}`, { ...options, headers });
+  let response; try { response = await fetch(`${STORAGE_BACKEND}${path}`, { ...options, headers }); } catch { throw new Error('Server is waking up or temporarily unreachable. Please retry.'); }
   const contentType = response.headers.get('content-type') || '';
   const data = contentType.includes('application/json') ? await response.json() : await response.text();
   if (!response.ok) {
@@ -1665,45 +1686,38 @@ function unlockLibrary() {
 $('unlockLibrary').addEventListener('click', unlockLibrary);
 $('adminCode').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlockLibrary(); });
 
-async function initializeStorage() {
-  setStorageError('');
-  $('storageBadge').textContent = 'Loading…';
-  $('libraryLoadState').textContent = 'Loading';
-  const started = performance.now();
-  try {
-    await refreshFiles();
-    $('storageBadge').textContent = 'Library';
-    $('libraryLoadState').textContent = `${storageFiles.length} ready`;
-    // Keep the loading state from flashing on very fast connections.
-    const elapsed = performance.now() - started;
-    if (elapsed < 180) await new Promise(r => setTimeout(r, 180 - elapsed));
-  } catch (error) {
-    $('storageBadge').textContent = 'Unavailable';
-    $('libraryLoadState').textContent = 'Unavailable';
-    setStorageError(`Could not load library: ${error.message}`);
-  }
+function libraryCacheKey() { return 'holly_cow_library_v2'; }
+function readLibraryCache() { try { const raw=sessionStorage.getItem(libraryCacheKey()); const parsed=raw?JSON.parse(raw):null; return Array.isArray(parsed)?parsed:[]; } catch { return []; } }
+function writeLibraryCache(files) { try { sessionStorage.setItem(libraryCacheKey(), JSON.stringify(files.slice(0,100))); } catch {} }
+async function fetchLibraryOnce() {
+  const data = await muxRequest('/api/mux/videos?limit=100', { method:'GET', cache:'no-store', headers:{'Cache-Control':'no-cache'} });
+  return Array.isArray(data.videos) ? data.videos.filter(v => v && v.playback_id && v.status !== 'errored') : [];
 }
-
-async function refreshFiles() {
+async function refreshFiles({silent=false} = {}) {
   if (!libraryUnlocked) return;
-  const started = performance.now();
-  try {
-    $('libraryLoadState').textContent = 'Refreshing…';
-    const data = await muxRequest('/api/mux/videos?limit=100', {
-      method: 'GET',
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache' }
-    });
-    storageFiles = Array.isArray(data.videos) ? data.videos.filter(v => v && v.playback_id && v.status !== 'errored') : [];
-    renderLibrary();
-    $('libraryCount').textContent = storageFiles.length ? `${storageFiles.length} video${storageFiles.length === 1 ? '' : 's'} ready` : 'No videos yet';
-    $('libraryLoadState').textContent = `${storageFiles.length} ready`;
-    const elapsed = performance.now() - started;
-    if (elapsed < 120) await new Promise(r => setTimeout(r, 120 - elapsed));
-  } catch (error) {
-    $('libraryLoadState').textContent = 'Error';
-    setStorageError(`Could not load library: ${error.message}`);
+  const cached=readLibraryCache();
+  if (cached.length && !storageFiles.length) { storageFiles=cached; renderLibrary(); $('libraryCount').textContent=`${cached.length} video${cached.length===1?'':'s'}`; $('libraryLoadState').textContent='Ready'; }
+  if (!silent) $('libraryLoadState').textContent=cached.length?'Updating…':'Loading…';
+  setStorageError('');
+  let lastError=null;
+  for (let attempt=0; attempt<3; attempt++) {
+    try {
+      if (attempt) await new Promise(r=>setTimeout(r,700*attempt));
+      storageFiles=await fetchLibraryOnce(); writeLibraryCache(storageFiles); renderLibrary();
+      $('libraryCount').textContent=storageFiles.length?`${storageFiles.length} video${storageFiles.length===1?'':'s'}`:'No videos yet';
+      $('libraryLoadState').textContent=`${storageFiles.length} ready`; return;
+    } catch(error) { lastError=error; }
   }
+  $('libraryLoadState').textContent=cached.length?'Offline copy':'Unavailable';
+  setStorageError(cached.length?'Showing the last library copy. Tap refresh when the connection returns.':'Library is temporarily unavailable. Tap refresh to try again.');
+  console.warn('Library refresh failed:', lastError);
+}
+async function initializeStorage() {
+  setStorageError(''); $('storageBadge').textContent='Library';
+  const cached=readLibraryCache();
+  if (cached.length) { storageFiles=cached; renderLibrary(); $('libraryCount').textContent=`${cached.length} video${cached.length===1?'':'s'}`; $('libraryLoadState').textContent='Ready'; } else $('libraryLoadState').textContent='Loading…';
+  fetch(`${STORAGE_BACKEND}/api/health`,{cache:'no-store'}).catch(()=>{});
+  await refreshFiles({silent:!!cached.length});
 }
 
 function renderLibrary() {
@@ -1794,8 +1808,11 @@ async function deleteLibraryFile(fileId) {
         state: { playing: false, time: 0, updatedAt: Date.now(), by: me.uid }
       });
     }
+    storageFiles = storageFiles.filter((item) => item.id !== fileId);
+    writeLibraryCache(storageFiles);
+    renderLibrary();
     toast('Video deleted.');
-    await refreshFiles();
+    await refreshFiles({silent:true});
   } catch (error) {
     toast(`Delete failed: ${error.message}`);
   }
@@ -1875,6 +1892,7 @@ async function uploadVideo(file) {
     setUploadProgress(91, 'Upload complete · processing…');
     const readyVideo = await waitForMuxVideo(init.uploadId, file.name);
     storageFiles = [readyVideo, ...storageFiles.filter((item) => item.id !== readyVideo.id)];
+    writeLibraryCache(storageFiles);
     renderLibrary();
     toast('Movie is ready to stream.');
   } catch (error) {
