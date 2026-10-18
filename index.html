@@ -2,263 +2,1403 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#190d2b">
-<meta name="description" content="A tiny pink universe made just for Shibu.">
-<title>The Box of Us &#x1F497;</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#160d25">
+<title>The Box of Us 💗</title>
+
 <style>
-:root{--pink:#ff9ed7;--hot:#ff69b4;--lilac:#c8a5ff;--ink:#190d2b;--glass:rgba(35,17,55,.72);--line:rgba(255,207,239,.22);--white:#fff8ff}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--ink);color:var(--white);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;overflow-x:hidden}
-button,input{font:inherit}button{cursor:pointer}
-#sky{position:fixed;inset:0;z-index:-3;background:radial-gradient(ellipse at 20% 15%,#7b2e82 0,transparent 36%),radial-gradient(ellipse at 82% 25%,#492c83 0,transparent 35%),radial-gradient(ellipse at 50% 90%,#66265c 0,transparent 38%),linear-gradient(145deg,#10091e,#261139 52%,#170b2a);overflow:hidden}
-#sky:before,#sky:after{content:"";position:absolute;inset:-20%;background:radial-gradient(ellipse at 25% 40%,rgba(255,111,194,.22),transparent 22%),radial-gradient(ellipse at 72% 58%,rgba(174,116,255,.2),transparent 25%);filter:blur(25px);animation:nebula 16s ease-in-out infinite alternate}
-#sky:after{animation-delay:-8s;opacity:.7;transform:rotate(25deg)}
-@keyframes nebula{to{transform:translate(4%,-3%) rotate(12deg) scale(1.1)}}
-.star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #ffc6ed;animation:twinkle 2.5s infinite alternate}
-@keyframes twinkle{from{opacity:.25;transform:scale(.7)}to{opacity:1;transform:scale(1.4)}}
-.float-heart{position:fixed;bottom:-40px;z-index:-1;pointer-events:none;animation:floatup 10s linear forwards;opacity:.7}
-@keyframes floatup{to{transform:translateY(-115vh) rotate(25deg);opacity:0}}
-header{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(20,9,33,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
-.brand{font-weight:800;letter-spacing:.04em;font-size:.88rem}.brand span{color:var(--pink)}
-#musicToggle{border:1px solid var(--line);border-radius:99px;padding:9px 12px;background:#ffffff10;color:white;font-size:.83rem}
-main{width:min(760px,100%);margin:auto;padding:18px 15px 60px}
-section{display:none;min-height:72vh;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:25px 4px;animation:fadein .55s ease}
-section.active{display:flex}
-@keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-.eyebrow{color:#ffc5e9;letter-spacing:.18em;text-transform:uppercase;font-size:.72rem;font-weight:700}
-h1,h2{line-height:1.12;margin:12px 0 16px}h1{font-size:clamp(2.2rem,9vw,4.2rem);letter-spacing:-.04em}h2{font-size:clamp(1.8rem,7vw,2.7rem)}
-p{line-height:1.75;color:#f6eafa;max-width:600px;margin:8px auto 18px}
-.glow{color:#ffd0ef;text-shadow:0 0 22px #ff74c9aa}
-.panel{width:100%;background:var(--glass);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:0 15px 50px #08020f55;backdrop-filter:blur(12px);margin:12px 0}
-.btn{border:0;border-radius:999px;padding:13px 20px;font-weight:800;color:#321331;background:linear-gradient(100deg,#ffc3e7,#d5b7ff);box-shadow:0 7px 25px #e78bdf32;transition:transform .18s}
-.btn:active{transform:scale(.97)}.btn.secondary{background:#ffffff0e;color:#fff;border:1px solid var(--line);box-shadow:none}.btn.small{padding:9px 13px;font-size:.85rem}
-.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:15px}
-.cat{font-size:2.7rem;display:inline-block;filter:drop-shadow(0 5px 14px #ff80cf44);animation:bob 2.8s ease-in-out infinite}
-.cat.smallcat{font-size:2.2rem}.sticker-fallback{width:82px;height:82px;display:grid;place-items:center;font-size:3.5rem;animation:bob 2.2s ease-in-out infinite;filter:drop-shadow(0 4px 12px #ff80cf66)}
-@keyframes bob{50%{transform:translateY(-7px) rotate(-3deg)}}
-.cat-row{display:flex;justify-content:center;gap:16px;align-items:center;margin:8px}
-.sticker{width:100px;height:100px;object-fit:contain;border-radius:16px;vertical-align:middle;filter:drop-shadow(0 4px 10px #0004)}.gif-row{gap:14px;flex-wrap:wrap}.gif-row img{background:#fff1fa;padding:4px;animation:bob 2.4s ease-in-out infinite}.gif-row img:nth-of-type(2){animation-delay:.5s}
-.envelope{width:190px;height:130px;margin:18px auto 25px;position:relative;border-radius:10px;background:linear-gradient(145deg,#ffc2e8,#d4a7ff);box-shadow:0 12px 30px #08020f66;display:grid;place-items:center;color:#68265f;font-size:2.4rem;cursor:pointer}
-.envelope:before{content:"";position:absolute;inset:0;background:linear-gradient(35deg,transparent 49%,#ffdaf0 50%) left/50% 100% no-repeat,linear-gradient(-35deg,transparent 49%,#f4c4ff 50%) right/50% 100% no-repeat;opacity:.85}
-.envelope span{position:relative;z-index:1}.letter{white-space:pre-line;text-align:left;line-height:1.9;font-size:1rem;color:#fff3fc;min-height:140px}
-.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;width:100%;margin-top:10px}
-.card{background:#ffffff0d;border:1px solid var(--line);border-radius:18px;padding:16px 12px;text-align:left;color:white;min-height:115px}
-.card strong{display:block;margin:7px 0;color:#ffd2ee}.card span{font-size:.9rem;color:#e8d7ef}
-.memory{width:100%;text-align:left;background:#ffffff0c;border:1px solid var(--line);border-radius:16px;padding:14px;margin:8px 0}
-.memory input{display:block;margin-top:10px;max-width:100%;font-size:.85rem}
-.counter{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:20px 0}
-.countbox{background:#ffffff10;border:1px solid var(--line);border-radius:14px;padding:12px 3px}.countbox b{font-size:1.5rem;display:block;color:#ffd1ee}.countbox small{font-size:.7rem;color:#e3cde8}
-#heartGame{position:relative;width:100%;height:290px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:linear-gradient(#3b1b53aa,#160d2caa)}
-.tapheart{position:absolute;border:0;background:transparent;font-size:2.2rem;animation:heartbob 1.4s infinite alternate}
-@keyframes heartbob{to{transform:translateY(-7px) rotate(9deg)}}
-#quizQuestion{font-size:1.1rem;font-weight:700;margin-bottom:16px}
-.quiz-option{display:block;width:100%;text-align:left;margin:8px 0;padding:12px;border-radius:13px;border:1px solid var(--line);background:#ffffff0c;color:white}
-.quiz-option:active{background:#ff9ed733}
-.song-disc{width:160px;height:160px;border-radius:50%;margin:20px auto;background:radial-gradient(circle,#ffd8ef 0 5%,#e889d1 6% 16%,#48255f 17% 20%,#b77be5 21% 35%,#2a173d 36%);box-shadow:0 0 40px #ee8cd655;display:grid;place-items:center;font-size:2rem;border:5px solid #ffffff20}
-.song-disc.playing{animation:spin 8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
-.music-frame{width:min(100%,320px);margin:18px auto;padding:10px;background:#ffffff0d;border:1px solid var(--line);border-radius:20px;overflow:hidden}.music-frame iframe{display:block;width:100%;max-width:300px;height:200px;margin:auto;border:0;border-radius:12px}.barviz{height:35px;display:flex;justify-content:center;gap:4px;align-items:center}.barviz i{display:block;width:4px;height:8px;border-radius:9px;background:#ffc3e7}.playing~.barviz i{animation:bars .5s ease-in-out infinite alternate}.barviz i:nth-child(2n){animation-delay:.2s}.barviz i:nth-child(3n){animation-delay:.35s}@keyframes bars{to{height:30px}}
-input[type=date],input[type=text]{background:#160b27;color:white;border:1px solid var(--line);border-radius:10px;padding:10px;max-width:100%}
-footer{text-align:center;color:#bfa8cc;font-size:.75rem;padding:20px}
-.notice{font-size:.8rem;color:#cbb7d5}
-@media(max-width:390px){.grid{grid-template-columns:1fr}.panel{padding:18px 14px}.sticker{width:82px;height:82px}.music-frame{padding:6px}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
+:root {
+  --pink: #ff8fca;
+  --pink-light: #ffd6ec;
+  --purple: #b99aff;
+  --white: #fff7fd;
+  --glass: rgba(255,255,255,.09);
+  --border: rgba(255,255,255,.17);
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--white);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background:
+    radial-gradient(ellipse at 15% 15%, #51264f 0, transparent 38%),
+    radial-gradient(ellipse at 85% 55%, #34275f 0, transparent 42%),
+    linear-gradient(145deg, #100b1b, #21112d 55%, #110b21);
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 4px;
+}
+
+#stars,
+#sparkles {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  color: #fff2fd;
+  opacity: .7;
+  animation: twinkle 3s ease-in-out infinite alternate;
+}
+
+@keyframes twinkle {
+  from { opacity: .18; transform: scale(.7); }
+  to { opacity: .95; transform: scale(1.2); }
+}
+
+header,
+main,
+footer {
+  position: relative;
+  z-index: 1;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  max-width: 900px;
+  margin: auto;
+}
+
+.brand {
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  font-size: 14px;
+}
+
+.music-button,
+.menu-button,
+.primary,
+.secondary,
+.nav-button,
+.choice-button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: white;
+  padding: 12px 17px;
+  background: rgba(255,255,255,.09);
+  transition: transform .2s, background .2s, box-shadow .2s;
+}
+
+.music-button {
+  background: linear-gradient(120deg, #a34c95, #7658c7);
+  box-shadow: 0 0 22px #d36cc633;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+main {
+  width: min(100% - 28px, 760px);
+  margin: 0 auto;
+}
+
+section {
+  display: none;
+  min-height: 75vh;
+  padding: 32px 0 60px;
+  animation: sectionIn .65s ease both;
+}
+
+section.active {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+@keyframes sectionIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  padding: clamp(22px, 5vw, 38px);
+  border: 1px solid var(--border);
+  border-radius: 28px;
+  background: linear-gradient(140deg, rgba(255,255,255,.105), rgba(255,255,255,.035));
+  box-shadow: 0 20px 65px #0003;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  text-align: center;
+}
+
+.eyebrow {
+  color: var(--pink-light);
+  text-transform: uppercase;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+}
+
+h1, h2, h3 {
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(32px, 8vw, 54px);
+  margin: 18px 0;
+  background: linear-gradient(110deg, #fff, #ffb9e1, #d4c0ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+h2 {
+  font-size: clamp(25px, 6vw, 38px);
+  margin: 12px 0 20px;
+}
+
+p {
+  line-height: 1.8;
+  color: #f8eaf7;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: #e5cfe9;
+}
+
+.sticker {
+  display: block;
+  width: min(170px, 48vw);
+  height: 140px;
+  object-fit: contain;
+  margin: 10px auto 18px;
+  border-radius: 18px;
+}
+
+.cat-fallback {
+  font-size: 68px;
+  line-height: 1.3;
+  display: block;
+  animation: catBounce 2.2s ease-in-out infinite;
+}
+
+@keyframes catBounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-9px) rotate(3deg); }
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 11px;
+  margin-top: 24px;
+}
+
+.primary {
+  background: linear-gradient(120deg, #ee72b8, #a16ce9);
+  border: 0;
+  font-weight: 800;
+  box-shadow: 0 8px 26px #e66ab544;
+}
+
+.secondary {
+  background: rgba(255,255,255,.07);
+}
+
+.primary:hover,
+.secondary:hover,
+.nav-button:hover,
+.choice-button:hover {
+  box-shadow: 0 0 22px #ff91d433;
+  background-color: rgba(255,255,255,.16);
+}
+
+.type-text {
+  white-space: pre-wrap;
+  text-align: left;
+  min-height: 120px;
+  line-height: 2;
+  font-size: 16px;
+}
+
+.letter-paper {
+  padding: 22px;
+  border-radius: 18px;
+  border: 1px solid #ffc6e833;
+  background: rgba(28, 13, 36, .48);
+  text-align: left;
+}
+
+.typed-letter {
+  color: #fff1fa;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 17px;
+  line-height: 2;
+  white-space: pre-wrap;
+}
+
+.magic-char {
+  display: inline-block;
+  animation: magicAppear .45s ease-out both;
+}
+
+@keyframes magicAppear {
+  0% {
+    opacity: 0;
+    transform: translateY(7px) scale(.7);
+    text-shadow: 0 0 20px #fff;
+  }
+  65% {
+    opacity: 1;
+    text-shadow: 0 0 12px #ff9bde, 0 0 20px #c2a1ff;
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    text-shadow: 0 0 0 transparent;
+  }
+}
+
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.nav-button {
+  min-width: 105px;
+}
+
+.page-count {
+  font-size: 12px;
+  color: #d9c1e6;
+}
+
+.choice-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.choice-button {
+  width: 100%;
+  text-align: left;
+  border-radius: 16px;
+  padding: 15px;
+}
+
+.feedback {
+  min-height: 30px;
+  font-weight: 700;
+  color: #ffc6e7;
+}
+
+.heart-game-area {
+  position: relative;
+  height: 240px;
+  overflow: hidden;
+  margin-top: 18px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: rgba(15, 8, 29, .42);
+}
+
+.floating-heart {
+  position: absolute;
+  font-size: 30px;
+  border: 0;
+  background: transparent;
+  animation: floatHeart 2.5s ease-in-out infinite;
+}
+
+@keyframes floatHeart {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-13px) rotate(8deg); }
+}
+
+.anime-stage {
+  position: relative;
+  height: 360px;
+  max-width: 600px;
+  margin: 20px auto;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid #ffcaef55;
+  background:
+    linear-gradient(180deg, #4b3a79 0%, #d17bb7 52%, #f5b6c9 100%);
+}
+
+.anime-sun {
+  position: absolute;
+  top: 30px;
+  right: 35px;
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #ffe2b5;
+  box-shadow: 0 0 40px #ffd8c8;
+}
+
+.anime-cloud {
+  position: absolute;
+  top: 70px;
+  left: -110px;
+  font-size: 42px;
+  opacity: .7;
+  animation: cloudMove 14s linear infinite;
+}
+
+@keyframes cloudMove {
+  to { left: 110%; }
+}
+
+.anime-ground {
+  position: absolute;
+  height: 70px;
+  bottom: 0;
+  width: 100%;
+  background: linear-gradient(#56385d, #34233e);
+}
+
+.anime-flower {
+  position: absolute;
+  bottom: 48px;
+  font-size: 22px;
+}
+
+.anime-character {
+  position: absolute;
+  bottom: 46px;
+  font-size: 72px;
+  filter: drop-shadow(0 8px 4px #25172a55);
+}
+
+.anime-boy {
+  left: -90px;
+  animation: boyRun 4.5s cubic-bezier(.35,.05,.65,.95) forwards;
+}
+
+.anime-girl {
+  right: 48px;
+  transform: translateY(0);
+  animation: girlAppear 1.4s ease both;
+  animation-delay: 3.5s;
+  opacity: 0;
+}
+
+.anime-rose {
+  position: absolute;
+  bottom: 110px;
+  left: 48%;
+  font-size: 44px;
+  opacity: 0;
+  transform: scale(.2);
+  animation: roseGive 1.2s ease-out forwards;
+  animation-delay: 4.5s;
+}
+
+@keyframes boyRun {
+  0% { left: -90px; transform: translateY(0) rotate(0); }
+  15% { transform: translateY(-18px) rotate(-8deg); }
+  30% { transform: translateY(0) rotate(7deg); }
+  45% { transform: translateY(-15px) rotate(-8deg); }
+  60% { transform: translateY(0) rotate(5deg); }
+  78% { transform: translateY(-8px) rotate(-3deg); }
+  100% { left: calc(100% - 165px); transform: translateY(0) rotate(0); }
+}
+
+@keyframes girlAppear {
+  from { opacity: 0; transform: translateY(15px) scale(.85); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes roseGive {
+  0% { opacity: 0; transform: scale(.2) rotate(-25deg); }
+  65% { opacity: 1; transform: scale(1.25) rotate(8deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0); }
+}
+
+.anime-caption {
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: 15px;
+  text-align: center;
+  font-weight: 800;
+  text-shadow: 0 2px 8px #3d2344;
+}
+
+footer {
+  text-align: center;
+  padding: 25px 14px 35px;
+  color: #cbb3d5;
+  font-size: 12px;
+}
+
+.toast {
+  position: fixed;
+  z-index: 10;
+  bottom: 20px;
+  left: 50%;
+  transform: translate(-50%, 20px);
+  opacity: 0;
+  background: #392344;
+  border: 1px solid #ffb9e355;
+  color: white;
+  border-radius: 999px;
+  padding: 12px 18px;
+  transition: .3s;
+  pointer-events: none;
+  width: max-content;
+  max-width: calc(100% - 30px);
+  text-align: center;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+@media (max-width: 480px) {
+  header { padding: 12px 4px; }
+  .brand { font-size: 11px; }
+  .music-button { font-size: 12px; padding: 10px 12px; }
+  .anime-stage { height: 300px; }
+  .anime-character { font-size: 60px; }
+  .anime-girl { right: 25px; }
+  .nav-button { min-width: 92px; padding: 11px 12px; }
+  .card { border-radius: 23px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
 </style>
 </head>
+
 <body>
-<div id="sky" aria-hidden="true"></div>
-<header><div class="brand">&#x1F30C; THE <span>BOX OF US</span></div><button id="musicToggle" type="button">&#x266B; Start our music</button></header>
+<div id="stars" aria-hidden="true"></div>
+<div id="sparkles" aria-hidden="true"></div>
+
+<header>
+  <div class="brand">🌌 THE BOX OF US</div>
+  <button class="music-button" id="musicToggle" type="button">♫ Start our music</button>
+</header>
+
 <main>
-<section id="welcome" class="active">
-<div class="eyebrow">a tiny universe, made for you</div>
-<div class="cat-row gif-row">
-<img class="sticker" src="https://media1.tenor.com/m/GwrvJoDe4FsAAAAd/cats-hug.gif" alt="Two cute cartoon cats hugging" loading="eager" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
-<span class="cat sticker-fallback" hidden aria-label="Cute cat sticker">&#x1F9F8;&#x1F496;</span>
-<img class="sticker" src="https://media1.tenor.com/m/-7jZGQVH32gAAAAd/cute-love.gif" alt="Two cartoon cats with a heart" loading="eager" onerror="this.hidden=true;this.nextElementSibling.hidden=false">
-<span class="cat sticker-fallback" hidden aria-label="Cute cat sticker">&#x1F63B;&#x1F496;</span>
-</div>
-<h1 class="glow">Hey, Shibu...</h1>
-<p>I made something for you. It's not perfect, and maybe it's a little silly... but every little part was made with you in mind.</p>
-<p>Ready to see what's inside?</p>
-<button class="btn" data-go="letter">Open your little universe &#x2728;</button>
-<p class="notice">Tip: tap &#x201C;Start our music&#x201D; whenever you're ready. &#x1F497;</p>
+
+<section class="active" id="welcome" data-title="Welcome">
+  <div class="card">
+    <div class="eyebrow">A tiny universe, made for you</div>
+    <span class="cat-fallback" aria-hidden="true">🐈‍⬛💗</span>
+    <img class="sticker"
+      src="https://media.tenor.com/8F3qYyNQk4oAAAAi/cat-love.gif"
+      alt="Cute cat love animation"
+      onerror="this.style.display='none'">
+    <h1>Hey, Shibu...</h1>
+    <p class="subtitle">
+      I made you a little universe. It has stars, romance,
+      questionable jokes, and one boy who is ridiculously
+      lucky that you exist.
+    </p>
+    <p>Warning: opening this may cause smiling, blushing, and missing me. 😌</p>
+    <div class="actions">
+      <button class="primary" data-go="letter">Open your little universe ✨</button>
+    </div>
+    <p class="subtitle">P.S. If you blush, please blame the stars. Not me. 👀</p>
+  </div>
 </section>
 
-<section id="letter">
-<div class="eyebrow">chapter one &#xB7; from my heart</div><h2>A little letter <span class="glow">for you</span></h2>
-<div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open the letter"><span>&#x1F48C;</span></div>
-<div class="panel"><div class="letter" id="letterText">Tap the envelope to open your letter. &#x1F497;</div>
-<div class="actions"><button class="btn small" id="showFullLetter">Read it all</button><button class="btn secondary small" data-go="countdown">Next &#x2728;</button></div></div>
-<div class="cat-row"><span class="cat sticker-fallback" role="img" aria-label="Cute cat love sticker">&#x1F63D;</span><span class="cat smallcat">&#x1F48C;</span></div>
+<section id="letter" data-title="A tiny confession">
+  <div class="card">
+    <div class="eyebrow">Confession no. 001</div>
+    <span class="cat-fallback">😽💌</span>
+    <h2>A tiny confession</h2>
+    <div class="letter-paper">
+      <div class="typed-letter" id="loveLetter" aria-live="polite"></div>
+    </div>
+    <p class="subtitle">Written with love. Proofread by absolutely nobody. 😂</p>
+    <div class="actions">
+      <button class="secondary" id="retypeLetter">Read it again ✨</button>
+    </div>
+    <div class="nav-row">
+      <button class="nav-button" data-back>← Back</button>
+      <span class="page-count"></span>
+      <button class="primary nav-button" data-next>Next →</button>
+    </div>
+  </div>
 </section>
 
-<section id="countdown">
-<div class="eyebrow">chapter two &#xB7; someday soon</div><h2>Until we meet <span class="glow">for real</span> &#x1FAC2;</h2>
-<div class="cat-row"><span class="cat">&#x1F431;</span><span class="cat">&#x1F319;</span></div>
-<p>One day, there won't be a screen between us. Just you and me, sharing a little moment we've been looking forward to.</p>
-<div class="panel"><div id="countMessage">Our day isn't on the calendar yet, but it's still something to look forward to. &#x1F497;</div><div class="counter" id="counter" hidden><div class="countbox"><b id="days">0</b><small>DAYS</small></div><div class="countbox"><b id="hours">0</b><small>HOURS</small></div><div class="countbox"><b id="minutes">0</b><small>MINUTES</small></div><div class="countbox"><b id="seconds">0</b><small>SECONDS</small></div></div>
-<label for="meetDate" class="notice">Set the date whenever you know it:</label><br><input type="date" id="meetDate"><button class="btn small" id="saveDate">Save date</button><p class="notice">This date is saved only in this browser.</p></div>
-<button class="btn" data-go="memories">Let's keep going &#x1F4F8;</button>
+<section id="flirt" data-title="Flirt zone">
+  <div class="card">
+    <div class="eyebrow">Extremely serious research</div>
+    <span class="cat-fallback">😼💕</span>
+    <img class="sticker"
+      src="https://media.tenor.com/4hQX8fVw9YAAAAAi/cat-kiss.gif"
+      alt="Kissing cat animation"
+      onerror="this.style.display='none'">
+    <h2>Official flirt zone</h2>
+    <p>Choose your daily dose of nonsense, madam. 👑</p>
+
+    <div class="choice-list">
+      <button class="choice-button" data-flirt="1">💗 Give me a compliment</button>
+      <button class="choice-button" data-flirt="2">😏 Make me blush</button>
+      <button class="choice-button" data-flirt="3">😂 Make me laugh</button>
+      <button class="choice-button" data-flirt="4">🥹 Say something sweet</button>
+    </div>
+
+    <div class="letter-paper" style="margin-top:18px">
+      <div id="flirtResult" class="typed-letter" aria-live="polite">
+        Pick one. I promise to be only 73% embarrassing.
+      </div>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-button" data-back>← Back</button>
+      <span class="page-count"></span>
+      <button class="primary nav-button" data-next>Next →</button>
+    </div>
+  </div>
 </section>
 
-<section id="memories">
-<div class="eyebrow">chapter three &#xB7; little things, big feelings</div><h2>Our little <span class="glow">memories</span> &#x1F4F8;</h2>
-<p>These spaces are waiting for your real photos and moments. Tap a photo picker to add an image from your phone; it stays on this device.</p>
-<div class="panel" id="memoryList">
-<div class="memory"><strong>&#x1F497; The Beginning</strong><div>Every story has a first page.</div><input type="file" accept="image/*" data-memory="beginning"><div class="preview"></div></div>
-<div class="memory"><strong>&#x1F602; Little Moments</strong><div>The conversations that still make you smile.</div><input type="file" accept="image/*" data-memory="moments"><div class="preview"></div></div>
-<div class="memory"><strong>&#x1F319; A memory to make</strong><div>One day, a photo from a day spent together.</div><input type="file" accept="image/*" data-memory="future"><div class="preview"></div></div>
-</div>
-<div class="actions"><button class="btn secondary" data-go="hearts">Next surprise &#x1F49E;</button></div>
+<section id="game" data-title="Catch my heart">
+  <div class="card">
+    <div class="eyebrow">Very important mission</div>
+    <span class="cat-fallback">🐱💘</span>
+    <h2>Catch my heart!</h2>
+    <p>Tap the floating hearts before they escape. Collect 5 to win my extremely prestigious imaginary award. 🏆</p>
+
+    <div class="heart-game-area" id="heartArea">
+      <button class="floating-heart" style="left:12%;top:20%" aria-label="Catch heart">💗</button>
+      <button class="floating-heart" style="left:65%;top:40%;animation-delay:.4s" aria-label="Catch heart">💖</button>
+      <button class="floating-heart" style="left:40%;top:68%;animation-delay:.8s" aria-label="Catch heart">💕</button>
+      <button class="floating-heart" style="left:80%;top:15%;animation-delay:.2s" aria-label="Catch heart">💘</button>
+      <button class="floating-heart" style="left:25%;top:48%;animation-delay:1s" aria-label="Catch heart">💝</button>
+    </div>
+
+    <h3 id="score">Hearts caught: 0 / 5</h3>
+    <p class="feedback" id="gameFeedback" aria-live="polite">Your mission starts now, cutie!</p>
+    <div class="actions">
+      <button class="secondary" id="resetGame">Play again ↻</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-button" data-back>← Back</button>
+      <span class="page-count"></span>
+      <button class="primary nav-button" data-next>Next →</button>
+    </div>
+  </div>
 </section>
 
-<section id="hearts">
-<div class="eyebrow">chapter four &#xB7; find the little messages</div><h2>Catch my <span class="glow">heart</span> &#x1F497;</h2>
-<p>Tap the floating hearts to collect little reminders. Find all five!</p>
-<div id="heartGame" aria-label="Tap the hearts game"></div><div class="panel" id="heartMessage">Your first little surprise is waiting. &#x2728;</div>
-<div class="actions"><button class="btn small" id="resetHearts">Play again</button><button class="btn secondary small" data-go="quiz">Next: our quiz &#x1F9E9;</button></div>
+<section id="quiz" data-title="Love quiz">
+  <div class="card">
+    <div class="eyebrow">A completely scientific quiz</div>
+    <span class="cat-fallback">😹💞</span>
+    <h2>How well do you know us?</h2>
+    <p>There are no wrong answers. Okay, maybe one. I'm watching. 👀</p>
+
+    <h3 id="quizQuestion">Question 1</h3>
+    <div class="choice-list" id="quizChoices"></div>
+    <p class="feedback" id="quizFeedback" aria-live="polite"></p>
+    <p id="quizProgress" class="subtitle">Question 1 of 5</p>
+
+    <div class="actions">
+      <button class="secondary" id="restartQuiz">Restart quiz ↻</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-button" data-back>← Back</button>
+      <span class="page-count"></span>
+      <button class="primary nav-button" data-next>Next →</button>
+    </div>
+  </div>
 </section>
 
-<section id="quiz">
-<div class="eyebrow">chapter five &#xB7; just us things</div><h2>How well do you <span class="glow">know us?</span> &#x1F9E9;</h2>
-<div class="panel"><div id="quizQuestion">What would I love most about our first proper date?</div><div id="quizOptions"></div><div id="quizFeedback" aria-live="polite"></div><div class="actions"><button class="btn small" id="nextQuestion" hidden>Next question &#x279C;</button></div></div>
-<div class="cat-row"><span class="cat">&#x1F63A;</span><span class="cat smallcat">&#x2728;</span></div>
-<button class="btn secondary" data-go="openwhen">Open when... &#x1F48C;</button>
+<section id="openwhen" data-title="Open when">
+  <div class="card">
+    <div class="eyebrow">Emergency girlfriend support</div>
+    <span class="cat-fallback">🐈💌</span>
+    <img class="sticker"
+      src="https://media.tenor.com/Z8w9Jg9FJYAAAAAi/cat-hug.gif"
+      alt="Hugging cats animation"
+      onerror="this.style.display='none'">
+    <h2>Open when...</h2>
+    <p>For every mood, including the one where you pretend you don't miss me. Very convincing, by the way. 😂</p>
+
+    <div class="choice-list">
+      <button class="choice-button" data-open="sad">🥺 You feel sad</button>
+      <button class="choice-button" data-open="miss">💗 You miss me</button>
+      <button class="choice-button" data-open="angry">😤 You're angry at me</button>
+      <button class="choice-button" data-open="happy">🌸 You're happy</button>
+    </div>
+
+    <div class="letter-paper" style="margin-top:18px">
+      <div class="typed-letter" id="openMessage" aria-live="polite">Choose a little message, Shibu. 💗</div>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-button" data-back>← Back</button>
+      <span class="page-count"></span>
+      <button class="primary nav-button" data-next>Next →</button>
+    </div>
+  </div>
 </section>
 
-<section id="openwhen">
-<div class="eyebrow">chapter six &#xB7; for every kind of day</div><h2>Open <span class="glow">when...</span> &#x1F48C;</h2>
-<p>Pick the envelope that feels like you right now.</p>
-<div class="grid">
-<button class="card" data-note="miss"><span>&#x1F48C;</span><strong>you miss me</strong><span>A little virtual hug.</span></button>
-<button class="card" data-note="smile"><span>&#x1F338;</span><strong>you need a smile</strong><span>A tiny dose of silly.</span></button>
-<button class="card" data-note="bad"><span>&#x1F327;&#xFE0F;</span><strong>today feels hard</strong><span>Take a breath, love.</span></button>
-<button class="card" data-note="remember"><span>&#x1F319;</span><strong>you want to remember us</strong><span>A little look at our story.</span></button>
-</div>
-<div class="panel" id="notePanel" hidden><div class="cat-row"><span class="cat" id="noteCat">&#x1F63D;</span></div><div id="noteText" class="letter"></div></div>
-<button class="btn" data-go="song">Our song &#x1F3B5;</button>
+<section id="animation" data-title="Anime love story">
+  <div class="card">
+    <div class="eyebrow">A little anime daydream</div>
+    <span class="cat-fallback">🌸🐈</span>
+    <h2>Our little anime scene</h2>
+    <p>One boy. One girl. One bouquet. Zero chill when he sees her. 🌹</p>
+
+    <div class="anime-stage" id="animeStage">
+      <div class="anime-sun"></div>
+      <div class="anime-cloud">☁️</div>
+      <div class="anime-cloud" style="top:125px;animation-delay:-6s;font-size:32px">☁️</div>
+      <div class="anime-caption" id="animeCaption">The moment he sees her... 💗</div>
+      <div class="anime-ground"></div>
+      <div class="anime-flower" style="left:8%">🌷</div>
+      <div class="anime-flower" style="left:22%">🌸</div>
+      <div class="anime-flower" style="left:72%">🌼</div>
+      <div class="anime-flower" style="left:88%">🌷</div>
+      <div class="anime-character anime-boy" id="animeBoy">🏃🏻‍♂️</div>
+      <div class="anime-character anime-girl" id="animeGirl">👧🏻</div>
+      <div class="anime-rose" id="animeRose">💐</div>
+    </div>
+
+    <p class="subtitle" id="animeMessage" aria-live="polite">
+      He practised what to say. Then he saw her and forgot every word. 😂
+    </p>
+
+    <div class="actions">
+      <button class="primary" id="replayAnime">▶ Play the scene again</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="nav-button" data-back>← Back</button>
+      <span class="page-count"></span>
+      <button class="primary nav-button" data-next>Next →</button>
+    </div>
+  </div>
 </section>
 
-<section id="song">
-<div class="eyebrow">chapter seven &#xB7; our song</div><h2><span class="glow">I Wanna Be Yours</span></h2>
-<div class="song-disc" id="songDisc">&#x1F496;</div><h3 id="songTitle">I Wanna Be Yours &#xB7; Arctic Monkeys</h3><p id="songSubtitle">Tap play to start the song. It can continue while you explore the other pages.</p>
-<div class="music-frame"><iframe id="ytPlayer" title="I Wanna Be Yours by Arctic Monkeys - YouTube music player" width="300" height="200" src="about:blank" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
-<div class="actions"><button class="btn" id="playSong" type="button">&#x25B6; Play I Wanna Be Yours</button><button class="btn secondary" id="stopSong" type="button">&#x23F8; Stop music</button></div>
-<p class="notice">The song is played through the official YouTube embed. Your browser may require one more tap on the player.</p>
-<button class="btn" data-go="final">One last thing... &#x1F319;</button>
+<section id="final" data-title="The final surprise">
+  <div class="card">
+    <div class="eyebrow">One last thing, Shibu</div>
+    <span class="cat-fallback">😻🌹💗</span>
+    <img class="sticker"
+      src="https://media.tenor.com/8F3qYyNQk4oAAAAi/cat-love.gif"
+      alt="Cute cat love animation"
+      onerror="this.style.display='none'">
+    <h1>You're my favourite plot twist.</h1>
+
+    <div class="letter-paper">
+      <div class="typed-letter" id="finalLetter" aria-live="polite"></div>
+    </div>
+
+    <p class="subtitle">If I could put a hug inside this screen, you'd be stuck in one right now. 🤗</p>
+
+    <div class="actions">
+      <button class="primary" id="replayAll">Start our little universe again ↻</button>
+      <button class="secondary" id="finalMusic">♫ Music on / off</button>
+    </div>
+  </div>
 </section>
 
-<section id="final">
-<div class="eyebrow">the last page &#xB7; but not the end</div><div class="cat-row gif-row"><img class="sticker" src="https://media1.tenor.com/m/GwrvJoDe4FsAAAAd/cats-hug.gif" alt="Two cute cartoon cats hugging" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="cat sticker-fallback" hidden>&#x1F9F8;&#x1F496;</span><img class="sticker" src="https://media1.tenor.com/m/-7jZGQVH32gAAAAd/cute-love.gif" alt="Two cartoon cats with a heart" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="cat sticker-fallback" hidden>&#x1F63B;&#x1F496;</span></div>
-<h1 class="glow">One last thing, Shibu...</h1>
-<div class="panel"><div class="letter" id="finalText"></div><div class="actions"><button class="btn small" id="revealFinal">Read it all &#x1F497;</button></div></div>
-<p class="glow">This universe is full of stars. But you're the reason I made it. &#x2728;</p>
-<button class="btn" id="replay">&#x21BB; Replay our universe</button>
-</section>
 </main>
-<footer>Made with care, one tiny star at a time. &#x1F497;<br><span>THE BOX OF US &#xB7; V1.0</span></footer>
+
+<footer>
+  Made with a suspicious amount of affection. 💗<br>
+  THE BOX OF US · A tiny universe for Shibu
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-// Lightweight starfield: no large background video or heavy effects.
-for(let i=0;i<85;i++){const s=document.createElement('i');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=(Math.random()*3)+'s';s.style.opacity=Math.random();$('#sky').appendChild(s)}
-setInterval(()=>{if(document.hidden)return;const h=document.createElement('div');h.className='float-heart';h.textContent=['\u{2661}','\u{1F497}','\u{2726}','\u{2728}'][Math.floor(Math.random()*4)];h.style.left=Math.random()*100+'vw';h.style.fontSize=(12+Math.random()*18)+'px';document.body.appendChild(h);setTimeout(()=>h.remove(),10000)},1800);
+"use strict";
 
-const sections=$$('main section');
-function go(id){sections.forEach(s=>s.classList.toggle('active',s.id===id));window.scrollTo({top:0,behavior:'smooth'});if(id==='hearts')makeHearts();if(id==='final')typeInto($('#finalText'),finalLetter)}
-$$('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
-const loveLetter=`Hey, Shibu. \u{2764}\u{FE0F}
+/* --------------------------------------------------
+   NAVIGATION
+-------------------------------------------------- */
 
-I honestly don't even know where to start, because there's so much I want to tell you and somehow I never know how to put all of it into words.
+const sectionIds = [
+  "welcome",
+  "letter",
+  "flirt",
+  "game",
+  "quiz",
+  "openwhen",
+  "animation",
+  "final"
+];
 
-You became such a special part of my life, and I'm really glad that, out of all the people in this world, I got to know you.
+let currentIndex = 0;
 
-Sometimes I wish I could explain exactly what you mean to me. Not with some big, complicated paragraph, but in a way that would let you feel what I feel when I think about you.
+const $ = (selector, root = document) => root.querySelector(selector);
+const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
-I know there are still so many moments I want to experience with you: conversations, laughter, little memories, and the day we finally get to spend time together without a screen between us.
-
-I want to see you smile in front of me, hear your voice without a phone between us, laugh with you over stupid things, and have a moment where I can look at you and think, \u{201C}damn, she's really here.\u{201D}
-
-I can't promise every day will be perfect. But I can promise that what we have matters to me, and I don't want to take it for granted.
-
-So I made this little universe for you. Every star, every surprise, every tiny message is a little way of saying something I might not always know how to say out loud.
-
-You don't have to rush through anything here. Explore everything, open every little surprise, and smile whenever something reminds you of us.
-
-And if you ever wonder whether you're special to me...
-
-Shibu, you wouldn't be exploring a universe made just for you if you weren't. \u{1F979}\u{2764}\u{FE0F}
-
-With love,
-Your favourite person. \u{1F497}`;
-let typingTimer;
-function typeInto(el,text){clearInterval(typingTimer);el.textContent='';let i=0;typingTimer=setInterval(()=>{el.textContent+=text.charAt(i++);if(i>=text.length)clearInterval(typingTimer)},18)}
-function openLetter(){typeInto($('#letterText'),loveLetter)}
-$('#envelope').addEventListener('click',openLetter);$('#envelope').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openLetter()}});
-$('#showFullLetter').addEventListener('click',()=>{clearInterval(typingTimer);$('#letterText').textContent=loveLetter});
-const finalLetter=`Out of everything I've made here, this is probably the simplest thing I can tell you.
-
-I'm glad it's you.
-
-I'm glad our paths crossed, I'm glad we got to know each other, and I'm glad I get to call you someone special in my life.
-
-I made this little universe because sometimes a simple message doesn't feel big enough for everything you want to say. So I gave those feelings a place to live.
-
-Whenever you open this website, I hope it reminds you of the little things that make our story ours.
-
-And someday, when we look back at this, I hope we'll have even more memories to add.
-
-Until then, keep smiling, keep being yourself, and never forget how much the little things can mean.
-
-This universe is full of stars, Shibu. But you're the reason I made it. \u{1F497}
-
-End of the beginning. \u{2728}`;
-$('#revealFinal').addEventListener('click',()=>{clearInterval(typingTimer);$('#finalText').textContent=finalLetter});
-$('#replay').addEventListener('click',()=>go('welcome'));
-
-// Countdown settings
-function safeGet(key){try{return localStorage.getItem(key)}catch(e){return null}}
-function safeSet(key,value){try{localStorage.setItem(key,value)}catch(e){}}
-function safeRemove(key){try{localStorage.removeItem(key)}catch(e){}}
-const dateInput=$('#meetDate'),savedDate=safeGet('boxOfUsMeetDate');
-if(savedDate){dateInput.value=savedDate;updateCountdown()}
-$('#saveDate').addEventListener('click',()=>{if(!dateInput.value){safeRemove('boxOfUsMeetDate');$('#counter').hidden=true;$('#countMessage').textContent="Our day isn't on the calendar yet, but it's still something to look forward to. \u{1F497}";return}safeSet('boxOfUsMeetDate',dateInput.value);updateCountdown()});
-function updateCountdown(){const d=safeGet('boxOfUsMeetDate');if(!d)return;const target=new Date(d+'T00:00:00');if(Number.isNaN(+target))return;$('#counter').hidden=false;$('#countMessage').textContent=target.getTime()<=Date.now()?'Today is a special day. Take it all in. \u{2764}\u{FE0F}':'A little countdown to a day worth looking forward to. \u{1F497}';function tick(){let diff=Math.max(0,target-Date.now());$('#days').textContent=Math.floor(diff/86400000);$('#hours').textContent=Math.floor(diff%86400000/3600000);$('#minutes').textContent=Math.floor(diff%3600000/60000);$('#seconds').textContent=Math.floor(diff%60000/1000)}tick();clearInterval(window.countTimer);window.countTimer=setInterval(tick,1000)}
-if(savedDate)updateCountdown();
-
-// Photo previews use local object URLs only (not uploaded to a server).
-$$('input[data-memory]').forEach(input=>input.addEventListener('change',()=>{const file=input.files&&input.files[0];if(!file)return;const box=input.parentElement.querySelector('.preview');box.replaceChildren();const img=document.createElement('img');img.src=URL.createObjectURL(file);img.alt='Selected memory';img.style.cssText='display:block;max-width:100%;max-height:240px;border-radius:12px;margin-top:10px';box.appendChild(img);const caption=document.createElement('div');caption.className='notice';caption.textContent='Preview only \u{2014} choose again after refreshing. This photo was not uploaded.';box.appendChild(caption)}));
-
-// Catch the heart mini-game
-const heartMessages=['A tiny reminder: someone is thinking about you. \u{1F497}','Your smile deserves its own little universe. \u{2728}','If I could teleport anywhere right now, I would choose wherever you are. \u{1FAC2}','You found a tiny piece of my heart. \u{1F63D}',"One day, let's make a memory that beats every message here. \u{1F319}"];
-let found=new Set();
-function makeHearts(){const area=$('#heartGame');area.replaceChildren();found=new Set();$('#heartMessage').textContent='Your first little surprise is waiting. \u{2728}';for(let i=0;i<5;i++){const b=document.createElement('button');b.className='tapheart';b.textContent='\u{1F497}';b.setAttribute('aria-label','Catch heart '+(i+1));b.style.left=(5+Math.random()*75)+'%';b.style.top=(5+Math.random()*70)+'%';b.addEventListener('click',()=>{if(found.has(i))return;found.add(i);b.textContent='\u{2728}';b.disabled=true;$('#heartMessage').textContent=heartMessages[i];if(found.size===5)$('#heartMessage').textContent='You found all five! Keep these little reminders close. \u{1F497}';});area.appendChild(b)}}
-$('#resetHearts').addEventListener('click',makeHearts);
-
-// Quiz: answers are playful, not factual claims about private details.
-const quiz=[{q:'What would I love most about our first proper date?',a:['Showing off to everyone','Spending real time together','Taking expensive photos'],correct:1,why:'Exactly. The time together is the real gift. \u{2764}\u{FE0F}'},{q:'What makes a small memory special?',a:['It has to be expensive','It has to be perfect','It means something to us'],correct:2,why:'The little things can mean the most. \u{1F497}'},{q:'If you have a difficult day, what should you remember?',a:['You must hide your feelings','You deserve kindness and rest','You have to solve everything instantly'],correct:1,why:'You deserve gentleness, even on hard days. \u{1F338}'},{q:'What is this little website meant to be?',a:['A tiny universe made for you','A school project','A shopping page'],correct:0,why:'A whole little universe, just for you. \u{1F30C}'},{q:'What do I hope we make more of?',a:['Arguments','Memories together','To-do lists'],correct:1,why:'More memories, one little moment at a time. \u{1FAC2}'}];
-let qi=0,score=0,answered=false;
-function showQuiz(){answered=false;const q=quiz[qi];$('#quizQuestion').textContent=`${qi+1}/${quiz.length} \u{B7} ${q.q}`;$('#quizOptions').replaceChildren();$('#quizFeedback').textContent='';$('#nextQuestion').hidden=true;q.a.forEach((a,i)=>{const b=document.createElement('button');b.className='quiz-option';b.textContent=a;b.addEventListener('click',()=>{if(answered)return;answered=true;if(i===q.correct){score++;$('#quizFeedback').textContent=q.why}else $('#quizFeedback').textContent='Cute try! '+q.why;$$('.quiz-option').forEach(x=>x.disabled=true);$('#nextQuestion').hidden=false;$('#nextQuestion').textContent=qi===quiz.length-1?'See our result \u{1F497}':'Next question \u{279C}'});$('#quizOptions').appendChild(b)})}
-$('#nextQuestion').addEventListener('click',()=>{if(qi<quiz.length-1){qi++;showQuiz()}else{$('#quizQuestion').textContent=`You scored ${score} out of ${quiz.length} \u{1F497}` ;$('#quizOptions').replaceChildren();$('#quizFeedback').textContent='The best parts of our story are still waiting to happen.';$('#nextQuestion').hidden=true;qi=0;score=0;setTimeout(showQuiz,4500)}});showQuiz();
-
-// Open-when letters
-const notes={miss:`Hey, Shibu. \u{2764}\u{FE0F}\n\nIf you're reading this because you miss me, I wish I could make that feeling disappear with one hug.\n\nUntil I can, imagine me sitting beside you, listening to whatever you want to tell me. You don't have to have something interesting to say. We don't have to do anything special.\n\nSometimes, just being together is enough.\n\nSending you the biggest virtual hug. \u{1FAC2}\u{1F497}`,smile:`Hey, silly. \u{1F979}\n\nYes, you. The person reading this.\n\nI hope you're smiling at least a little right now. If not, imagine me trying my absolute best to make you laugh and somehow making the situation ten times more embarrassing.\n\nThere. That's probably more realistic. \u{1F602}\u{2764}\u{FE0F}`,bad:`Hey, my favourite person. \u{1F497}\n\nYou don't have to pretend you're okay all the time. Some days are difficult, and you deserve space to feel whatever you're feeling.\n\nTake a breath. Drink some water. Give yourself a little time. You don't need to solve everything today.\n\nI hope tomorrow feels lighter, and I hope you remember that one difficult day doesn't define you. \u{1F338}`,remember:`Look at how far we've come, Shibu. \u{2764}\u{FE0F}\n\nThere's still so much we haven't experienced together. More conversations, more laughter, more memories, and hopefully lots of moments when we forget to check our phones because we're too busy enjoying ourselves.\n\nI don't know exactly what every chapter of our story will look like. But I'm happy that you're part of the story I'm living right now. \u{1F48C}`};
-const cats={miss:'\u{1F63D}',smile:'\u{1F639}',bad:'\u{1F431}',remember:'\u{1F63B}'};
-$$('[data-note]').forEach(b=>b.addEventListener('click',()=>{$('#notePanel').hidden=false;$('#noteCat').textContent=cats[b.dataset.note];typeInto($('#noteText'),notes[b.dataset.note])}));
-
-// Official YouTube embed for the requested song. Playback begins only after a user tap.
-const ytPlayer=$('#ytPlayer');
-const youtubeSong='https://www.youtube.com/embed/nyuo9-OjNNg?autoplay=1&playsinline=1&rel=0&enablejsapi=1';
-let musicStarted=false;
-function startMusic(){
-  go('song');
-  if(!musicStarted){ytPlayer.src=youtubeSong;musicStarted=true;$('#songDisc').classList.add('playing');$('#musicToggle').textContent='Stop our music';$('#playSong').textContent='Restart I Wanna Be Yours';$('#songSubtitle').textContent='Now playing: I Wanna Be Yours by Arctic Monkeys.';}
+function showToast(message) {
+  const toast = $("#toast");
+  toast.textContent = message;
+  toast.classList.add("show");
+  clearTimeout(showToast.timer);
+  showToast.timer = setTimeout(() => toast.classList.remove("show"), 2400);
 }
-function stopMusic(){
-  ytPlayer.src='about:blank';musicStarted=false;$('#songDisc').classList.remove('playing');$('#musicToggle').textContent='Start our music';$('#playSong').textContent='Play I Wanna Be Yours';$('#songSubtitle').textContent='Music stopped. Tap play whenever you want to listen again.';
+
+function showSection(index) {
+  currentIndex = Math.max(0, Math.min(index, sectionIds.length - 1));
+
+  $$("#" + sectionIds.join(", #")).forEach(section => {
+    section.classList.remove("active");
+  });
+
+  const activeSection = $("#" + sectionIds[currentIndex]);
+  activeSection.classList.add("active");
+
+  $$(".page-count").forEach(el => {
+    el.textContent = (currentIndex + 1) + " / " + sectionIds.length;
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (activeSection.id === "letter") typeLetter();
+  if (activeSection.id === "final") typeFinal();
+  if (activeSection.id === "animation" && !animePlayed) playAnime();
 }
-$('#musicToggle').addEventListener('click',()=>musicStarted?stopMusic():startMusic());
-$('#playSong').addEventListener('click',()=>{if(musicStarted){ytPlayer.src='about:blank';musicStarted=false;}startMusic()});
-$('#stopSong').addEventListener('click',stopMusic);
+
+document.addEventListener("click", event => {
+  const go = event.target.closest("[data-go]");
+  const next = event.target.closest("[data-next]");
+  const back = event.target.closest("[data-back]");
+
+  if (go) {
+    const target = sectionIds.indexOf(go.dataset.go);
+    if (target >= 0) showSection(target);
+  }
+
+  if (next) showSection(currentIndex + 1);
+  if (back) showSection(currentIndex - 1);
+});
+
+/* --------------------------------------------------
+   STAR BACKGROUND
+-------------------------------------------------- */
+
+(function makeStars() {
+  const stars = $("#stars");
+  const symbols = ["✦", "·", "✧", "⋆"];
+
+  for (let i = 0; i < 65; i++) {
+    const star = document.createElement("span");
+    star.className = "star";
+    star.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    star.style.left = Math.random() * 100 + "%";
+    star.style.top = Math.random() * 100 + "%";
+    star.style.fontSize = (7 + Math.random() * 13) + "px";
+    star.style.animationDelay = Math.random() * 4 + "s";
+    star.style.animationDuration = (2 + Math.random() * 4) + "s";
+    stars.appendChild(star);
+  }
+})();
+
+/* --------------------------------------------------
+   MAGIC AUTO-TYPING
+-------------------------------------------------- */
+
+const letterText =
+`Dear Shibu,
+
+I have a tiny problem.
+
+Whenever I try to act cool around you, my brain suddenly behaves like it has no internet connection. 😭
+
+You make ordinary days feel special, and somehow even a random conversation with you becomes the best part of my day.
+
+Also, I would like to formally complain that you're way too cute. It's distracting. How am I supposed to focus on anything when my favourite person exists?
+
+If being adorable was a crime, you'd be serving 27 life sentences. And yes, I'd still visit you. With snacks. 😂
+
+I can't promise I'll always have the perfect words, but I can promise that you'll always have someone who wants to make you smile, listen to you, and annoy you with affection.
+
+So here's your official reminder:
+You're beautiful, you're precious, and you're ridiculously important to me.
+
+Now stop smiling at your screen like that.
+Actually, don't stop. I wish I could see it. 💗
+
+Yours,
+The boy who is absolutely, embarrassingly gone for you. 🌹`;
+
+const finalText =
+`Shibu,
+
+If life were an anime, you'd be the character who walks into the scene and makes the whole soundtrack change.
+
+I'd probably run toward you dramatically, trip over absolutely nothing, drop the bouquet, pick it up, and still try to act smooth.
+
+And somehow, you'd still be my favourite person in the entire story. 😂💗
+
+Thank you for being you.
+For making me smile.
+For being the person I want to tell the little things to.
+
+No fancy speech can explain all of it perfectly.
+
+But if you remember one thing from this little universe, remember this:
+
+You are loved.
+You are appreciated.
+And you have a boy who thinks he's the main character until you show up. 🌸
+
+P.S. I reserve the right to steal a hug.
+Terms and conditions apply.
+No refunds. 😌💗`;
+
+function typeMagic(element, text, speed = 34) {
+  if (!element) return;
+
+  clearInterval(element._typingTimer);
+  element.textContent = "";
+  let i = 0;
+
+  function typeOne() {
+    if (i >= text.length) {
+      clearInterval(element._typingTimer);
+      element._typingTimer = null;
+      return;
+    }
+
+    const char = text[i++];
+    if (char === "\n" || char === " ") {
+      element.appendChild(document.createTextNode(char));
+    } else {
+      const span = document.createElement("span");
+      span.className = "magic-char";
+      span.textContent = char;
+      element.appendChild(span);
+    }
+
+    if (i < text.length) {
+      element._typingTimer = setTimeout(typeOne, char === "\n" ? speed * 3 : speed);
+    } else {
+      element._typingTimer = null;
+    }
+  }
+
+  typeOne();
+}
+
+function typeLetter() {
+  const el = $("#loveLetter");
+  if (el.dataset.done === "yes") return;
+  el.dataset.done = "yes";
+  typeMagic(el, letterText, 24);
+}
+
+$("#retypeLetter").addEventListener("click", () => {
+  typeMagic($("#loveLetter"), letterText, 24);
+});
+
+function typeFinal() {
+  const el = $("#finalLetter");
+  if (el.dataset.done === "yes") return;
+  el.dataset.done = "yes";
+  typeMagic(el, finalText, 24);
+}
+
+/* --------------------------------------------------
+   FLIRTY MESSAGES
+-------------------------------------------------- */
+
+const flirtMessages = {
+  1: [
+    "You're ridiculously pretty. I would say it less often, but I don't want to lie. 😌💗",
+    "Your smile deserves its own fan club. I volunteer as president. 🫡",
+    "You're the kind of person who makes a normal day feel like a favourite memory. 🌸"
+  ],
+  2: [
+    "If you were here right now, I'd try to say something smooth... then forget English. 😳",
+    "I was going to play hard to get, but then I remembered I'm already easy to get when it comes to you. 😂",
+    "Are you a notification? Because one from you can fix my entire mood. 💌"
+  ],
+  3: [
+    "My heart has one brain cell, and it screams your name all day. 😭",
+    "I'm not saying you're distracting, but I just forgot why I opened this section. Oh right. YOU. 😹",
+    "Relationship status: emotionally sponsored by your smile. 😂💗"
+  ],
+  4: [
+    "Even on your not-so-good days, you deserve kindness, patience, and a little reminder that you're loved. 🫶",
+    "You don't have to be perfect to be precious to me. You just have to be you. 💗",
+    "If I could send a hug through the screen, I'd send the deluxe, extra-squishy edition. 🤗"
+  ]
+};
+
+$$("[data-flirt]").forEach(button => {
+  button.addEventListener("click", () => {
+    const list = flirtMessages[button.dataset.flirt];
+    const message = list[Math.floor(Math.random() * list.length)];
+    typeMagic($("#flirtResult"), message, 26);
+  });
+});
+
+/* --------------------------------------------------
+   HEART CATCHING GAME
+-------------------------------------------------- */
+
+let caught = 0;
+
+function resetGame() {
+  caught = 0;
+  $("#score").textContent = "Hearts caught: 0 / 5";
+  $("#gameFeedback").textContent = "Your mission starts now, cutie!";
+
+  $$(".floating-heart").forEach((heart, i) => {
+    heart.style.display = "block";
+    heart.style.left = [ "12%", "65%", "40%", "80%", "25%" ][i];
+    heart.style.top = [ "20%", "40%", "68%", "15%", "48%" ][i];
+  });
+}
+
+$$(".floating-heart").forEach(heart => {
+  heart.addEventListener("click", () => {
+    if (heart.style.display === "none") return;
+
+    heart.style.display = "none";
+    caught++;
+    $("#score").textContent = "Hearts caught: " + caught + " / 5";
+
+    if (caught >= 5) {
+      $("#gameFeedback").textContent =
+        "YOU WIN! 🏆 Congratulations, you caught my heart. Unfortunately, it's non-refundable. 💗";
+      showToast("Mission complete, cutie! 💗");
+    } else {
+      $("#gameFeedback").textContent = [
+        "Oho! Look at you go! 💕",
+        "My heart is getting nervous. 😳",
+        "You're dangerously good at this. 💗",
+        "Almost there, superstar! 🌟"
+      ][Math.min(caught - 1, 3)];
+    }
+  });
+});
+
+$("#resetGame").addEventListener("click", resetGame);
+
+/* --------------------------------------------------
+   RELATIONSHIP QUIZ
+-------------------------------------------------- */
+
+const quizData = [
+  {
+    q: "What happens to my brain when you look extra cute?",
+    a: ["It works perfectly", "It forgets how to function", "It writes a tax report"],
+    correct: 1,
+    response: "Correct. Brain.exe has stopped working. 😭"
+  },
+  {
+    q: "What is my favourite kind of notification?",
+    a: ["A weather alert", "Your message", "A software update"],
+    correct: 1,
+    response: "Obviously yours. Even my phone knows. 💌"
+  },
+  {
+    q: "What's the best way to fix a bad day?",
+    a: ["A little kindness and a chat", "Fight a chair", "Eat a textbook"],
+    correct: 0,
+    response: "Exactly. And you deserve that kindness too. 🫶"
+  },
+  {
+    q: "If we were in an anime, what would I do when I saw you?",
+    a: ["Run dramatically with a bouquet", "Pretend I don't know you", "Turn into a potato"],
+    correct: 0,
+    response: "The dramatic running scene is already in this website. 😂🌹"
+  },
+  {
+    q: "Final question: who's my favourite girl?",
+    a: ["A random celebrity", "A cartoon character", "Shibu, obviously!"],
+    correct: 2,
+    response: "Correct answer! Please collect your imaginary crown. 👑💗"
+  }
+];
+
+let quizIndex = 0;
+let quizScore = 0;
+let quizFinished = false;
+
+function renderQuiz() {
+  const question = quizData[quizIndex];
+  const choices = $("#quizChoices");
+  choices.textContent = "";
+  $("#quizFeedback").textContent = "";
+
+  if (!question) return;
+
+  $("#quizQuestion").textContent = question.q;
+  $("#quizProgress").textContent =
+    "Question " + (quizIndex + 1) + " of " + quizData.length;
+
+  question.a.forEach((answer, index) => {
+    const button = document.createElement("button");
+    button.className = "choice-button";
+    button.textContent = answer;
+
+    button.addEventListener("click", () => {
+      if (quizFinished || button.disabled) return;
+
+      $$(".choice-button", choices).forEach(b => b.disabled = true);
+
+      if (index === question.correct) {
+        quizScore++;
+        $("#quizFeedback").textContent = question.response;
+      } else {
+        $("#quizFeedback").textContent =
+          "Not quite! 😂 The correct answer was: " +
+          question.a[question.correct] + ".";
+      }
+
+      const next = document.createElement("button");
+      next.className = "primary";
+      next.style.marginTop = "12px";
+      next.textContent = quizIndex === quizData.length - 1 ? "See my score 💗" : "Next question →";
+
+      next.addEventListener("click", () => {
+        quizIndex++;
+        if (quizIndex >= quizData.length) {
+          quizFinished = true;
+          $("#quizQuestion").textContent = "Quiz complete! 🎉";
+          choices.textContent = "";
+          $("#quizProgress").textContent = "Your score: " + quizScore + " / " + quizData.length;
+          $("#quizFeedback").textContent =
+            quizScore === quizData.length
+              ? "Perfect score! You are officially the CEO of this tiny universe. 👑💗"
+              : "You scored " + quizScore + " out of " + quizData.length +
+                ". Your prize is unlimited affection and one very dramatic bouquet. 🌹";
+        } else {
+          renderQuiz();
+        }
+      });
+
+      choices.appendChild(next);
+    });
+
+    choices.appendChild(button);
+  });
+}
+
+function restartQuiz() {
+  quizIndex = 0;
+  quizScore = 0;
+  quizFinished = false;
+  renderQuiz();
+}
+
+$("#restartQuiz").addEventListener("click", restartQuiz);
+renderQuiz();
+
+/* --------------------------------------------------
+   OPEN-WHEN MESSAGES
+-------------------------------------------------- */
+
+const openMessages = {
+  sad:
+    "Hey, cutie. You don't have to pretend to be okay every second. Take a breath, get comfortable, and give yourself some kindness. You matter on your sad days just as much as on your happy ones. Sending you the biggest virtual hug. 🤗💗",
+  miss:
+    "You miss me? That's suspicious... because I was just thinking about you too. 😌 Imagine me showing up with a bouquet, a hug, and absolutely no ability to act normal around you. 🌹",
+  angry:
+    "Okay, madam, I'll put my imaginary helmet on. 😂 But seriously, I want to listen and understand, not win an argument. Tell me what hurt you when you're ready. You matter more than my ego. 💗",
+  happy:
+    "LOOK AT YOU BEING HAPPY! 🌸 Someone alert the universe because my favourite person is having a good moment. I hope this happiness stays around and gives you a million reasons to smile. Save one smile for me, please. 😽"
+};
+
+$$("[data-open]").forEach(button => {
+  button.addEventListener("click", () => {
+    typeMagic($("#openMessage"), openMessages[button.dataset.open], 25);
+  });
+});
+
+/* --------------------------------------------------
+   ANIME-STYLE RUN + ROSE SCENE
+-------------------------------------------------- */
+
+let animePlayed = false;
+
+function playAnime() {
+  const boy = $("#animeBoy");
+  const girl = $("#animeGirl");
+  const rose = $("#animeRose");
+  const caption = $("#animeCaption");
+  const message = $("#animeMessage");
+
+  animePlayed = true;
+
+  [boy, girl, rose].forEach(el => {
+    el.style.animation = "none";
+    void el.offsetWidth;
+  });
+
+  boy.style.left = "";
+  boy.style.opacity = "1";
+  boy.style.animation = "boyRun 4.5s cubic-bezier(.35,.05,.65,.95) forwards";
+
+  girl.style.opacity = "0";
+  girl.style.animation = "girlAppear 1.4s ease both";
+  girl.style.animationDelay = "3.5s";
+
+  rose.style.opacity = "0";
+  rose.style.animation = "roseGive 1.2s ease-out forwards";
+  rose.style.animationDelay = "4.5s";
+
+  caption.textContent = "The moment he sees her... 💗";
+  message.textContent = "He practised what to say. Then he saw her and forgot every word. 😂";
+
+  setTimeout(() => {
+    caption.textContent = "Mission: deliver bouquet. Heart: absolutely panicking. 🌹";
+  }, 1800);
+
+  setTimeout(() => {
+    caption.textContent = "And then... she smiles. 🌸";
+    typeMagic(message,
+      "He ran all this way just to give her flowers. Then she smiled, and suddenly the whole world felt like the ending of his favourite anime. 💗",
+      25);
+  }, 4600);
+}
+
+$("#replayAnime").addEventListener("click", playAnime);
+
+/* --------------------------------------------------
+   ROMANTIC LYRIC-FREE INSTRUMENTAL
+   Browser-generated original melody.
+-------------------------------------------------- */
+
+let audioContext = null;
+let masterGain = null;
+let musicPlaying = false;
+let musicTimer = null;
+let noteIndex = 0;
+let nextNoteTime = 0;
+
+const melody = [
+  261.63, 329.63, 392.00, 329.63,
+  293.66, 349.23, 440.00, 349.23,
+  261.63, 329.63, 392.00, 523.25,
+  440.00, 392.00, 329.63, 293.66
+];
+
+function ensureAudio() {
+  const AudioCtx = window.AudioContext || window.webkitAudioContext;
+
+  if (!AudioCtx) {
+    showToast("This browser doesn't support generated music.");
+    return false;
+  }
+
+  if (!audioContext) {
+    audioContext = new AudioCtx();
+    masterGain = audioContext.createGain();
+    masterGain.gain.value = 0.18;
+    masterGain.connect(audioContext.destination);
+  }
+
+  return true;
+}
+
+function playNote(frequency, start, duration) {
+  if (!audioContext || !masterGain) return;
+
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(frequency, start);
+
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(0.12, start + 0.08);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+  osc.connect(gain);
+  gain.connect(masterGain);
+
+  osc.start(start);
+  osc.stop(start + duration + 0.03);
+
+  // A soft upper harmony adds a gentle romantic shimmer.
+  const harmony = audioContext.createOscillator();
+  const harmonyGain = audioContext.createGain();
+
+  harmony.type = "sine";
+  harmony.frequency.setValueAtTime(frequency * 1.5, start);
+  harmonyGain.gain.setValueAtTime(0.0001, start);
+  harmonyGain.gain.exponentialRampToValueAtTime(0.025, start + 0.1);
+  harmonyGain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+
+  harmony.connect(harmonyGain);
+  harmonyGain.connect(masterGain);
+
+  harmony.start(start);
+  harmony.stop(start + duration + 0.03);
+}
+
+function scheduleMusic() {
+  if (!musicPlaying || !audioContext) return;
+
+  while (nextNoteTime < audioContext.currentTime + 0.4) {
+    const frequency = melody[noteIndex % melody.length];
+    playNote(frequency, nextNoteTime, 0.48);
+
+    noteIndex++;
+    nextNoteTime += 0.48;
+  }
+
+  musicTimer = setTimeout(scheduleMusic, 120);
+}
+
+async function startMusic() {
+  if (!ensureAudio()) return;
+
+  try {
+    await audioContext.resume();
+
+    if (musicPlaying) return;
+
+    musicPlaying = true;
+    nextNoteTime = audioContext.currentTime + 0.05;
+    scheduleMusic();
+
+    $("#musicToggle").textContent = "♫ Pause our music";
+    showToast("Our little instrumental is playing. 💗");
+  } catch (error) {
+    musicPlaying = false;
+    showToast("Tap the music button again to allow audio.");
+  }
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  clearTimeout(musicTimer);
+
+  if (masterGain && audioContext) {
+    masterGain.gain.cancelScheduledValues(audioContext.currentTime);
+    masterGain.gain.setTargetAtTime(0.0001, audioContext.currentTime, 0.08);
+  }
+
+  $("#musicToggle").textContent = "♫ Start our music";
+
+  // Rebuild the audio graph on the next start so volume returns smoothly.
+  setTimeout(() => {
+    if (!musicPlaying && masterGain && audioContext) {
+      masterGain.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    }
+  }, 250);
+}
+
+$("#musicToggle").addEventListener("click", async () => {
+  if (musicPlaying) {
+    stopMusic();
+  } else {
+    if (masterGain && audioContext) {
+      masterGain.gain.setValueAtTime(0.18, audioContext.currentTime);
+    }
+    await startMusic();
+  }
+});
+
+$("#finalMusic").addEventListener("click", async () => {
+  if (musicPlaying) {
+    stopMusic();
+  } else {
+    if (masterGain && audioContext) {
+      masterGain.gain.setValueAtTime(0.18, audioContext.currentTime);
+    }
+    await startMusic();
+  }
+});
+
+/*
+ Browsers may block audio before a user gesture.
+ Try once on page load; if blocked, the visitor can tap Start our music.
+*/
+window.addEventListener("load", () => {
+  startMusic().catch(() => {
+    $("#musicToggle").textContent = "♫ Tap for our music";
+  });
+});
+
+/* --------------------------------------------------
+   REPLAY THE WEBSITE
+-------------------------------------------------- */
+
+$("#replayAll").addEventListener("click", () => {
+  $("#loveLetter").dataset.done = "";
+  $("#finalLetter").dataset.done = "";
+
+  restartQuiz();
+  resetGame();
+  animePlayed = false;
+
+  showSection(0);
+  showToast("Back to the beginning, Shibu. 💗");
+});
+
+/* --------------------------------------------------
+   SMALL INTERACTION SPARKLES
+-------------------------------------------------- */
+
+document.addEventListener("click", event => {
+  if (event.target.closest("button")) {
+    const sparkle = document.createElement("span");
+    sparkle.textContent = ["✦", "✨", "♡"][Math.floor(Math.random() * 3)];
+    sparkle.style.position = "fixed";
+    sparkle.style.left = event.clientX + "px";
+    sparkle.style.top = event.clientY + "px";
+    sparkle.style.zIndex = "20";
+    sparkle.style.pointerEvents = "none";
+    sparkle.style.color = "#ffd0ee";
+    sparkle.style.fontSize = "20px";
+    sparkle.style.transition = "transform .65s ease, opacity .65s ease";
+    document.body.appendChild(sparkle);
+
+    requestAnimationFrame(() => {
+      sparkle.style.transform = "translateY(-30px) scale(1.5)";
+      sparkle.style.opacity = "0";
+    });
+
+    setTimeout(() => sparkle.remove(), 700);
+  }
+});
+
+/* --------------------------------------------------
+   STARTUP
+-------------------------------------------------- */
+
+resetGame();
+renderQuiz();
+showSection(0);
 </script>
 </body>
 </html>
