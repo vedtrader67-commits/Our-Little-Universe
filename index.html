@@ -1,1896 +1,249 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<meta name="theme-color" content="#03101f">
-<meta name="description" content="Holly Cow watch-together room">
-<title>Holly Cow</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#190d2b">
+<meta name="description" content="A tiny pink universe made just for Shibu.">
+<title>The Box of Us ðŸ’—</title>
 <style>
-:root{
-  --bg:#020711;
-  --bg2:#061325;
-  --panel:#07172b;
-  --panel2:#0a1e36;
-  --line:#17406b;
-  --line2:#1c5b92;
-  --blue:#269cff;
-  --cyan:#55e7ff;
-  --text:#ecf8ff;
-  --muted:#8ca9c7;
-  --good:#35e69b;
-  --warn:#ffd166;
-  --bad:#ff6685;
-  --shadow:0 0 45px rgba(24,144,255,.16);
-  --radius:18px;
-}
-*{box-sizing:border-box}
-html,body{width:100%;max-width:100%;overflow-x:hidden}
-body{-webkit-text-size-adjust:100%;touch-action:pan-y;overscroll-behavior-x:none}
-button,.btn,input,.select{touch-action:manipulation}
-html{background:var(--bg);scroll-behavior:smooth}
-body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -15%,#0c3d70 0,#061528 34%,#020711 72%);color:var(--text);font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;box-shadow:inset 0 0 120px rgba(38,156,255,.10)}
-button,input,select{font:inherit}
-button{cursor:pointer}
-button:disabled{cursor:not-allowed;opacity:.5}
-.hidden{display:none!important}
-.app{width:min(1500px,100%);margin:auto;padding:14px}
-.card{background:linear-gradient(180deg,rgba(9,29,51,.97),rgba(4,15,28,.97));border:1px solid var(--line2);border-radius:var(--radius);box-shadow:var(--shadow),0 0 28px rgba(38,156,255,.08)}
-.top{position:sticky;top:10px;z-index:20;min-height:66px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;backdrop-filter:blur(14px)}
-.brand{font-weight:950;letter-spacing:.4px;font-size:21px}
-.glow{color:var(--cyan);text-shadow:0 0 20px rgba(85,231,255,.5)}
-.user{display:flex;align-items:center;gap:10px;min-width:0}
-.avatar{width:38px;height:38px;border-radius:50%;border:1px solid var(--line2);object-fit:cover;background:#0b2948}
-.userText{min-width:0}
-.userText b,.userText span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
-.userText span{font-size:12px;color:var(--muted)}
-.grid{display:grid;grid-template-columns:300px minmax(0,1fr) 320px;gap:14px;margin-top:14px}
-.side{padding:16px;min-height:720px}
-.main{padding:14px;min-height:720px}
-.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 12px;font-size:15px}
-.muted{color:var(--muted)}
-.small{font-size:12px}
-.hr{height:1px;background:var(--line);margin:16px 0}
-.stack{display:grid;gap:9px}
-.row{display:flex;gap:8px;align-items:center}
-.row.wrap{flex-wrap:wrap}
-.input,.select{width:100%;border:1px solid var(--line);background:#03101f;color:var(--text);border-radius:11px;padding:10px 12px;outline:none}
-.input:focus,.select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(38,156,255,.12)}
-.btn{min-height:50px;border:1px solid rgba(85,231,255,.62);background:linear-gradient(180deg,#0b2b4b,#071a30);color:var(--text);border-radius:13px;padding:10px 15px;transition:.14s ease;white-space:nowrap;font-weight:800;box-shadow:0 0 16px rgba(38,156,255,.20),inset 0 0 14px rgba(85,231,255,.05)}
-.btn:hover{transform:translateY(-1px);border-color:var(--blue);box-shadow:0 0 20px rgba(38,156,255,.15)}
-.btn.primary{background:linear-gradient(135deg,#087be0,#17b9ff);border-color:#55e7ff;color:white;font-weight:900;box-shadow:0 0 28px rgba(38,156,255,.40),inset 0 0 16px rgba(255,255,255,.08)}
-.btn.danger{border-color:#7e2940;color:#ff9eb0;background:#260e18}
-.btn.ghost{background:transparent}
-.btn.full{width:100%}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.stat{padding:12px;border:1px solid var(--line);border-radius:13px;background:#041326;text-align:center;min-width:0}
-.stat b{display:block;font-size:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.stat span{display:block;margin-top:3px;font-size:10px;letter-spacing:1.2px;color:var(--muted)}
-.roomBox{padding:13px;border:1px solid var(--line2);border-radius:14px;background:rgba(4,19,36,.8);margin-top:12px}
-.roomCode{font-size:29px;font-weight:950;letter-spacing:6px;color:var(--cyan);text-shadow:0 0 22px rgba(85,231,255,.35);text-align:center;padding:5px 0}
-.video{position:relative;aspect-ratio:16/9;background:#000;border-radius:14px;overflow:hidden;border:1px solid #12375b;box-shadow:0 0 40px rgba(0,0,0,.45)}
-.video video{width:100%;height:100%;display:block;background:#000;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
-.emptyVideo{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:30px;background:radial-gradient(circle,#0a2948,#02060d 65%)}
-.emptyVideo b{font-size:20px;display:block;margin-bottom:5px}
-.controls{padding:12px 0 0}
-.range{width:100%;accent-color:var(--blue);cursor:pointer}
-.controlrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr)) auto;align-items:center;gap:8px;margin-top:10px}
-.time{font-size:12px;color:var(--muted);margin-left:auto;white-space:nowrap}
-.people{display:grid;gap:7px}
-.person{display:flex;align-items:center;gap:9px;padding:9px;border-radius:11px;background:#041326;border:1px solid #0e2b49}
-.person img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#09233c}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 10px var(--good);flex:none}
-.library{display:grid;gap:7px;max-height:380px;overflow:auto;padding-right:2px}
-.libraryGate{padding:11px;border:1px solid var(--line2);border-radius:13px;background:rgba(3,16,31,.8);box-shadow:0 0 18px rgba(38,156,255,.12)}
-.file{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center;padding:9px;border:1px solid #0e2d4c;border-radius:12px;background:#041326}
-.fileName{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fileMeta{font-size:11px;color:var(--muted)}
-.fileActions{display:flex;gap:5px}
-.fileActions .btn{padding:7px 8px;font-size:12px}
-.progress{height:7px;background:#03101f;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-top:8px}
-.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#178fff,#5beaff);box-shadow:0 0 15px #32bfff}
-.chat{height:520px;display:flex;flex-direction:column}
-.messages{flex:1;overflow:auto;padding:4px 1px 8px;display:flex;flex-direction:column;gap:7px}
-.msg{max-width:92%;padding:8px 10px;border-radius:12px;background:#041326;border:1px solid #0e2d4c}
-.msg b{font-size:11px;color:var(--cyan)}
-.msg p{margin:2px 0 0;white-space:pre-wrap;word-break:break-word}
-.chatbox{display:flex;gap:7px;border-top:1px solid var(--line);padding-top:9px}
-.chatbox .input{min-width:0}
-.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#06182b;border:1px solid var(--line2);box-shadow:0 0 35px rgba(38,156,255,.25);padding:11px 15px;border-radius:12px;z-index:100;color:var(--text);transition:.2s ease;max-width:min(90vw,560px);text-align:center}
-.toast.show{opacity:1;transform:translate(-50%,0)}
-.error{color:#ff9aad;font-size:12px;min-height:18px}
-.ok{color:#73f0b7;font-size:12px;min-height:18px}
-.login{min-height:100vh;display:grid;place-items:center;padding:16px 12px}
-.loginCard{width:min(420px,100%);padding:22px 20px;text-align:center}
-.logoMark{width:68px;height:68px;border-radius:20px;margin:0 auto 12px;display:grid;place-items:center;font-size:34px;font-weight:950;background:radial-gradient(circle at 35% 30%,#65efff,#1578dd 50%,#06172c 100%);box-shadow:0 0 45px rgba(38,156,255,.35);border:1px solid #48caff}
-.loginCard h1{margin:0 0 6px;font-size:29px}
-.loginCard p{color:var(--muted);margin:0 auto 14px;max-width:360px}
-.authError{margin-top:10px;color:#ff91a5;font-size:12px;word-break:break-word}
-.badge{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:5px 9px;color:var(--muted);font-size:11px}
-.badge i{width:6px;height:6px;border-radius:50%;background:var(--good);box-shadow:0 0 8px var(--good)}
-.drop{border:1px dashed #286493;border-radius:13px;padding:15px;text-align:center;background:#03101f;color:var(--muted);transition:.15s}
-.drop.drag{border-color:var(--cyan);background:#062342;color:var(--text)}
-
-/* Fullscreen chat + custom touch controls */
-.fullscreenChat{position:absolute;right:12px;top:12px;width:min(270px,34vw);max-height:55%;display:flex;flex-direction:column;gap:7px;z-index:20;pointer-events:none}
-.fullscreenMsg{background:rgba(2,12,25,.82);border:1px solid rgba(85,231,255,.5);box-shadow:0 0 18px rgba(38,156,255,.2);backdrop-filter:blur(8px);border-radius:11px;padding:7px 9px;color:var(--text);font-size:12px;line-height:1.3;animation:chatIn .2s ease}
-.fullscreenMsg p{margin:0;white-space:pre-wrap;word-break:break-word;max-height:48px;overflow:hidden}
-.typingPopup{position:absolute;right:12px;bottom:94px;z-index:32;max-width:min(230px,55vw);padding:7px 10px;border:1px solid rgba(85,231,255,.55);border-radius:11px;background:rgba(2,12,25,.84);backdrop-filter:blur(9px);box-shadow:0 0 20px rgba(38,156,255,.24);font-size:11px;color:var(--text);opacity:0;transform:translateY(7px);pointer-events:none;transition:.18s ease}
-.typingPopup.show{opacity:1;transform:translateY(0)}
-.typingLine{min-height:18px;padding:3px 2px;color:var(--cyan);font-size:11px;opacity:0;transition:.15s ease}
-.typingLine.show{opacity:1}
-.fullscreenTyping{padding:4px 8px;color:var(--cyan);font-size:10px;min-height:17px}
-
-@keyframes chatIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
-.fullscreenControls{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;gap:10px;z-index:35;opacity:0;pointer-events:none;transition:opacity .18s ease}
-.fullscreenControls.show{opacity:1;pointer-events:auto}
-.fsBtn{width:64px;height:64px;border-radius:50%;border:1px solid rgba(85,231,255,.8);background:rgba(3,16,31,.78);color:#fff;display:grid;place-items:center;font-size:23px;font-weight:900;box-shadow:0 0 22px rgba(38,156,255,.45),inset 0 0 12px rgba(85,231,255,.08);backdrop-filter:blur(8px);touch-action:manipulation}
-.fsBtn.small{width:56px;height:56px;font-size:21px}
-.fsBtn.chatToggle{width:52px;height:52px;font-size:20px;margin-right:2px}
-.fsBtn:active{transform:scale(.94)}
-.fullscreenChatPanel{position:absolute;right:12px;bottom:92px;width:min(300px,calc(100vw - 24px));height:min(42vh,360px);z-index:34;display:flex;flex-direction:column;background:rgba(2,12,25,.92);border:1px solid rgba(85,231,255,.65);border-radius:14px;box-shadow:0 0 28px rgba(38,156,255,.28),inset 0 0 18px rgba(85,231,255,.04);backdrop-filter:blur(12px);overflow:hidden;opacity:0;transform:translateY(8px) scale(.98);pointer-events:none;transition:.18s ease}
-.fullscreenChatPanel.show{opacity:1;transform:translateY(0) scale(1);pointer-events:auto}
-.fullscreenChatHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border-bottom:1px solid rgba(85,231,255,.18);font-size:12px;font-weight:800}
-.fullscreenChatHead .btn{padding:5px 8px;font-size:10px}
-.fullscreenChatMessages{flex:1;min-height:0;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
-.fullscreenChatItem{max-width:88%;padding:6px 8px;border-radius:10px;background:#041326;border:1px solid #0e2d4c;font-size:11px;line-height:1.25;align-self:flex-start}
-.fullscreenChatItem.mine{align-self:flex-end;border-color:#1b6aa0;background:#06213b}
-.fullscreenChatItem b{display:block;color:var(--cyan);font-size:9px;margin-bottom:2px}
-.fullscreenChatItem p{margin:0;white-space:pre-wrap;word-break:break-word}
-.fullscreenChatForm{display:flex;gap:6px;padding:7px;border-top:1px solid rgba(85,231,255,.18)}
-.fullscreenChatForm .input{min-width:0;height:36px;font-size:12px}
-.fullscreenChatForm .btn{padding:7px 10px;font-size:11px}
-.video:fullscreen,.video:-webkit-full-screen{width:100vw;height:100vh;aspect-ratio:auto;border:0;border-radius:0;display:flex;align-items:center;justify-content:center;background:#000}
-.video:fullscreen video,.video:-webkit-full-screen video{width:100%;height:100%;object-fit:contain}
-.video:fullscreen .fullscreenChat,.video:-webkit-full-screen .fullscreenChat{display:flex}
-.video:not(:fullscreen) .fullscreenChat{display:none}
-.video:not(:fullscreen) .fullscreenControls{display:none}
-@media(max-width:760px){
-  html{font-size:15px}
-  .app{padding:8px}
-  .top{top:4px;padding:10px 11px;min-height:58px}
-  .brand{font-size:19px}
-  .grid{display:flex;flex-direction:column;gap:10px;margin-top:10px}
-  .side,.main{min-height:0;padding:11px}
-  .side:first-child{order:1}
-  .main{order:2}
-  .side:last-child{order:3}
-  .stats{gap:6px}
-  .stat{padding:9px 5px}
-  .stat b{font-size:15px}
-  .stat span{font-size:9px}
-  .video{border-radius:12px;box-shadow:0 0 30px rgba(38,156,255,.20)}
-  .controlrow{grid-template-columns:repeat(5,1fr);gap:7px}
-  .controlrow .btn{width:100%;min-height:52px;padding:8px 5px;font-size:13px}
-  .time{grid-column:1/-1;text-align:center;margin:2px 0 0}
-  .row{gap:7px}
-  .row>.btn{min-width:0}
-  .library{max-height:280px}
-  .chat{height:420px}
-  .input,.select{min-height:50px}
-}
-  .fullscreenChat{right:8px;top:8px;width:min(235px,48vw);gap:5px}
-  .fullscreenMsg{font-size:11px;padding:6px 8px}
-  .fullscreenControls{bottom:18px;gap:7px}.fullscreenChatPanel{right:8px;bottom:82px;width:min(285px,calc(100vw - 16px));height:min(45vh,330px)}
-  .fsBtn{width:60px;height:60px}
-  .fsBtn.small{width:52px;height:52px}
-}
-@media(orientation:landscape) and (max-width:900px){
-  .app{padding:6px}
-  .main{padding:8px}
-  .video{max-height:calc(100vh - 90px)}
-  .video video{object-fit:contain}
-  .controlrow .btn{min-height:46px}
-  .fullscreenChat{right:10px;top:10px;width:min(260px,30vw)}
-  .fullscreenControls{bottom:16px}.fullscreenChatPanel{right:10px;bottom:82px}
-}
-.btn{box-shadow:0 0 10px rgba(38,156,255,.14),inset 0 0 8px rgba(85,231,255,.04)}
-.btn:hover,.btn:focus-visible{box-shadow:0 0 22px rgba(38,156,255,.45),0 0 8px rgba(85,231,255,.22),inset 0 0 10px rgba(85,231,255,.08)}
-.btn.primary{box-shadow:0 0 24px rgba(38,156,255,.38),inset 0 0 12px rgba(255,255,255,.06)}
-.btn.danger{box-shadow:0 0 16px rgba(255,50,100,.2)}
-.btn.ghost{box-shadow:0 0 12px rgba(38,156,255,.14)}
-
-.modal{position:fixed;inset:0;background:rgba(0,5,12,.78);backdrop-filter:blur(10px);z-index:90;display:grid;place-items:center;padding:16px}
-.modalCard{width:min(620px,100%);max-height:90vh;overflow:auto;padding:18px}
-.modalHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
-.hiddenText{display:none}
-.footerNote{padding:10px 0;color:var(--muted);font-size:11px;text-align:center}
-@media(max-width:1100px){.grid{grid-template-columns:270px minmax(0,1fr)}.grid>.side:last-child{grid-column:1/-1;min-height:unset}.chat{height:300px}}
-@media(max-width:760px){.app{padding:8px}.top{position:relative;top:0}.grid{grid-template-columns:1fr}.side,.main{min-height:unset}.stats{grid-template-columns:repeat(3,1fr)}.userText{display:none}.controlrow .time{width:100%;margin-left:0}.file{grid-template-columns:1fr}.fileActions{justify-content:flex-start}.chat{height:360px}}
+:root{--pink:#ff9ed7;--hot:#ff69b4;--lilac:#c8a5ff;--ink:#190d2b;--glass:rgba(35,17,55,.72);--line:rgba(255,207,239,.22);--white:#fff8ff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--ink);color:var(--white);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh;overflow-x:hidden}
+button,input{font:inherit}button{cursor:pointer}
+#sky{position:fixed;inset:0;z-index:-3;background:radial-gradient(ellipse at 20% 15%,#7b2e82 0,transparent 36%),radial-gradient(ellipse at 82% 25%,#492c83 0,transparent 35%),radial-gradient(ellipse at 50% 90%,#66265c 0,transparent 38%),linear-gradient(145deg,#10091e,#261139 52%,#170b2a);overflow:hidden}
+#sky:before,#sky:after{content:"";position:absolute;inset:-20%;background:radial-gradient(ellipse at 25% 40%,rgba(255,111,194,.22),transparent 22%),radial-gradient(ellipse at 72% 58%,rgba(174,116,255,.2),transparent 25%);filter:blur(25px);animation:nebula 16s ease-in-out infinite alternate}
+#sky:after{animation-delay:-8s;opacity:.7;transform:rotate(25deg)}
+@keyframes nebula{to{transform:translate(4%,-3%) rotate(12deg) scale(1.1)}}
+.star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px #ffc6ed;animation:twinkle 2.5s infinite alternate}
+@keyframes twinkle{from{opacity:.25;transform:scale(.7)}to{opacity:1;transform:scale(1.4)}}
+.float-heart{position:fixed;bottom:-40px;z-index:-1;pointer-events:none;animation:floatup 10s linear forwards;opacity:.7}
+@keyframes floatup{to{transform:translateY(-115vh) rotate(25deg);opacity:0}}
+header{position:sticky;top:0;z-index:10;display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(20,9,33,.72);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{font-weight:800;letter-spacing:.04em;font-size:.88rem}.brand span{color:var(--pink)}
+#musicToggle{border:1px solid var(--line);border-radius:99px;padding:9px 12px;background:#ffffff10;color:white;font-size:.83rem}
+main{width:min(760px,100%);margin:auto;padding:18px 15px 60px}
+section{display:none;min-height:72vh;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:25px 4px;animation:fadein .55s ease}
+section.active{display:flex}
+@keyframes fadein{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.eyebrow{color:#ffc5e9;letter-spacing:.18em;text-transform:uppercase;font-size:.72rem;font-weight:700}
+h1,h2{line-height:1.12;margin:12px 0 16px}h1{font-size:clamp(2.2rem,9vw,4.2rem);letter-spacing:-.04em}h2{font-size:clamp(1.8rem,7vw,2.7rem)}
+p{line-height:1.75;color:#f6eafa;max-width:600px;margin:8px auto 18px}
+.glow{color:#ffd0ef;text-shadow:0 0 22px #ff74c9aa}
+.panel{width:100%;background:var(--glass);border:1px solid var(--line);border-radius:24px;padding:22px 18px;box-shadow:0 15px 50px #08020f55;backdrop-filter:blur(12px);margin:12px 0}
+.btn{border:0;border-radius:999px;padding:13px 20px;font-weight:800;color:#321331;background:linear-gradient(100deg,#ffc3e7,#d5b7ff);box-shadow:0 7px 25px #e78bdf32;transition:transform .18s}
+.btn:active{transform:scale(.97)}.btn.secondary{background:#ffffff0e;color:#fff;border:1px solid var(--line);box-shadow:none}.btn.small{padding:9px 13px;font-size:.85rem}
+.actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:15px}
+.cat{font-size:2.7rem;display:inline-block;filter:drop-shadow(0 5px 14px #ff80cf44);animation:bob 2.8s ease-in-out infinite}
+.cat.smallcat{font-size:2.2rem}
+@keyframes bob{50%{transform:translateY(-7px) rotate(-3deg)}}
+.cat-row{display:flex;justify-content:center;gap:16px;align-items:center;margin:8px}
+.sticker{width:82px;height:82px;object-fit:contain;border-radius:14px;vertical-align:middle;filter:drop-shadow(0 4px 10px #0004)}
+.envelope{width:190px;height:130px;margin:18px auto 25px;position:relative;border-radius:10px;background:linear-gradient(145deg,#ffc2e8,#d4a7ff);box-shadow:0 12px 30px #08020f66;display:grid;place-items:center;color:#68265f;font-size:2.4rem;cursor:pointer}
+.envelope:before{content:"";position:absolute;inset:0;background:linear-gradient(35deg,transparent 49%,#ffdaf0 50%) left/50% 100% no-repeat,linear-gradient(-35deg,transparent 49%,#f4c4ff 50%) right/50% 100% no-repeat;opacity:.85}
+.envelope span{position:relative;z-index:1}.letter{white-space:pre-line;text-align:left;line-height:1.9;font-size:1rem;color:#fff3fc;min-height:140px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;width:100%;margin-top:10px}
+.card{background:#ffffff0d;border:1px solid var(--line);border-radius:18px;padding:16px 12px;text-align:left;color:white;min-height:115px}
+.card strong{display:block;margin:7px 0;color:#ffd2ee}.card span{font-size:.9rem;color:#e8d7ef}
+.memory{width:100%;text-align:left;background:#ffffff0c;border:1px solid var(--line);border-radius:16px;padding:14px;margin:8px 0}
+.memory input{display:block;margin-top:10px;max-width:100%;font-size:.85rem}
+.counter{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin:20px 0}
+.countbox{background:#ffffff10;border:1px solid var(--line);border-radius:14px;padding:12px 3px}.countbox b{font-size:1.5rem;display:block;color:#ffd1ee}.countbox small{font-size:.7rem;color:#e3cde8}
+#heartGame{position:relative;width:100%;height:290px;border:1px solid var(--line);border-radius:22px;overflow:hidden;background:linear-gradient(#3b1b53aa,#160d2caa)}
+.tapheart{position:absolute;border:0;background:transparent;font-size:2.2rem;animation:heartbob 1.4s infinite alternate}
+@keyframes heartbob{to{transform:translateY(-7px) rotate(9deg)}}
+#quizQuestion{font-size:1.1rem;font-weight:700;margin-bottom:16px}
+.quiz-option{display:block;width:100%;text-align:left;margin:8px 0;padding:12px;border-radius:13px;border:1px solid var(--line);background:#ffffff0c;color:white}
+.quiz-option:active{background:#ff9ed733}
+.song-disc{width:160px;height:160px;border-radius:50%;margin:20px auto;background:radial-gradient(circle,#ffd8ef 0 5%,#e889d1 6% 16%,#48255f 17% 20%,#b77be5 21% 35%,#2a173d 36%);box-shadow:0 0 40px #ee8cd655;display:grid;place-items:center;font-size:2rem;border:5px solid #ffffff20}
+.song-disc.playing{animation:spin 8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.barviz{height:35px;display:flex;justify-content:center;gap:4px;align-items:center}.barviz i{display:block;width:4px;height:8px;border-radius:9px;background:#ffc3e7}.playing~.barviz i{animation:bars .5s ease-in-out infinite alternate}.barviz i:nth-child(2n){animation-delay:.2s}.barviz i:nth-child(3n){animation-delay:.35s}@keyframes bars{to{height:30px}}
+input[type=date],input[type=text]{background:#160b27;color:white;border:1px solid var(--line);border-radius:10px;padding:10px;max-width:100%}
+footer{text-align:center;color:#bfa8cc;font-size:.75rem;padding:20px}
+.notice{font-size:.8rem;color:#cbb7d5}
+@media(max-width:390px){.grid{grid-template-columns:1fr}.panel{padding:18px 14px}.sticker{width:65px;height:65px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important}}
 </style>
 </head>
 <body>
-<section id="login" class="login">
-  <div class="card loginCard">
-    <div class="logoMark">●</div>
-    <h1 class="glow">Holly Cow</h1>
-    <p>Watch together.</p>
-    <button id="google" class="btn primary full">Continue with Google</button>
-    <div id="loginErr" class="authError"></div>
-    
-  </div>
+<div id="sky" aria-hidden="true"></div>
+<header><div class="brand">ðŸŒŒ THE <span>BOX OF US</span></div><button id="musicToggle" type="button">â™« Start our music</button></header>
+<main>
+<section id="welcome" class="active">
+<div class="eyebrow">a tiny universe, made for you</div>
+<div class="cat-row"><span class="cat">ðŸˆâ€â¬›</span><img class="sticker" src="https://tenor.com/sKoS5W86VL6.gif" alt="Cute animated cat love sticker" loading="lazy" referrerpolicy="no-referrer"><span class="cat">ðŸˆ</span></div>
+<h1 class="glow">Hey, Shibu...</h1>
+<p>I made something for you. It's not perfect, and maybe it's a little silly... but every little part was made with you in mind.</p>
+<p>Ready to see what's inside?</p>
+<button class="btn" data-go="letter">Open your little universe âœ¨</button>
+<p class="notice">Tip: tap â€œStart our musicâ€ whenever you're ready. ðŸ’—</p>
 </section>
 
-<div id="app" class="app hidden">
-  <header class="card top">
-    <div class="brand"><span class="glow">Holly Cow</span></div>
-    <div class="row">
-      <span id="connectionBadge" class="badge"><i></i><span>Online</span></span>
-      <div class="user">
-        <img id="avatar" class="avatar" alt="">
-        <div class="userText">
-          <b id="name">User</b>
-          <span id="email"></span>
-        </div>
-      </div>
-      <button id="logout" class="btn ghost">Log out</button>
-    </div>
-  </header>
+<section id="letter">
+<div class="eyebrow">chapter one Â· from my heart</div><h2>A little letter <span class="glow">for you</span></h2>
+<div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open the letter"><span>ðŸ’Œ</span></div>
+<div class="panel"><div class="letter" id="letterText">Tap the envelope to open your letter. ðŸ’—</div>
+<div class="actions"><button class="btn small" id="showFullLetter">Read it all</button><button class="btn secondary small" data-go="countdown">Next âœ¨</button></div></div>
+<div class="cat-row"><img class="sticker" src="https://tenor.com/sKoS5W86VL6.gif" alt="Cute cat love sticker" loading="lazy" referrerpolicy="no-referrer"><span class="cat smallcat">ðŸ’Œ</span></div>
+</section>
 
-  <main class="grid">
-    <aside class="card side">
-      <h3 class="sectionTitle">Room <span class="badge"><i></i>4 people max</span></h3>
-      <div class="stack">
-        <button id="create" class="btn primary full">Create room</button>
-        <div class="row">
-          <input id="code" class="input" maxlength="6" autocomplete="off" placeholder="6-character code">
-          <button id="join" class="btn">Join</button>
-        </div>
-        <div id="roomErr" class="error"></div>
-      </div>
-      <div id="roomBox" class="roomBox hidden">
-        <div class="small muted" style="text-align:center">YOUR ROOM CODE</div>
-        <div id="roomCode" class="roomCode">------</div>
-        <div class="row">
-          <button id="copy" class="btn full">Copy invite</button>
-          <button id="leave" class="btn danger">Leave</button>
-        </div>
-      </div>
+<section id="countdown">
+<div class="eyebrow">chapter two Â· someday soon</div><h2>Until we meet <span class="glow">for real</span> ðŸ«‚</h2>
+<div class="cat-row"><span class="cat">ðŸ±</span><span class="cat">ðŸŒ™</span></div>
+<p>One day, there won't be a screen between us. Just you and me, sharing a little moment we've been looking forward to.</p>
+<div class="panel"><div id="countMessage">Our day isn't on the calendar yet, but it's still something to look forward to. ðŸ’—</div><div class="counter" id="counter" hidden><div class="countbox"><b id="days">0</b><small>DAYS</small></div><div class="countbox"><b id="hours">0</b><small>HOURS</small></div><div class="countbox"><b id="minutes">0</b><small>MINUTES</small></div><div class="countbox"><b id="seconds">0</b><small>SECONDS</small></div></div>
+<label for="meetDate" class="notice">Set the date whenever you know it:</label><br><input type="date" id="meetDate"><button class="btn small" id="saveDate">Save date</button><p class="notice">This date is saved only in this browser.</p></div>
+<button class="btn" data-go="memories">Let's keep going ðŸ“¸</button>
+</section>
 
-      <div class="hr"></div>
-      <h3 class="sectionTitle">Library <span id="storageBadge" class="badge">Locked</span></h3>
-      <div id="libraryGate" class="libraryGate">
-        <div class="small muted">Enter the code to access the library.</div>
-        <div class="row" style="margin-top:8px">
-          <input id="adminCode" class="input" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="Admin code">
-          <button id="unlockLibrary" class="btn primary">Unlock</button>
-        </div>
-        <div id="adminError" class="error"></div>
-      </div>
-      <div id="libraryAdminArea" class="hidden">
-      <input id="filePicker" type="file" accept="video/*" class="hidden">
-      <button id="chooseFile" class="btn primary full">Add movie</button>
-      <div id="drop" class="drop" style="margin-top:8px">Drag a video here to add it</div>
-      <div id="uploadStatus" class="small muted" style="margin-top:8px">No upload running.</div>
-      <div class="progress"><i id="uploadBar"></i></div>
-      <div class="row" style="margin-top:8px">
-        <input id="searchFiles" class="input" placeholder="Search your videos…">
-        <button id="refreshFiles" class="btn">↻</button>
-      </div>
-      <div id="library" class="library" style="margin-top:8px"></div>
-      <div id="storageError" class="error"></div>
-      </div>
-    </aside>
-
-    <section class="card main">
-      <div class="stats">
-        <div class="stat"><b id="online">0</b><span>CONNECTED</span></div>
-        <div class="stat"><b id="status">Not in room</b><span>ROOM</span></div>
-        <div class="stat"><b id="roomSmall">—</b><span>CODE</span></div>
-      </div>
-
-      <div id="videoWrap" class="video">
-        <video id="video" playsinline webkit-playsinline preload="auto" controlslist="nodownload noplaybackrate" disablepictureinpicture disableremoteplayback></video>
-        <div id="fullscreenChat" class="fullscreenChat" aria-live="polite"></div>
-        <div id="typingPopup" class="typingPopup" aria-live="polite"></div>
-        <div id="fullscreenChatPanel" class="fullscreenChatPanel" aria-hidden="true">
-          <div class="fullscreenChatHead">
-            <span>Chat</span>
-            <button id="fsClearChat" class="btn ghost" type="button">Clear</button>
-          </div>
-          <div id="fullscreenTyping" class="fullscreenTyping" aria-live="polite"></div>
-          <div id="fullscreenChatMessages" class="fullscreenChatMessages"></div>
-          <form id="fullscreenChatForm" class="fullscreenChatForm">
-            <input id="fullscreenMessage" class="input" maxlength="500" autocomplete="off" placeholder="Message…">
-            <button class="btn primary" type="submit">Send</button>
-          </form>
-        </div>
-        <div id="fullscreenControls" class="fullscreenControls" aria-hidden="true">
-          <button id="fsChatToggle" class="fsBtn chatToggle" type="button" aria-label="Open chat">💬</button>
-          <button id="fsBack" class="fsBtn small" type="button" aria-label="Back 10 seconds">↶</button>
-          <button id="fsPlay" class="fsBtn" type="button" aria-label="Play or pause">▶</button>
-          <button id="fsForward" class="fsBtn small" type="button" aria-label="Forward 10 seconds">↷</button>
-        </div>
-        <div id="emptyVideo" class="emptyVideo">
-          <div>
-            <b>Choose a movie</b>
-            <span class="muted">Create or join a room, then choose a movie.</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="controls">
-        <input id="seek" class="range" type="range" min="0" max="1000" value="0">
-        <div class="controlrow">
-          <button id="back" class="btn">−10s</button>
-          <button id="play" class="btn primary">Play</button>
-          <button id="forward" class="btn">+10s</button>
-          <button id="mute" class="btn">Mute</button>
-          <button id="full" class="btn">Fullscreen</button>
-          <span id="time" class="time">00:00 / 00:00</span>
-        </div>
-      </div>
-
-      <div class="hr"></div>
-      <div class="sectionTitle">
-        <div><b id="movieTitle">No movie selected</b><div id="movieMeta" class="small muted">Choose a movie to share with the room.</div></div>
-        <span id="syncState" class="badge"><i></i>Waiting</span>
-      </div>
-    </section>
-
-    <aside class="card side">
-      <h3 class="sectionTitle">People <span id="peopleCount" class="muted">(0)</span></h3>
-      <div id="people" class="people"></div>
-      <div class="hr"></div>
-      <div class="sectionTitle">
-        <h3 style="margin:0">Room chat</h3>
-        <button id="clearChat" class="btn ghost" type="button" style="min-height:36px;padding:6px 10px;font-size:11px">Clear</button>
-      </div>
-      <div class="chat">
-        <div id="messages" class="messages"></div>
-        <div id="typingLine" class="typingLine" aria-live="polite"></div>
-        <form id="chat" class="chatbox">
-          <input id="message" class="input" maxlength="500" placeholder="Message…">
-          <button class="btn primary">Send</button>
-        </form>
-      </div>
-      
-    </aside>
-  </main>
+<section id="memories">
+<div class="eyebrow">chapter three Â· little things, big feelings</div><h2>Our little <span class="glow">memories</span> ðŸ“¸</h2>
+<p>These spaces are waiting for your real photos and moments. Tap a photo picker to add an image from your phone; it stays on this device.</p>
+<div class="panel" id="memoryList">
+<div class="memory"><strong>ðŸ’— The Beginning</strong><div>Every story has a first page.</div><input type="file" accept="image/*" data-memory="beginning"><div class="preview"></div></div>
+<div class="memory"><strong>ðŸ˜‚ Little Moments</strong><div>The conversations that still make you smile.</div><input type="file" accept="image/*" data-memory="moments"><div class="preview"></div></div>
+<div class="memory"><strong>ðŸŒ™ A memory to make</strong><div>One day, a photo from a day spent together.</div><input type="file" accept="image/*" data-memory="future"><div class="preview"></div></div>
 </div>
-
-<div id="toast" class="toast"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js';
-import {
-  getAuth,
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged,
-  signOut
-} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js';
-import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  deleteField,
-  onSnapshot,
-  collection,
-  addDoc,
-  getDocs,
-  writeBatch,
-  serverTimestamp,
-  query,
-  orderBy,
-  limit,
-  runTransaction
-} from 'https://www.gstatic.com/firebasejs/12.3.0/firebase-firestore.js';
-
-/* ================================================================
-   1. Firebase configuration
-   ================================================================ */
-const firebaseConfig = {
-  apiKey: 'AIzaSyAyw5c-W1BYIr8tmAqBEnLxw3zVEBUMxAw',
-  authDomain: 'our-universe-8229c.firebaseapp.com',
-  projectId: 'our-universe-8229c',
-  storageBucket: 'our-universe-8229c.firebasestorage.app',
-  messagingSenderId: '23799640027',
-  appId: '1:23799640027:web:ca783565b32c9fbfecc1fe',
-  measurementId: 'G-226GWG3N4M'
-};
-
-/* Render handles only small Mux control/API requests. Video bytes do NOT pass through Render. */
-const STORAGE_BACKEND = 'https://backed-0szz.onrender.com';
-const ADMIN_CODE = '9995';
-const MUX_HLS = (playbackId) => `https://stream.mux.com/${encodeURIComponent(playbackId)}.m3u8`;
-
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
-const googleProvider = new GoogleAuthProvider();
-
-/* ================================================================
-   2. Small helpers
-   ================================================================ */
-const $ = (id) => document.getElementById(id);
-let me = null;
-let roomId = '';
-let roomData = null;
-let unsubscribeRoom = null;
-let unsubscribeMessages = null;
-let suppressVideoEvents = false;
-let lastStateWrite = 0;
-let syncHeartbeatTimer = null;
-let syncCorrectionTimer = null;
-let lastRemoteStateKey = '';
-let syncControllerId = '';
-let lastUserActionAt = 0;
-let localSyncReady = false;
-let storageWorkspaceId = '';
-let storageFiles = [];
-let currentMovieFileId = '';
-let muxPlayer = null;
-let muxPlaybackId = '';
-let muxStatusPollTimer = null;
-let uploadRunning = false;
-let libraryUnlocked = false;
-let fullscreenControlTimer = null;
-let lastVideoProgressAt = Date.now();
-let lastVideoTime = 0;
-let stallRecoveryTimer = null;
-let lastFullscreenMessageId = '';
-const fullscreenMessageTimers = new Map();
-let fullscreenChatOpen = false;
-let chatMessagesCache = [];
-let clearingChat = false;
-let typingStopTimer = null;
-let typingWriteTimer = null;
-let typingVisibleTimer = null;
-let lastTypingSignature = "";
-let initialRoomMovieKey = null;
-
-function toast(message) {
-  const node = $('toast');
-  node.textContent = message;
-  node.classList.add('show');
-  clearTimeout(toast.timer);
-  toast.timer = setTimeout(() => node.classList.remove('show'), 2800);
-}
-
-function setError(message) {
-  $('roomErr').textContent = message || '';
-}
-
-function setStorageError(message) {
-  $('storageError').textContent = message || '';
-}
-
-function escapeHtml(value) {
-  return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    "'": '&#39;',
-    '"': '&quot;'
-  })[char]);
-}
-
-function randomRoomCode() {
-  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  let output = '';
-  for (let i = 0; i < 6; i += 1) {
-    output += alphabet[Math.floor(Math.random() * alphabet.length)];
-  }
-  return output;
-}
-
-function validRoomCode(value) {
-  return /^[A-Z0-9]{6}$/.test(value);
-}
-
-function displayName(user) {
-  return user?.displayName || user?.email || 'User';
-}
-
-function formatBytes(bytes) {
-  const n = Number(bytes || 0);
-  if (!n) return '0 B';
-  const units = ['B', 'KB', 'MB', 'GB'];
-  const index = Math.min(Math.floor(Math.log(n) / Math.log(1024)), units.length - 1);
-  return `${(n / Math.pow(1024, index)).toFixed(index ? 1 : 0)} ${units[index]}`;
-}
-
-function formatTime(value) {
-  const seconds = Math.max(0, Math.floor(Number(value) || 0));
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = seconds % 60;
-  if (h > 0) {
-    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  }
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-}
-
-function roomReference(code) {
-  return doc(db, 'blueRooms', code);
-}
-
-function currentInviteUrl(code) {
-  const url = new URL(location.href);
-  url.search = '';
-  url.hash = '';
-  url.searchParams.set('room', code);
-  return url.toString();
-}
-
-/* ================================================================
-   3. Authentication
-   ================================================================ */
-$('google').addEventListener('click', async () => {
-  $('loginErr').textContent = '';
-  try {
-    await signInWithPopup(auth, googleProvider);
-  } catch (error) {
-    $('loginErr').textContent = error?.message || 'Google sign-in failed.';
-  }
-});
-
-$('logout').addEventListener('click', async () => {
-  await leaveRoom(false);
-  await signOut(auth);
-});
-
-onAuthStateChanged(auth, async (user) => {
-  me = user;
-
-  if (!user) {
-    cleanupRoomUI();
-    $('app').classList.add('hidden');
-    $('login').classList.remove('hidden');
-    return;
-  }
-
-  $('login').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  $('name').textContent = displayName(user);
-  $('email').textContent = user.email || '';
-  $('avatar').src = user.photoURL || '';
-
-  // Library always starts locked after every page load/refresh.
-  // Do not persist admin access in local/session storage.
-  libraryUnlocked = false;
-
-  const inviteCode = new URLSearchParams(location.search).get('room');
-  if (inviteCode && !roomId) {
-    const normalized = inviteCode.trim().toUpperCase();
-    $('code').value = normalized;
-    await enterRoom(normalized);
-  }
-});
-
-/* ================================================================
-   4. Room creation and joining
-   ================================================================ */
-async function createRoom() {
-  if (!me) {
-    toast('Sign in first.');
-    return;
-  }
-
-  setError('');
-  $('create').disabled = true;
-
-  try {
-    await leaveRoom(false);
-
-    let code = '';
-    let created = false;
-
-    for (let attempt = 0; attempt < 12 && !created; attempt += 1) {
-      const candidate = randomRoomCode();
-      const ref = roomReference(candidate);
-      const existing = await getDoc(ref);
-      if (existing.exists()) continue;
-
-      const member = {
-        name: displayName(me),
-        photo: me.photoURL || '',
-        joinedAt: Date.now()
-      };
-
-      await setDoc(ref, {
-        code: candidate,
-        host: me.uid,
-        createdAt: serverTimestamp(),
-        updatedAt: Date.now(),
-        members: {
-          [me.uid]: member
-        },
-        movie: {
-          fileId: '',
-          title: '',
-          url: ''
-        },
-        state: {
-          playing: false,
-          time: 0,
-          updatedAt: Date.now(),
-          by: me.uid
-        }
-      });
-
-      code = candidate;
-      created = true;
-    }
-
-    if (!created) throw new Error('Could not create a unique room. Try again.');
-
-    await enterRoom(code);
-    toast(`Room ${code} created.`);
-  } catch (error) {
-    setError(error?.message || 'Could not create room.');
-    toast(error?.message || 'Could not create room.');
-  } finally {
-    $('create').disabled = false;
-  }
-}
-
-async function enterRoom(rawCode) {
-  if (!me) return;
-
-  const code = String(rawCode || '').trim().toUpperCase();
-  setError('');
-
-  if (!validRoomCode(code)) {
-    setError('Enter exactly 6 letters/numbers.');
-    return;
-  }
-
-  $('join').disabled = true;
-
-  try {
-    await leaveRoom(false);
-
-    const ref = roomReference(code);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists()) {
-      setError('Invalid room code. That room does not exist.');
-      return;
-    }
-
-    await runTransaction(db, async (transaction) => {
-      const currentSnap = await transaction.get(ref);
-      if (!currentSnap.exists()) {
-        throw new Error('Invalid room code. That room does not exist.');
-      }
-
-      const data = currentSnap.data();
-      const members = data.members || {};
-      const alreadyMember = Boolean(members[me.uid]);
-      const memberCount = Object.keys(members).length;
-
-      if (!alreadyMember && memberCount >= 4) {
-        throw new Error('Room is full. Only four people can be connected.');
-      }
-
-      if (!alreadyMember) {
-        transaction.update(ref, {
-          [`members.${me.uid}`]: {
-            name: displayName(me),
-            photo: me.photoURL || '',
-            joinedAt: Date.now()
-          },
-          updatedAt: Date.now()
-        });
-      }
-    });
-
-    roomId = code;
-    $('code').value = code;
-    $('roomCode').textContent = code;
-    $('roomSmall').textContent = code;
-    $('status').textContent = 'Connected';
-    $('roomBox').classList.remove('hidden');
-    $('syncState').innerHTML = '<i></i>Live';
-    history.replaceState(null, '', `?room=${encodeURIComponent(code)}`);
-
-    subscribeToRoom(code);
-    toast(`Joined room ${code}.`);
-  } catch (error) {
-    const message = error?.message || 'Could not join room.';
-    setError(message.includes('permission-denied') || message.includes('Missing or insufficient permissions')
-      ? 'Could not access this room. Check the room code and try again.'
-      : message);
-    toast(message.includes('permission-denied') || message.includes('Missing or insufficient permissions')
-      ? 'Firestore denied room access.'
-      : message);
-  } finally {
-    $('join').disabled = false;
-  }
-}
-
-async function leaveRoom(showToast = true) {
-  const oldRoom = roomId;
-
-  if (unsubscribeRoom) {
-    unsubscribeRoom();
-    unsubscribeRoom = null;
-  }
-
-  if (unsubscribeMessages) {
-    unsubscribeMessages();
-    unsubscribeMessages = null;
-  }
-
-  if (oldRoom && me) {
-    try {
-      const ref = roomReference(oldRoom);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const data = snap.data();
-        const members = data.members || {};
-        const count = Object.keys(members).length;
-
-        if (data.host === me.uid && count <= 1) {
-          await deleteDoc(ref);
-        } else if (members[me.uid]) {
-          await updateDoc(ref, {
-            [`members.${me.uid}`]: deleteField(),
-            updatedAt: Date.now()
-          });
-        }
-      }
-    } catch (error) {
-      console.warn('Leave room cleanup failed:', error);
-    }
-  }
-
-  roomId = '';
-  roomData = null;
-  cleanupRoomUI();
-
-  if (location.search) {
-    history.replaceState(null, '', location.pathname);
-  }
-
-  if (showToast) toast('Left room.');
-}
-
-function cleanupRoomUI() {
-  stopSyncHeartbeat();
-  stopSyncCorrection();
-  syncControllerId = '';
-  lastRemoteStateKey = '';
-
-  $('roomBox').classList.add('hidden');
-  $('status').textContent = 'Not in room';
-  $('roomSmall').textContent = '—';
-  $('online').textContent = '0';
-  $('peopleCount').textContent = '(0)';
-  $('people').innerHTML = '';
-  $('messages').innerHTML = '';
-  $('fullscreenChat').replaceChildren();
-  $('fullscreenChatMessages').replaceChildren();
-  $('fullscreenTyping').textContent = '';
-  $('typingLine').textContent = '';
-  $('typingLine').classList.remove('show');
-  $('typingPopup').textContent = '';
-  $('typingPopup').classList.remove('show');
-  clearTimeout(typingStopTimer);
-  clearTimeout(typingWriteTimer);
-  clearTimeout(typingVisibleTimer);
-  setFullscreenChatOpen(false);
-  chatMessagesCache = [];
-  roomData = null;
-  lastFullscreenMessageId = '';
-  clearTimeout(fullscreenMessageTimers.get('latest'));
-  fullscreenMessageTimers.delete('latest');
-  $('syncState').innerHTML = '<i></i>Waiting';
-  $('movieTitle').textContent = 'No movie selected';
-  $('movieMeta').textContent = 'Choose a movie to share with the room.';
-  currentMovieFileId = '';
-  initialRoomMovieKey = null;
-  setVideoSource('');
-}
-
-$('create').addEventListener('click', createRoom);
-$('join').addEventListener('click', () => enterRoom($('code').value));
-$('code').addEventListener('input', () => {
-  $('code').value = $('code').value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
-});
-$('code').addEventListener('keydown', (event) => {
-  if (event.key === 'Enter') enterRoom($('code').value);
-});
-$('leave').addEventListener('click', () => leaveRoom(true));
-$('copy').addEventListener('click', async () => {
-  if (!roomId) return;
-  const invite = currentInviteUrl(roomId);
-  try {
-    await navigator.clipboard.writeText(invite);
-    toast('Invite link copied.');
-  } catch {
-    window.prompt('Copy this invite link:', invite);
-  }
-});
-
-/* ================================================================
-   5. Firestore real-time room listener
-   ================================================================ */
-function subscribeToRoom(code) {
-  initialRoomMovieKey = null;
-  if (unsubscribeRoom) unsubscribeRoom();
-  if (unsubscribeMessages) unsubscribeMessages();
-
-  const ref = roomReference(code);
-
-  unsubscribeRoom = onSnapshot(ref, (snapshot) => {
-    if (!snapshot.exists()) {
-      toast('The room was closed.');
-      cleanupRoomUI();
-      roomId = '';
-      return;
-    }
-
-    roomData = snapshot.data();
-    if (chatMessagesCache.length || roomData.chatClearedAt) renderMessages(chatMessagesCache);
-    syncControllerId = roomData.state?.controller || roomData.state?.by || syncControllerId;
-    renderMembers(roomData.members || {});
-    renderTyping(roomData.typing || {});
-    const incomingMovie = roomData.movie || {};
-    const incomingMovieKey = `${incomingMovie.fileId || ''}:${incomingMovie.playbackId || ''}`;
-    if (initialRoomMovieKey === null) {
-      initialRoomMovieKey = incomingMovieKey;
-      // Never auto-load a movie that was already selected before this login/join/refresh.
-      renderMovie({});
-    } else if (incomingMovieKey !== initialRoomMovieKey) {
-      initialRoomMovieKey = incomingMovieKey;
-      renderMovie(incomingMovie);
-    }
-    applyRemoteState(roomData.state || {});
-    startSyncHeartbeat();
-    startSyncCorrection();
-  }, (error) => {
-    console.error(error);
-    setError(`Room sync failed: ${error.message}`);
-    toast('Room access was denied. Publish the matching blueRooms Firestore rules.');
-  });
-
-  const messagesQuery = query(
-    collection(db, 'blueRooms', code, 'messages'),
-    orderBy('createdAt', 'asc'),
-    limit(100)
-  );
-
-  unsubscribeMessages = onSnapshot(messagesQuery, (snapshot) => {
-    const messages = [];
-    snapshot.forEach((item) => messages.push({ id: item.id, ...item.data() }));
-    renderMessages(messages);
-  }, (error) => {
-    console.error(error);
-    toast(`Chat permission error: ${error.message}`);
-  });
-}
-
-function renderMembers(members) {
-  const entries = Object.entries(members || {});
-  $('online').textContent = String(entries.length);
-  $('peopleCount').textContent = `(${entries.length})`;
-
-  $('people').innerHTML = entries.map(([uid, member]) => {
-    const label = uid === me?.uid ? `${member.name || 'User'} (You)` : (member.name || 'User');
-    const photo = member.photo ? `<img src="${escapeHtml(member.photo)}" alt="">` : '<span style="width:30px;height:30px;border-radius:50%;background:#0a3154;display:block"></span>';
-    return `<div class="person"><span class="dot"></span>${photo}<span>${escapeHtml(label)}</span></div>`;
-  }).join('');
-}
-
-function renderMessages(messages) {
-  chatMessagesCache = messages.slice();
-  $('messages').innerHTML = '';
-  const popup = $('fullscreenChat');
-  const panel = $('fullscreenChatMessages');
-  const clearedAt = roomData?.chatClearedAt;
-  const clearedMillis = clearedAt?.toMillis ? clearedAt.toMillis() : Number(clearedAt || 0);
-  const visibleMessages = messages.filter((message) => {
-    const createdMillis = message.createdAt?.toMillis ? message.createdAt.toMillis() : 0;
-    return !clearedMillis || !createdMillis || createdMillis > clearedMillis;
-  });
-
-  for (const message of visibleMessages) {
-    const mine = message.uid === me?.uid;
-    const name = mine ? 'You' : (message.name || 'User');
-
-    const item = document.createElement('div');
-    item.className = 'msg';
-    item.innerHTML = `<b>${escapeHtml(name)}</b><p>${escapeHtml(message.text || '')}</p>`;
-    $('messages').appendChild(item);
-  }
-
-  panel.replaceChildren();
-  for (const message of visibleMessages) {
-    const mine = message.uid === me?.uid;
-    const item = document.createElement('div');
-    item.className = `fullscreenChatItem${mine ? ' mine' : ''}`;
-    item.innerHTML = `<b>${escapeHtml(mine ? 'You' : (message.name || 'User'))}</b><p>${escapeHtml(message.text || '')}</p>`;
-    panel.appendChild(item);
-  }
-  panel.scrollTop = panel.scrollHeight;
-
-  // Show only genuinely new chat messages in fullscreen. Existing messages loaded
-  // when the room opens must not pop up again every time Firestore sends a snapshot.
-  const latest = visibleMessages[visibleMessages.length - 1];
-  if (latest) {
-    const messageId = latest.id || `${latest.createdAt?.seconds || Date.now()}-${latest.uid || ''}`;
-
-    if (!lastFullscreenMessageId) {
-      lastFullscreenMessageId = messageId;
-    } else if (messageId !== lastFullscreenMessageId) {
-      lastFullscreenMessageId = messageId;
-
-      const item = document.createElement('div');
-      item.className = 'fullscreenMsg';
-      item.dataset.messageId = messageId;
-      item.innerHTML = `<p>${escapeHtml(latest.text || '')}</p>`;
-      popup.replaceChildren(item);
-
-      clearTimeout(fullscreenMessageTimers.get('latest'));
-      fullscreenMessageTimers.set('latest', setTimeout(() => {
-        item.remove();
-        fullscreenMessageTimers.delete('latest');
-      }, 2000));
-    }
-  } else {
-    lastFullscreenMessageId = '';
-    popup.replaceChildren();
-  }
-
-  $('messages').scrollTop = $('messages').scrollHeight;
-}
-
-function renderMovie(movie) {
-  const fileId = movie.fileId || '';
-  currentMovieFileId = fileId;
-
-  if (!fileId) {
-    $('movieTitle').textContent = 'No movie selected';
-    $('movieMeta').textContent = 'Choose a movie to share with the room.';
-    setVideoSource('');
-    return;
-  }
-
-  $('movieTitle').textContent = movie.title || 'Movie';
-  $('movieMeta').textContent = 'Playing for everyone in this room.';
-
-  const source = movie.url || (movie.playbackId ? MUX_HLS(movie.playbackId) : '');
-  muxPlaybackId = movie.playbackId || '';
-  if (source && $('video').dataset.source !== source) {
-    setVideoSource(source);
-  } else if (!source) {
-    setVideoSource('');
-  }
-}
-
-/* ================================================================
-   6. Video synchronization
-   ================================================================ */
-function destroyMuxPlayer() {
-  if (muxPlayer) { try { muxPlayer.destroy(); } catch {} muxPlayer = null; }
-}
-
-function setVideoSource(url) {
-  const video = $('video');
-  destroyMuxPlayer();
-  if (!url) {
-    suppressVideoEvents = true; video.pause(); video.removeAttribute('src'); video.load();
-    video.dataset.source = ''; video.dataset.streamRetries = '0'; $('emptyVideo').classList.remove('hidden');
-    setTimeout(() => { suppressVideoEvents = false; }, 150); return;
-  }
-  if (video.dataset.source === url) return;
-  suppressVideoEvents = true; video.dataset.source = url; video.dataset.streamRetries = '0'; video.preload = 'auto'; $('emptyVideo').classList.add('hidden');
-  if (url.includes('.m3u8') && window.Hls && window.Hls.isSupported()) {
-    muxPlayer = new window.Hls({ enableWorker:true, lowLatencyMode:false, backBufferLength:30, maxBufferLength:60, maxMaxBufferLength:120, maxBufferSize:60*1000*1000, maxBufferHole:0.5, startLevel:-1, capLevelToPlayerSize:true, abrEwmaDefaultEstimate:1600000, abrBandWidthFactor:0.85, abrBandWidthUpFactor:0.7, fragLoadingMaxRetry:6, manifestLoadingMaxRetry:6, levelLoadingMaxRetry:6, fragLoadingRetryDelay:800, levelLoadingRetryDelay:800 });
-    muxPlayer.loadSource(url); muxPlayer.attachMedia(video);
-    muxPlayer.on(window.Hls.Events.MANIFEST_PARSED, () => { suppressVideoEvents=false; applyLatestRoomState(); });
-    muxPlayer.on(window.Hls.Events.ERROR, (_event, data) => {
-      if (!data?.fatal) return;
-      if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR) { try { muxPlayer.startLoad(); } catch {} }
-      else if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) { try { muxPlayer.recoverMediaError(); } catch {} }
-      else { setSyncState('Stream error'); toast('The video stream could not be recovered.'); }
-    });
-  } else {
-    video.src=url; video.load();
-    video.addEventListener('loadedmetadata', () => { suppressVideoEvents=false; applyLatestRoomState(); }, {once:true});
-  }
-  setTimeout(() => { suppressVideoEvents=false; }, 1200);
-}
-
-function applyLatestRoomState() { if (roomData?.state) applyRemoteState(roomData.state, true); }
-
-/* ================================================================
-   6. Strong shared playback clock
-   ================================================================ */
-function isPlaybackController() {
-  const controller = roomData?.state?.controller || roomData?.host;
-  return Boolean(me?.uid && controller === me.uid);
-}
-
-function stateTimestampMs(state) {
-  if (!state) return 0;
-  if (state.updatedAt && typeof state.updatedAt.toMillis === 'function') return state.updatedAt.toMillis();
-  if (Number.isFinite(Number(state.updatedAt))) return Number(state.updatedAt);
-  if (Number.isFinite(Number(state.clientUpdatedAt))) return Number(state.clientUpdatedAt);
-  return 0;
-}
-
-function setSyncBadge(text, tone = '') {
-  const node = $('syncState');
-  if (!node) return;
-  node.className = `badge ${tone}`.trim();
-  node.innerHTML = `<i></i>${escapeHtml(text)}`;
-}
-
-function setSyncState(text) {
-  setSyncBadge(text, text.toLowerCase().includes('buffer') || text.toLowerCase().includes('offline') ? 'warn' : '');
-}
-
-function localPlaybackState(controller = me?.uid || '') {
-  const video = $('video');
-  return {
-    playing: !video.paused && !video.ended,
-    time: Number(video.currentTime || 0),
-    clientUpdatedAt: Date.now(),
-    by: me?.uid || '',
-    controller
-  };
-}
-
-async function writePlaybackState(force = false, controller = me?.uid) {
-  if (!roomId || !me || suppressVideoEvents || !roomData) return;
-  const now = Date.now();
-  if (!force && now - lastStateWrite < 900) return;
-  lastStateWrite = now;
-
-  const state = localPlaybackState(controller || me.uid);
-  try {
-    await updateDoc(roomReference(roomId), {
-      state: { ...state, updatedAt: serverTimestamp() },
-      updatedAt: now
-    });
-  } catch (error) {
-    console.warn('Playback write failed:', error);
-  }
-}
-
-async function takePlaybackControl() {
-  if (!roomId || !me) return;
-  try {
-    await updateDoc(roomReference(roomId), {
-      'state.controller': me.uid,
-      'state.by': me.uid,
-      updatedAt: Date.now()
-    });
-    syncControllerId = me.uid;
-  } catch (error) {
-    console.warn('Could not take playback control:', error);
-  }
-}
-
-function remoteTarget(state) {
-  const base = Number(state?.time || 0);
-  if (!state?.playing) return base;
-  const stamp = stateTimestampMs(state);
-  const elapsed = stamp ? Math.max(0, Date.now() - stamp) / 1000 : 0;
-  return Math.max(0, base + elapsed);
-}
-
-function applyRemoteState(state, force = false) {
-  if (!state || !me || state.by === me.uid) return;
-  const video = $('video');
-  if (!video.dataset.source || !Number.isFinite(Number(state.time))) return;
-
-  const key = `${state.by || ''}:${state.clientUpdatedAt || stateTimestampMs(state)}:${state.playing ? 1 : 0}:${Math.round(Number(state.time || 0) * 10)}`;
-  const target = remoteTarget(state);
-  const drift = target - Number(video.currentTime || 0);
-  const controller = state.controller || roomData?.host || '';
-  syncControllerId = controller;
-
-  if (!force && key === lastRemoteStateKey && Math.abs(drift) < 0.35) return;
-  lastRemoteStateKey = key;
-
-  if (state.playing) {
-    if (video.readyState < 2) {
-      setSyncState('Buffering…');
-      return;
-    }
-
-    if (Math.abs(drift) > 2.0) {
-      try { video.currentTime = target; } catch {}
-      video.play().catch(() => setSyncState('Tap Play to sync'));
-    } else if (Math.abs(drift) > 0.35) {
-      // Gentle catch-up avoids repeated seeks and keeps playback visually smooth.
-      video.playbackRate = drift > 0 ? Math.min(1.12, 1 + Math.min(0.12, drift * 0.045))
-        : Math.max(0.90, 1 - Math.min(0.10, Math.abs(drift) * 0.04));
-      video.play().catch(() => setSyncState('Tap Play to sync'));
-    } else {
-      video.playbackRate = 1;
-      video.play().catch(() => setSyncState('Tap Play to sync'));
-    }
-    setSyncState(Math.abs(drift) < 0.45 ? 'Synced' : 'Catching up…');
-  } else {
-    video.playbackRate = 1;
-    if (Math.abs(drift) > 0.25) {
-      try { video.currentTime = target; } catch {}
-    }
-    if (!video.paused) video.pause();
-    setSyncState('Paused · Synced');
-  }
-}
-
-function startSyncHeartbeat() {
-  stopSyncHeartbeat();
-  syncHeartbeatTimer = setInterval(() => {
-    if (!roomId || !roomData || !me || !isPlaybackController()) return;
-    const video = $('video');
-    if (!video.dataset.source || video.paused || video.ended) return;
-    writePlaybackState(false, me.uid);
-  }, 1200);
-}
-
-function stopSyncHeartbeat() {
-  clearInterval(syncHeartbeatTimer);
-  syncHeartbeatTimer = null;
-}
-
-function startSyncCorrection() {
-  stopSyncCorrection();
-  syncCorrectionTimer = setInterval(() => {
-    if (!roomId || !roomData?.state || !me || isPlaybackController()) return;
-    applyRemoteState(roomData.state);
-  }, 500);
-}
-
-function stopSyncCorrection() {
-  clearInterval(syncCorrectionTimer);
-  syncCorrectionTimer = null;
-}
-
-function startLongVideoWatchdog() {
-  clearInterval(window.__hollyCowVideoWatchdog);
-  window.__hollyCowVideoWatchdog = setInterval(() => {
-    const video = $('video');
-    if (!video.dataset.source || video.paused || video.ended) return;
-    const now = Date.now();
-    const noProgress = now - lastVideoProgressAt > 7000;
-    if (noProgress && video.readyState < 3) recoverLongVideoStream('network');
-  }, 2500);
-}
-
-startLongVideoWatchdog();
-
-function recoverLongVideoStream(reason = 'stall') {
-  const video = $('video');
-  if (!video.dataset.source) return;
-  const position = Number(video.currentTime || 0);
-  setSyncState(reason === 'network' ? 'Reconnecting…' : 'Recovering stream…');
-
-  if (muxPlayer) {
-    try {
-      muxPlayer.startLoad(-1);
-      muxPlayer.recoverMediaError();
-    } catch {}
-  } else if (video.error) {
-    // Native fallback only: reload the same URL and restore the position.
-    const src = video.dataset.source;
-    suppressVideoEvents = true;
-    video.src = src;
-    video.load();
-    const restore = () => {
-      try { video.currentTime = position; } catch {}
-      suppressVideoEvents = false;
-      applyLatestRoomState();
-      video.removeEventListener('loadedmetadata', restore);
-    };
-    video.addEventListener('loadedmetadata', restore);
-  }
-}
-
-$('play').addEventListener('click', async () => {
-  if (!roomId || !me || !$('video').dataset.source) return toast('Choose a movie and join a room first.');
-  await takePlaybackControl();
-  const video = $('video');
-  suppressVideoEvents = true;
-  if (video.paused) await video.play().catch(() => toast('Tap Play again to allow video playback.'));
-  else video.pause();
-  suppressVideoEvents = false;
-  await writePlaybackState(true, me.uid);
-});
-
-$('back').addEventListener('click', async () => {
-  if (!roomId || !me || !$('video').dataset.source) return;
-  await takePlaybackControl();
-  $('video').currentTime = Math.max(0, $('video').currentTime - 10);
-  await writePlaybackState(true, me.uid);
-});
-
-$('forward').addEventListener('click', async () => {
-  if (!roomId || !me || !$('video').dataset.source) return;
-  await takePlaybackControl();
-  const duration = Number($('video').duration || Infinity);
-  $('video').currentTime = Math.min(duration, $('video').currentTime + 10);
-  await writePlaybackState(true, me.uid);
-});
-
-$('seek').addEventListener('input', () => {
-  const video = $('video');
-  if (!Number.isFinite(video.duration) || video.duration <= 0) return;
-  video.currentTime = (Number($('seek').value) / 1000) * video.duration;
-});
-$('seek').addEventListener('change', async () => {
-  if (!roomId || !me || !$('video').dataset.source) return;
-  await takePlaybackControl();
-  await writePlaybackState(true, me.uid);
-});
-
-$('video').addEventListener('play', () => {
-  if (suppressVideoEvents) return;
-  if (!isPlaybackController()) return;
-  writePlaybackState(true, me.uid);
-});
-$('video').addEventListener('pause', () => {
-  if (suppressVideoEvents) return;
-  if (!isPlaybackController()) return;
-  writePlaybackState(true, me.uid);
-});
-$('video').addEventListener('seeked', () => {
-  if (suppressVideoEvents) return;
-  if (!isPlaybackController()) return;
-  writePlaybackState(true, me.uid);
-});
-$('video').addEventListener('timeupdate', () => {
-  lastVideoProgressAt = Date.now();
-  lastVideoTime = Number($('video').currentTime || 0);
-  const video = $('video');
-  if (Number.isFinite(video.duration) && video.duration > 0) $('seek').value = String(Math.round((video.currentTime / video.duration) * 1000));
-});
-$('video').addEventListener('loadedmetadata', () => {
-  const video = $('video');
-  if (Number.isFinite(video.duration) && video.duration > 0) $('seek').value = String(Math.round((video.currentTime / video.duration) * 1000));
-});
-$('video').addEventListener('waiting', () => {
-  clearTimeout(stallRecoveryTimer);
-  stallRecoveryTimer = setTimeout(() => {
-    if (!$('video').paused && $('video').readyState < 3) setSyncState('Buffering…');
-  }, 1200);
-});
-$('video').addEventListener('stalled', () => {
-  clearTimeout(stallRecoveryTimer);
-  stallRecoveryTimer = setTimeout(() => {
-    if ($('video').readyState < 3 && !$('video').paused) recoverLongVideoStream('stall');
-  }, 9000);
-});
-$('video').addEventListener('playing', () => {
-  clearTimeout(stallRecoveryTimer);
-  lastVideoProgressAt = Date.now();
-  lastVideoTime = Number($('video').currentTime || 0);
-  if (roomData?.state && !isPlaybackController()) applyRemoteState(roomData.state, true);
-  else setSyncState('Live');
-});
-
-$('video').addEventListener('error', () => {
-  const video = $('video');
-  if (!video.dataset.source || video.paused) return;
-  clearTimeout(stallRecoveryTimer);
-  stallRecoveryTimer = setTimeout(() => {
-    if (!video.paused && video.error) recoverLongVideoStream('network');
-  }, 2500);
-});
-$('video').addEventListener('canplay', () => {
-  if (roomData?.state && !isPlaybackController()) applyRemoteState(roomData.state, true);
-});
-
-
-/* ================================================================
-   Realtime typing presence
-   ================================================================ */
-function getActiveTypers(typing) {
-  const now = Date.now();
-  return Object.entries(typing || {}).filter(([uid, value]) => {
-    if (uid === me?.uid) return false;
-    return value && Number(value.at || 0) > now - 3500;
-  }).map(([, value]) => value.name || 'Someone');
-}
-
-function renderTyping(typing) {
-  const names = getActiveTypers(typing);
-  const text = names.length === 1 ? `${names[0]} is typing…` : names.length > 1 ? `${names.slice(0, 2).join(' and ')} are typing…` : '';
-  const line = $('typingLine');
-  const fsLine = $('fullscreenTyping');
-  line.textContent = text;
-  line.classList.toggle('show', !!text);
-  fsLine.textContent = text;
-
-  if (text && text !== lastTypingSignature) {
-    lastTypingSignature = text;
-    const popup = $('typingPopup');
-    popup.textContent = text;
-    popup.classList.add('show');
-    clearTimeout(typingVisibleTimer);
-    typingVisibleTimer = setTimeout(() => popup.classList.remove('show'), 3000);
-  } else if (!text) {
-    lastTypingSignature = '';
-    $('typingPopup').classList.remove('show');
-  }
-}
-
-function scheduleTypingPresence(input) {
-  if (!roomId || !me) return;
-  const hasText = String(input.value || '').trim().length > 0;
-  clearTimeout(typingStopTimer);
-  clearTimeout(typingWriteTimer);
-  if (!hasText) {
-    clearTypingPresence();
-    return;
-  }
-  typingWriteTimer = setTimeout(async () => {
-    try {
-      await updateDoc(roomReference(roomId), {
-        [`typing.${me.uid}`]: { name: displayName(me), at: Date.now() }
-      });
-    } catch {}
-  }, 120);
-  typingStopTimer = setTimeout(clearTypingPresence, 3000);
-}
-
-async function clearTypingPresence() {
-  clearTimeout(typingStopTimer);
-  clearTimeout(typingWriteTimer);
-  if (!roomId || !me) return;
-  try {
-    await updateDoc(roomReference(roomId), { [`typing.${me.uid}`]: deleteField() });
-  } catch {}
-}
-
-/* ================================================================
-   7. Room chat
-   ================================================================ */
-$('message').addEventListener('input', () => scheduleTypingPresence($('message')));
-$('fullscreenMessage').addEventListener('input', () => scheduleTypingPresence($('fullscreenMessage')));
-$('message').addEventListener('blur', clearTypingPresence);
-$('fullscreenMessage').addEventListener('blur', clearTypingPresence);
-
-$('chat').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const input = $('message');
-  const text = input.value.trim();
-  if (!text) return;
-  input.disabled = true;
-  try {
-    if (await sendChatMessage(text)) { input.value = ''; await clearTypingPresence(); }
-  } finally {
-    input.disabled = false;
-    input.focus();
-  }
-});
-
-$('fullscreenChatForm').addEventListener('submit', async (event) => {
-  event.preventDefault();
-  const input = $('fullscreenMessage');
-  const text = input.value.trim();
-  if (!text) return;
-  input.disabled = true;
-  try {
-    if (await sendChatMessage(text)) { input.value = ''; await clearTypingPresence(); }
-  } finally {
-    input.disabled = false;
-    input.focus();
-  }
-});
-$('fsClearChat').addEventListener('click', clearChatView);
-$('clearChat').addEventListener('click', clearChatView);
-
-
-$('mute').addEventListener('click', () => {
-  const video = $('video');
-  video.muted = !video.muted;
-  $('mute').textContent = video.muted ? 'Unmute' : 'Mute';
-});
-$('video').addEventListener('volumechange', () => {
-  $('mute').textContent = $('video').muted ? 'Unmute' : 'Mute';
-});
-
-/* ================================================================
-   Fullscreen player controls
-   ================================================================ */
-function isFullscreen() {
-  return document.fullscreenElement === $('videoWrap') || document.webkitFullscreenElement === $('videoWrap');
-}
-
-function showFullscreenControls() {
-  if (!isFullscreen()) return;
-  const controls = $('fullscreenControls');
-  controls.classList.add('show');
-  controls.setAttribute('aria-hidden', 'false');
-  clearTimeout(fullscreenControlTimer);
-  fullscreenControlTimer = setTimeout(() => {
-    controls.classList.remove('show');
-    controls.setAttribute('aria-hidden', 'true');
-  }, 2600);
-}
-
-function hideFullscreenControls() {
-  clearTimeout(fullscreenControlTimer);
-  fullscreenControlTimer = null;
-  $('fullscreenControls').classList.remove('show');
-  $('fullscreenControls').setAttribute('aria-hidden', 'true');
-}
-
-function setFullscreenChatOpen(open) {
-  fullscreenChatOpen = !!open;
-  const panel = $('fullscreenChatPanel');
-  const toggle = $('fsChatToggle');
-  panel.classList.toggle('show', fullscreenChatOpen && isFullscreen());
-  panel.setAttribute('aria-hidden', fullscreenChatOpen && isFullscreen() ? 'false' : 'true');
-  toggle.textContent = fullscreenChatOpen ? '×' : '💬';
-  toggle.setAttribute('aria-label', fullscreenChatOpen ? 'Close chat' : 'Open chat');
-}
-
-function openFullscreenChat() {
-  if (!isFullscreen()) return;
-  setFullscreenChatOpen(!fullscreenChatOpen);
-  showFullscreenControls();
-  if (fullscreenChatOpen) {
-    const input = $('fullscreenMessage');
-    setTimeout(() => input.focus(), 30);
-    const panel = $('fullscreenChatMessages');
-    panel.scrollTop = panel.scrollHeight;
-  }
-}
-
-async function sendChatMessage(text) {
-  if (!roomId || !me) {
-    toast('Join a room first.');
-    return false;
-  }
-  const clean = String(text || '').trim();
-  if (!clean) return false;
-  try {
-    await addDoc(collection(db, 'blueRooms', roomId, 'messages'), {
-      uid: me.uid,
-      name: displayName(me),
-      text: clean.slice(0, 500),
-      createdAt: serverTimestamp()
-    });
-    return true;
-  } catch (error) {
-    toast(`Chat failed: ${error.message}`);
-    return false;
-  }
-}
-
-async function clearChatView() {
-  if (!roomId || !me || clearingChat) {
-    if (!roomId || !me) toast('Join a room first.');
-    return;
-  }
-
-  if (!chatMessagesCache.length) {
-    toast('Chat is already empty.');
-    return;
-  }
-
-  const confirmed = window.confirm('Clear the chat for everyone on every screen?');
-  if (!confirmed) return;
-
-  clearingChat = true;
-  $('clearChat').disabled = true;
-  $('fsClearChat').disabled = true;
-
-  try {
-    const messagesRef = collection(db, 'blueRooms', roomId, 'messages');
-    const snapshot = await getDocs(messagesRef);
-
-    // Firestore batches support up to 500 writes. Delete in chunks so a long chat
-    // is cleared completely rather than only deleting the first page of messages.
-    let batch = writeBatch(db);
-    let count = 0;
-    for (const message of snapshot.docs) {
-      batch.delete(message.ref);
-      count += 1;
-      if (count === 500) {
-        await batch.commit();
-        batch = writeBatch(db);
-        count = 0;
-      }
-    }
-    if (count > 0) await batch.commit();
-
-    // This marker also makes every connected client hide any message that may
-    // still be arriving from a snapshot while the deletes propagate.
-    await updateDoc(roomReference(roomId), { chatClearedAt: serverTimestamp() });
-
-    $('fullscreenMessage').value = '';
-    $('message').value = '';
-    chatMessagesCache = [];
-    $('messages').innerHTML = '';
-    $('fullscreenChatMessages').replaceChildren();
-    $('fullscreenChat').replaceChildren();
-    lastFullscreenMessageId = '';
-    toast(`Chat cleared for everyone${snapshot.size ? ` (${snapshot.size} messages)` : ''}.`);
-  } catch (error) {
-    console.error('Clear chat failed:', error);
-    toast(`Could not clear chat: ${error.message}`);
-  } finally {
-    clearingChat = false;
-    $('clearChat').disabled = false;
-    $('fsClearChat').disabled = false;
-  }
-}
-
-async function toggleFullscreen() {
-  const wrap = $('videoWrap');
-  const video = $('video');
-  if (!video.dataset.source) {
-    toast('Choose a movie first.');
-    return;
-  }
-
-  try {
-    if (!isFullscreen()) {
-      if (wrap.requestFullscreen) await wrap.requestFullscreen();
-      else if (wrap.webkitRequestFullscreen) wrap.webkitRequestFullscreen();
-      else if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
-      else {
-        toast('Fullscreen is not supported by this browser.');
-        return;
-      }
-      showFullscreenControls();
-    } else {
-      if (document.exitFullscreen) await document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }
-  } catch (error) {
-    console.warn('Fullscreen failed:', error);
-    toast('Fullscreen could not be opened. Tap the button again.');
-  }
-}
-
-async function fullscreenSeek(delta) {
-  if (!roomId || !me || !$('video').dataset.source) return;
-  await takePlaybackControl();
-  const video = $('video');
-  const duration = Number(video.duration || Infinity);
-  suppressVideoEvents = true;
-  video.currentTime = Math.max(0, Math.min(duration, video.currentTime + delta));
-  suppressVideoEvents = false;
-  await writePlaybackState(true, me.uid);
-  showFullscreenControls();
-}
-
-$('full').addEventListener('click', toggleFullscreen);
-$('fsBack').addEventListener('click', () => fullscreenSeek(-10));
-$('fsForward').addEventListener('click', () => fullscreenSeek(10));
-$('fsChatToggle').addEventListener('click', openFullscreenChat);
-$('fsPlay').addEventListener('click', async () => {
-  if (!roomId || !me || !$('video').dataset.source) return;
-  await takePlaybackControl();
-  const video = $('video');
-  suppressVideoEvents = true;
-  if (video.paused) await video.play().catch(() => toast('Tap Play again to allow video playback.'));
-  else video.pause();
-  suppressVideoEvents = false;
-  await writePlaybackState(true, me.uid);
-  showFullscreenControls();
-});
-
-function syncFullscreenPlayIcon() {
-  const paused = $('video').paused;
-  $('fsPlay').textContent = paused ? '▶' : 'Ⅱ';
-  $('fsPlay').setAttribute('aria-label', paused ? 'Play' : 'Pause');
-}
-$('video').addEventListener('play', syncFullscreenPlayIcon);
-$('video').addEventListener('pause', syncFullscreenPlayIcon);
-
-$('videoWrap').addEventListener('pointerup', (event) => {
-  if (!isFullscreen()) return;
-  if (event.target.closest('.fullscreenControls') || event.target.closest('.fullscreenChat') || event.target.closest('.fullscreenChatPanel')) return;
-  showFullscreenControls();
-});
-
-function handleFullscreenChange() {
-  const active = isFullscreen();
-  $('full').textContent = active ? 'Exit Fullscreen' : 'Fullscreen';
-  if (active) {
-    syncFullscreenPlayIcon();
-    showFullscreenControls();
-    setFullscreenChatOpen(fullscreenChatOpen);
-  } else {
-    setFullscreenChatOpen(false);
-    hideFullscreenControls();
-  }
-}
-
-document.addEventListener('fullscreenchange', handleFullscreenChange);
-document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-
-/* ================================================================
-   8. Mux video library client
-   ================================================================ */
-function adminHeaders(extra = {}) {
-  return { 'X-Admin-Code': ADMIN_CODE, ...extra };
-}
-
-async function muxRequest(path, options = {}) {
-  const headers = adminHeaders(options.headers || {});
-  const response = await fetch(`${STORAGE_BACKEND}${path}`, { ...options, headers });
-  const contentType = response.headers.get('content-type') || '';
-  const data = contentType.includes('application/json') ? await response.json() : await response.text();
-  if (!response.ok) {
-    const message = typeof data === 'object' ? data.error : data;
-    throw new Error(message || `Mux request failed (${response.status})`);
-  }
-  return data;
-}
-
-function unlockLibrary() {
-  const code = String($('adminCode')?.value || '').trim();
-  if (code !== ADMIN_CODE) {
-    $('adminError').textContent = 'Incorrect admin code.';
-    $('adminCode').value = '';
-    $('adminCode').focus();
-    return false;
-  }
-  libraryUnlocked = true;
-  $('libraryGate').classList.add('hidden');
-  $('libraryAdminArea').classList.remove('hidden');
-  $('storageBadge').textContent = 'Library unlocked';
-  initializeStorage();
-  return true;
-}
-
-$('unlockLibrary').addEventListener('click', unlockLibrary);
-$('adminCode').addEventListener('keydown', (event) => { if (event.key === 'Enter') unlockLibrary(); });
-
-async function initializeStorage() {
-  setStorageError('');
-  $('storageBadge').textContent = 'Loading…';
-  try {
-    await refreshFiles();
-    $('storageBadge').textContent = 'Library';
-  } catch (error) {
-    $('storageBadge').textContent = 'Unavailable';
-    setStorageError(`Library: ${error.message}`);
-  }
-}
-
-async function refreshFiles() {
-  if (!libraryUnlocked) return;
-  try {
-    const data = await muxRequest('/api/mux/videos?limit=100');
-    storageFiles = Array.isArray(data.videos) ? data.videos : [];
-    renderLibrary();
-  } catch (error) {
-    setStorageError(`Could not load library: ${error.message}`);
-  }
-}
-
-function renderLibrary() {
-  if (!libraryUnlocked) return;
-  const search = $('searchFiles').value.trim().toLowerCase();
-  const files = storageFiles.filter((file) => {
-    const name = String(file.name || '').toLowerCase();
-    return !search || name.includes(search);
-  });
-
-  if (!files.length) {
-    $('library').innerHTML = '<div class="small muted">No ready videos found. Upload your first movie.</div>';
-    return;
-  }
-
-  $('library').innerHTML = files.map((file) => `
-    <div class="file">
-      <div>
-        <div class="fileName" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div>
-        <div class="fileMeta">${formatBytes(file.size_bytes || 0)} · ${escapeHtml(file.status || 'ready')}</div>
-      </div>
-      <div class="fileActions">
-        <button class="btn useFile" data-id="${escapeHtml(file.id)}">Use</button>
-        <button class="btn danger deleteFile" data-id="${escapeHtml(file.id)}">Delete</button>
-      </div>
-    </div>
-  `).join('');
-
-  document.querySelectorAll('.useFile').forEach((button) => button.addEventListener('click', () => useLibraryFile(button.dataset.id)));
-  document.querySelectorAll('.deleteFile').forEach((button) => button.addEventListener('click', () => deleteLibraryFile(button.dataset.id)));
-}
-
-async function useLibraryFile(fileId) {
-  if (!libraryUnlocked) return toast('Access required.');
-  if (!roomId) return toast('Create or join a room first.');
-  const file = storageFiles.find((item) => item.id === fileId);
-  if (!file || !file.playback_id) return toast('This video is not ready yet.');
-
-  const movie = {
-    fileId: file.id,
-    assetId: file.id,
-    playbackId: file.playback_id,
-    title: file.name,
-    url: MUX_HLS(file.playback_id)
-  };
-
-  try {
-    await updateDoc(roomReference(roomId), {
-      movie,
-      state: { playing: false, time: 0, updatedAt: Date.now(), by: me.uid, controller: me.uid },
-      updatedAt: Date.now()
-    });
-    toast(`${file.name} shared with the room.`);
-  } catch (error) {
-    toast(`Could not share movie: ${error.message}`);
-  }
-}
-
-async function deleteLibraryFile(fileId) {
-  if (!libraryUnlocked) return toast('Access required.');
-  const file = storageFiles.find((item) => item.id === fileId);
-  if (!file) return;
-  if (!confirm(`Delete "${file.name}" from the Library?`)) return;
-
-  try {
-    await muxRequest(`/api/mux/assets/${encodeURIComponent(fileId)}`, { method: 'DELETE' });
-    if (currentMovieFileId === fileId && roomId) {
-      await updateDoc(roomReference(roomId), {
-        movie: { fileId: '', title: '', url: '', playbackId: '' },
-        state: { playing: false, time: 0, updatedAt: Date.now(), by: me.uid }
-      });
-    }
-    toast('Video deleted.');
-    await refreshFiles();
-  } catch (error) {
-    toast(`Delete failed: ${error.message}`);
-  }
-}
-
-$('searchFiles').addEventListener('input', renderLibrary);
-$('refreshFiles').addEventListener('click', () => { if (libraryUnlocked) refreshFiles(); });
-$('chooseFile').addEventListener('click', () => { if (libraryUnlocked) $('filePicker').click(); else toast('Enter the code to continue.'); });
-$('filePicker').addEventListener('change', () => {
-  const file = $('filePicker').files?.[0];
-  if (file) uploadVideo(file);
-  $('filePicker').value = '';
-});
-
-/* ================================================================
-   9. Mux direct uploads
-   ================================================================ */
-function setUploadProgress(percent, text) {
-  $('uploadBar').style.width = `${Math.max(0, Math.min(100, percent))}%`;
-  $('uploadStatus').textContent = text;
-}
-
-function uploadDirectWithProgress(url, file, onProgress) {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open('PUT', url, true);
-    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
-    xhr.upload.onprogress = (event) => { if (event.lengthComputable) onProgress?.(event.loaded, event.total); };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Upload failed (${xhr.status})`));
-    };
-    xhr.onerror = () => reject(new Error('Network error during upload.'));
-    xhr.onabort = () => reject(new Error('Upload was cancelled.'));
-    xhr.send(file);
-  });
-}
-
-async function waitForMuxVideo(uploadId, fileName) {
-  const started = Date.now();
-  while (Date.now() - started < 15 * 60 * 1000) {
-    const data = await muxRequest(`/api/mux/uploads/${encodeURIComponent(uploadId)}/status`);
-    if (data.status === 'ready' && data.video) {
-      setUploadProgress(100, `Ready · ${fileName}`);
-      return data.video;
-    }
-    if (data.status === 'errored') throw new Error(data.error || 'The video could not be processed.');
-    const pct = data.status === 'uploading' ? Math.min(95, Number(data.progress || 90)) : Math.min(98, Number(data.progress || 96));
-    setUploadProgress(pct, data.status === 'processing' ? `Processing · ${pct.toFixed(0)}%` : `Finalizing · ${pct.toFixed(0)}%`);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-  }
-  throw new Error('Processing is taking longer than expected. Refresh the library later.');
-}
-
-async function uploadVideo(file) {
-  if (uploadRunning) return toast('An upload is already running.');
-  if (!libraryUnlocked) return toast('Access required.');
-  if (!file.type.startsWith('video/')) return toast('Please choose a video file.');
-
-  uploadRunning = true;
-  setStorageError('');
-  setUploadProgress(0, `Preparing ${file.name}…`);
-
-  try {
-    const init = await muxRequest('/api/mux/upload-url', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: file.name })
-    });
-
-    await uploadDirectWithProgress(init.uploadUrl, file, (loaded, total) => {
-      const percent = total ? (loaded / total) * 90 : 0;
-      setUploadProgress(percent, `Uploading · ${percent.toFixed(1)}%`);
-    });
-
-    setUploadProgress(91, 'Upload complete · processing…');
-    const readyVideo = await waitForMuxVideo(init.uploadId, file.name);
-    storageFiles = [readyVideo, ...storageFiles.filter((item) => item.id !== readyVideo.id)];
-    renderLibrary();
-    toast('Movie is ready to stream.');
-  } catch (error) {
-    console.error(error);
-    setUploadProgress(0, `Upload failed: ${error.message}`);
-    setStorageError(error.message);
-    toast(`Upload failed: ${error.message}`);
-  } finally {
-    uploadRunning = false;
-  }
-}
-
-/* ================================================================
-   10. Drag and drop upload
-   ================================================================ */
-const drop = $('drop');
-
-['dragenter', 'dragover'].forEach((eventName) => {
-  drop.addEventListener(eventName, (event) => {
-    event.preventDefault();
-    drop.classList.add('drag');
-  });
-});
-
-['dragleave', 'drop'].forEach((eventName) => {
-  drop.addEventListener(eventName, (event) => {
-    event.preventDefault();
-    drop.classList.remove('drag');
-  });
-});
-
-drop.addEventListener('drop', (event) => {
-  const file = event.dataTransfer?.files?.[0];
-  if (file) uploadVideo(file);
-});
-
-/* ================================================================
-   11. Helpful startup checks
-   ================================================================ */
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState !== 'visible' || !roomId || !roomData?.state) return;
-  const video = $('video');
-  if (!video.dataset.source) return;
-  // Phones often pause/throttle media while the tab is backgrounded. Re-align
-  // immediately when the page becomes visible again.
-  applyRemoteState(roomData.state);
-});
-
-window.addEventListener('online', () => {
-  $('connectionBadge').innerHTML = '<i></i><span>Online</span>';
-  if ($('video').dataset.source) {
-    recoverLongVideoStream('network');
-    setTimeout(() => {
-      if (roomData?.state) applyRemoteState(roomData.state);
-    }, 1000);
-  }
-});
-
-window.addEventListener('offline', () => {
-  $('connectionBadge').innerHTML = '<i style="background:var(--bad)"></i><span>Unavailable</span>';
-  if (roomId) setSyncBadge('Unavailable — buffering', 'warn');
-});
-
-window.addEventListener('beforeunload', () => {
-  // Firestore handles the active connection. We intentionally do not perform
-  // asynchronous writes here because browsers may terminate them immediately.
-});
-
-/* If an old page left an invalid room parameter, the user can still use the
-   normal Create/Join controls. Nothing is automatically created for them. */
-if (new URLSearchParams(location.search).get('room')) {
-  $('code').value = String(new URLSearchParams(location.search).get('room')).toUpperCase().slice(0, 6);
-}
+<div class="actions"><button class="btn secondary" data-go="hearts">Next surprise ðŸ’ž</button></div>
+</section>
+
+<section id="hearts">
+<div class="eyebrow">chapter four Â· find the little messages</div><h2>Catch my <span class="glow">heart</span> ðŸ’—</h2>
+<p>Tap the floating hearts to collect little reminders. Find all five!</p>
+<div id="heartGame" aria-label="Tap the hearts game"></div><div class="panel" id="heartMessage">Your first little surprise is waiting. âœ¨</div>
+<div class="actions"><button class="btn small" id="resetHearts">Play again</button><button class="btn secondary small" data-go="quiz">Next: our quiz ðŸ§©</button></div>
+</section>
+
+<section id="quiz">
+<div class="eyebrow">chapter five Â· just us things</div><h2>How well do you <span class="glow">know us?</span> ðŸ§©</h2>
+<div class="panel"><div id="quizQuestion">What would I love most about our first proper date?</div><div id="quizOptions"></div><div id="quizFeedback" aria-live="polite"></div><div class="actions"><button class="btn small" id="nextQuestion" hidden>Next question âžœ</button></div></div>
+<div class="cat-row"><span class="cat">ðŸ˜º</span><span class="cat smallcat">âœ¨</span></div>
+<button class="btn secondary" data-go="openwhen">Open when... ðŸ’Œ</button>
+</section>
+
+<section id="openwhen">
+<div class="eyebrow">chapter six Â· for every kind of day</div><h2>Open <span class="glow">when...</span> ðŸ’Œ</h2>
+<p>Pick the envelope that feels like you right now.</p>
+<div class="grid">
+<button class="card" data-note="miss"><span>ðŸ’Œ</span><strong>you miss me</strong><span>A little virtual hug.</span></button>
+<button class="card" data-note="smile"><span>ðŸŒ¸</span><strong>you need a smile</strong><span>A tiny dose of silly.</span></button>
+<button class="card" data-note="bad"><span>ðŸŒ§ï¸</span><strong>today feels hard</strong><span>Take a breath, love.</span></button>
+<button class="card" data-note="remember"><span>ðŸŒ™</span><strong>you want to remember us</strong><span>A little look at our story.</span></button>
+</div>
+<div class="panel" id="notePanel" hidden><div class="cat-row"><span class="cat" id="noteCat">ðŸ˜½</span></div><div id="noteText" class="letter"></div></div>
+<button class="btn" data-go="song">Our song ðŸŽµ</button>
+</section>
+
+<section id="song">
+<div class="eyebrow">chapter seven Â· a little melody for you</div><h2>Our <span class="glow">song</span> ðŸŽµ</h2>
+<div class="song-disc" id="songDisc">ðŸ’—</div><h3 id="songTitle">A Little Pink Galaxy</h3><p id="songSubtitle">An original, gentle melody made in your browser.</p>
+<div class="barviz" id="barviz"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+<div class="actions"><button class="btn" id="playSong">â–¶ Play our melody</button><button class="btn secondary" id="stopSong">â…¡ Pause</button></div>
+<p class="notice">This is a little original synth melody, so there is no external song download or streaming link needed. Sound starts only after you tap play.</p>
+<button class="btn" data-go="final">One last thing... ðŸŒ™</button>
+</section>
+
+<section id="final">
+<div class="eyebrow">the last page Â· but not the end</div><div class="cat-row"><span class="cat">ðŸˆâ€â¬›</span><img class="sticker" src="https://tenor.com/sKoS5W86VL6.gif" alt="Two cats in love animated sticker" loading="lazy" referrerpolicy="no-referrer"><span class="cat">ðŸˆ</span></div>
+<h1 class="glow">One last thing, Shibu...</h1>
+<div class="panel"><div class="letter" id="finalText"></div><div class="actions"><button class="btn small" id="revealFinal">Read it all ðŸ’—</button></div></div>
+<p class="glow">This universe is full of stars. But you're the reason I made it. âœ¨</p>
+<button class="btn" id="replay">â†» Replay our universe</button>
+</section>
+</main>
+<footer>Made with care, one tiny star at a time. ðŸ’—<br><span>THE BOX OF US Â· V1.0</span></footer>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+// Lightweight starfield: no large background video or heavy effects.
+for(let i=0;i<85;i++){const s=document.createElement('i');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=(Math.random()*3)+'s';s.style.opacity=Math.random();$('#sky').appendChild(s)}
+setInterval(()=>{if(document.hidden)return;const h=document.createElement('div');h.className='float-heart';h.textContent=['â™¡','ðŸ’—','âœ¦','âœ¨'][Math.floor(Math.random()*4)];h.style.left=Math.random()*100+'vw';h.style.fontSize=(12+Math.random()*18)+'px';document.body.appendChild(h);setTimeout(()=>h.remove(),10000)},1800);
+
+const sections=$$('main section');
+function go(id){sections.forEach(s=>s.classList.toggle('active',s.id===id));window.scrollTo({top:0,behavior:'smooth'});if(id==='hearts')makeHearts();if(id==='final')typeInto($('#finalText'),finalLetter)}
+$$('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+const loveLetter=`Hey, Shibu. â¤ï¸
+
+I honestly don't even know where to start, because there's so much I want to tell you and somehow I never know how to put all of it into words.
+
+You became such a special part of my life, and I'm really glad that, out of all the people in this world, I got to know you.
+
+Sometimes I wish I could explain exactly what you mean to me. Not with some big, complicated paragraph, but in a way that would let you feel what I feel when I think about you.
+
+I know there are still so many moments I want to experience with you: conversations, laughter, little memories, and the day we finally get to spend time together without a screen between us.
+
+I want to see you smile in front of me, hear your voice without a phone between us, laugh with you over stupid things, and have a moment where I can look at you and think, â€œdamn, she's really here.â€
+
+I can't promise every day will be perfect. But I can promise that what we have matters to me, and I don't want to take it for granted.
+
+So I made this little universe for you. Every star, every surprise, every tiny message is a little way of saying something I might not always know how to say out loud.
+
+You don't have to rush through anything here. Explore everything, open every little surprise, and smile whenever something reminds you of us.
+
+And if you ever wonder whether you're special to me...
+
+Shibu, you wouldn't be exploring a universe made just for you if you weren't. ðŸ¥¹â¤ï¸
+
+With love,
+Your favourite person. ðŸ’—`;
+let typingTimer;
+function typeInto(el,text){clearInterval(typingTimer);el.textContent='';let i=0;typingTimer=setInterval(()=>{el.textContent+=text.charAt(i++);if(i>=text.length)clearInterval(typingTimer)},18)}
+function openLetter(){typeInto($('#letterText'),loveLetter)}
+$('#envelope').addEventListener('click',openLetter);$('#envelope').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openLetter()}});
+$('#showFullLetter').addEventListener('click',()=>{clearInterval(typingTimer);$('#letterText').textContent=loveLetter});
+const finalLetter=`Out of everything I've made here, this is probably the simplest thing I can tell you.
+
+I'm glad it's you.
+
+I'm glad our paths crossed, I'm glad we got to know each other, and I'm glad I get to call you someone special in my life.
+
+I made this little universe because sometimes a simple message doesn't feel big enough for everything you want to say. So I gave those feelings a place to live.
+
+Whenever you open this website, I hope it reminds you of the little things that make our story ours.
+
+And someday, when we look back at this, I hope we'll have even more memories to add.
+
+Until then, keep smiling, keep being yourself, and never forget how much the little things can mean.
+
+This universe is full of stars, Shibu. But you're the reason I made it. ðŸ’—
+
+End of the beginning. âœ¨`;
+$('#revealFinal').addEventListener('click',()=>{clearInterval(typingTimer);$('#finalText').textContent=finalLetter});
+$('#replay').addEventListener('click',()=>go('welcome'));
+
+// Countdown settings
+const dateInput=$('#meetDate'),savedDate=localStorage.getItem('boxOfUsMeetDate');
+if(savedDate){dateInput.value=savedDate;updateCountdown()}
+$('#saveDate').addEventListener('click',()=>{if(!dateInput.value){localStorage.removeItem('boxOfUsMeetDate');$('#counter').hidden=true;$('#countMessage').textContent="Our day isn't on the calendar yet, but it's still something to look forward to. ðŸ’—";return}localStorage.setItem('boxOfUsMeetDate',dateInput.value);updateCountdown()});
+function updateCountdown(){const d=localStorage.getItem('boxOfUsMeetDate');if(!d)return;const target=new Date(d+'T00:00:00');if(Number.isNaN(+target))return;$('#counter').hidden=false;$('#countMessage').textContent=target.getTime()<=Date.now()?'Today is a special day. Take it all in. â¤ï¸':'A little countdown to a day worth looking forward to. ðŸ’—';function tick(){let diff=Math.max(0,target-Date.now());$('#days').textContent=Math.floor(diff/86400000);$('#hours').textContent=Math.floor(diff%86400000/3600000);$('#minutes').textContent=Math.floor(diff%3600000/60000);$('#seconds').textContent=Math.floor(diff%60000/1000)}tick();clearInterval(window.countTimer);window.countTimer=setInterval(tick,1000)}
+if(savedDate)updateCountdown();
+
+// Photo previews use local object URLs only (not uploaded to a server).
+$$('input[data-memory]').forEach(input=>input.addEventListener('change',()=>{const file=input.files&&input.files[0];if(!file)return;const box=input.parentElement.querySelector('.preview');box.replaceChildren();const img=document.createElement('img');img.src=URL.createObjectURL(file);img.alt='Selected memory';img.style.cssText='display:block;max-width:100%;max-height:240px;border-radius:12px;margin-top:10px';box.appendChild(img);const caption=document.createElement('div');caption.className='notice';caption.textContent='Preview only â€” choose again after refreshing. This photo was not uploaded.';box.appendChild(caption)}));
+
+// Catch the heart mini-game
+const heartMessages=['A tiny reminder: someone is thinking about you. ðŸ’—','Your smile deserves its own little universe. âœ¨','If I could teleport anywhere right now, I would choose wherever you are. ðŸ«‚','You found a tiny piece of my heart. ðŸ˜½','One day, let's make a memory that beats every message here. ðŸŒ™'];
+let found=new Set();
+function makeHearts(){const area=$('#heartGame');area.replaceChildren();found=new Set();$('#heartMessage').textContent='Your first little surprise is waiting. âœ¨';for(let i=0;i<5;i++){const b=document.createElement('button');b.className='tapheart';b.textContent='ðŸ’—';b.setAttribute('aria-label','Catch heart '+(i+1));b.style.left=(5+Math.random()*75)+'%';b.style.top=(5+Math.random()*70)+'%';b.addEventListener('click',()=>{if(found.has(i))return;found.add(i);b.textContent='âœ¨';b.disabled=true;$('#heartMessage').textContent=heartMessages[i];if(found.size===5)$('#heartMessage').textContent='You found all five! Keep these little reminders close. ðŸ’—';});area.appendChild(b)}}
+$('#resetHearts').addEventListener('click',makeHearts);
+
+// Quiz: answers are playful, not factual claims about private details.
+const quiz=[{q:'What would I love most about our first proper date?',a:['Showing off to everyone','Spending real time together','Taking expensive photos'],correct:1,why:'Exactly. The time together is the real gift. â¤ï¸'},{q:'What makes a small memory special?',a:['It has to be expensive','It has to be perfect','It means something to us'],correct:2,why:'The little things can mean the most. ðŸ’—'},{q:'If you have a difficult day, what should you remember?',a:['You must hide your feelings','You deserve kindness and rest','You have to solve everything instantly'],correct:1,why:'You deserve gentleness, even on hard days. ðŸŒ¸'},{q:'What is this little website meant to be?',a:['A tiny universe made for you','A school project','A shopping page'],correct:0,why:'A whole little universe, just for you. ðŸŒŒ'},{q:'What do I hope we make more of?',a:['Arguments','Memories together','To-do lists'],correct:1,why:'More memories, one little moment at a time. ðŸ«‚'}];
+let qi=0,score=0,answered=false;
+function showQuiz(){answered=false;const q=quiz[qi];$('#quizQuestion').textContent=`${qi+1}/${quiz.length} Â· ${q.q}`;$('#quizOptions').replaceChildren();$('#quizFeedback').textContent='';$('#nextQuestion').hidden=true;q.a.forEach((a,i)=>{const b=document.createElement('button');b.className='quiz-option';b.textContent=a;b.addEventListener('click',()=>{if(answered)return;answered=true;if(i===q.correct){score++;$('#quizFeedback').textContent=q.why}else $('#quizFeedback').textContent='Cute try! '+q.why;$$('.quiz-option').forEach(x=>x.disabled=true);$('#nextQuestion').hidden=false;$('#nextQuestion').textContent=qi===quiz.length-1?'See our result ðŸ’—':'Next question âžœ'});$('#quizOptions').appendChild(b)})}
+$('#nextQuestion').addEventListener('click',()=>{if(qi<quiz.length-1){qi++;showQuiz()}else{$('#quizQuestion').textContent=`You scored ${score} out of ${quiz.length} ðŸ’—` ;$('#quizOptions').replaceChildren();$('#quizFeedback').textContent='The best parts of our story are still waiting to happen.';$('#nextQuestion').hidden=true;qi=0;score=0;setTimeout(showQuiz,4500)}});showQuiz();
+
+// Open-when letters
+const notes={miss:`Hey, Shibu. â¤ï¸\n\nIf you're reading this because you miss me, I wish I could make that feeling disappear with one hug.\n\nUntil I can, imagine me sitting beside you, listening to whatever you want to tell me. You don't have to have something interesting to say. We don't have to do anything special.\n\nSometimes, just being together is enough.\n\nSending you the biggest virtual hug. ðŸ«‚ðŸ’—`,smile:`Hey, silly. ðŸ¥¹\n\nYes, you. The person reading this.\n\nI hope you're smiling at least a little right now. If not, imagine me trying my absolute best to make you laugh and somehow making the situation ten times more embarrassing.\n\nThere. That's probably more realistic. ðŸ˜‚â¤ï¸`,bad:`Hey, my favourite person. ðŸ’—\n\nYou don't have to pretend you're okay all the time. Some days are difficult, and you deserve space to feel whatever you're feeling.\n\nTake a breath. Drink some water. Give yourself a little time. You don't need to solve everything today.\n\nI hope tomorrow feels lighter, and I hope you remember that one difficult day doesn't define you. ðŸŒ¸`,remember:`Look at how far we've come, Shibu. â¤ï¸\n\nThere's still so much we haven't experienced together. More conversations, more laughter, more memories, and hopefully lots of moments when we forget to check our phones because we're too busy enjoying ourselves.\n\nI don't know exactly what every chapter of our story will look like. But I'm happy that you're part of the story I'm living right now. ðŸ’Œ`};
+const cats={miss:'ðŸ˜½',smile:'ðŸ˜¹',bad:'ðŸ±',remember:'ðŸ˜»'};
+$$('[data-note]').forEach(b=>b.addEventListener('click',()=>{$('#notePanel').hidden=false;$('#noteCat').textContent=cats[b.dataset.note];typeInto($('#noteText'),notes[b.dataset.note])}));
+
+// Original gentle melody created with Web Audio API. No external music file required.
+let audioCtx=null,master=null,melodyTimer=null,step=0;const notesHz=[261.63,329.63,392,329.63,293.66,349.23,440,392,261.63,329.63,392,493.88,440,392,329.63,293.66];
+function playNote(freq,when,duration,vol,type='sine'){const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.type=type;osc.frequency.setValueAtTime(freq,when);gain.gain.setValueAtTime(.0001,when);gain.gain.exponentialRampToValueAtTime(vol,when+.06);gain.gain.exponentialRampToValueAtTime(.0001,when+duration);osc.connect(gain);gain.connect(master);osc.start(when);osc.stop(when+duration+.03)}
+function scheduleMelody(){if(!audioCtx||audioCtx.state!=='running')return;const now=audioCtx.currentTime;const f=notesHz[step%notesHz.length];playNote(f,now,.7,.07,'sine');playNote(f/2,now,.95,.025,'triangle');if(step%4===0)playNote(notesHz[(step+4)%notesHz.length]*2,now+.08,.28,.012,'sine');step++}
+async function startMusic(){try{if(!audioCtx){audioCtx=new(window.AudioContext||window.webkitAudioContext)();master=audioCtx.createGain();master.gain.value=.55;master.connect(audioCtx.destination)}await audioCtx.resume();if(melodyTimer)return;scheduleMelody();melodyTimer=setInterval(scheduleMelody,650);$('#songDisc').classList.add('playing');$('#musicToggle').textContent='â™« Music playing';$('#playSong').textContent='â™ª Playing our melody';}catch(e){$('#songSubtitle').textContent='Your browser could not start audio. Try tapping play again.'}}
+function stopMusic(){if(melodyTimer){clearInterval(melodyTimer);melodyTimer=null}if(audioCtx&&audioCtx.state==='running')audioCtx.suspend();$('#songDisc').classList.remove('playing');$('#musicToggle').textContent='â™« Start our music';$('#playSong').textContent='â–¶ Play our melody'}
+$('#musicToggle').addEventListener('click',()=>melodyTimer?stopMusic():startMusic());$('#playSong').addEventListener('click',startMusic);$('#stopSong').addEventListener('click',stopMusic);
 </script>
 </body>
 </html>
