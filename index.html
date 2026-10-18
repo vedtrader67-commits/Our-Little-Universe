@@ -34,7 +34,7 @@ p{line-height:1.75;color:#f6eafa;max-width:600px;margin:8px auto 18px}
 .btn:active{transform:scale(.97)}.btn.secondary{background:#ffffff0e;color:#fff;border:1px solid var(--line);box-shadow:none}.btn.small{padding:9px 13px;font-size:.85rem}
 .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:15px}
 .cat{font-size:2.7rem;display:inline-block;filter:drop-shadow(0 5px 14px #ff80cf44);animation:bob 2.8s ease-in-out infinite}
-.cat.smallcat{font-size:2.2rem}
+.cat.smallcat{font-size:2.2rem}.sticker-fallback{width:82px;height:82px;display:grid;place-items:center;font-size:3.5rem;animation:bob 2.2s ease-in-out infinite;filter:drop-shadow(0 4px 12px #ff80cf66)}
 @keyframes bob{50%{transform:translateY(-7px) rotate(-3deg)}}
 .cat-row{display:flex;justify-content:center;gap:16px;align-items:center;margin:8px}
 .sticker{width:82px;height:82px;object-fit:contain;border-radius:14px;vertical-align:middle;filter:drop-shadow(0 4px 10px #0004)}
@@ -70,7 +70,7 @@ footer{text-align:center;color:#bfa8cc;font-size:.75rem;padding:20px}
 <main>
 <section id="welcome" class="active">
 <div class="eyebrow">a tiny universe, made for you</div>
-<div class="cat-row"><span class="cat">ðŸˆâ€â¬›</span><img class="sticker" src="https://tenor.com/sKoS5W86VL6.gif" alt="Cute animated cat love sticker" loading="lazy" referrerpolicy="no-referrer"><span class="cat">ðŸˆ</span></div>
+<div class="cat-row"><span class="cat">ðŸˆâ€â¬›</span><span class="cat sticker-fallback" role="img" aria-label="Cute animated cat love sticker">ðŸ˜»</span><span class="cat">ðŸˆ</span></div>
 <h1 class="glow">Hey, Shibu...</h1>
 <p>I made something for you. It's not perfect, and maybe it's a little silly... but every little part was made with you in mind.</p>
 <p>Ready to see what's inside?</p>
@@ -83,7 +83,7 @@ footer{text-align:center;color:#bfa8cc;font-size:.75rem;padding:20px}
 <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Open the letter"><span>ðŸ’Œ</span></div>
 <div class="panel"><div class="letter" id="letterText">Tap the envelope to open your letter. ðŸ’—</div>
 <div class="actions"><button class="btn small" id="showFullLetter">Read it all</button><button class="btn secondary small" data-go="countdown">Next âœ¨</button></div></div>
-<div class="cat-row"><img class="sticker" src="https://tenor.com/sKoS5W86VL6.gif" alt="Cute cat love sticker" loading="lazy" referrerpolicy="no-referrer"><span class="cat smallcat">ðŸ’Œ</span></div>
+<div class="cat-row"><span class="cat sticker-fallback" role="img" aria-label="Cute cat love sticker">ðŸ˜½</span><span class="cat smallcat">ðŸ’Œ</span></div>
 </section>
 
 <section id="countdown">
@@ -221,7 +221,7 @@ if(savedDate)updateCountdown();
 $$('input[data-memory]').forEach(input=>input.addEventListener('change',()=>{const file=input.files&&input.files[0];if(!file)return;const box=input.parentElement.querySelector('.preview');box.replaceChildren();const img=document.createElement('img');img.src=URL.createObjectURL(file);img.alt='Selected memory';img.style.cssText='display:block;max-width:100%;max-height:240px;border-radius:12px;margin-top:10px';box.appendChild(img);const caption=document.createElement('div');caption.className='notice';caption.textContent='Preview only â€” choose again after refreshing. This photo was not uploaded.';box.appendChild(caption)}));
 
 // Catch the heart mini-game
-const heartMessages=['A tiny reminder: someone is thinking about you. ðŸ’—','Your smile deserves its own little universe. âœ¨','If I could teleport anywhere right now, I would choose wherever you are. ðŸ«‚','You found a tiny piece of my heart. ðŸ˜½','One day, let's make a memory that beats every message here. ðŸŒ™'];
+const heartMessages=['A tiny reminder: someone is thinking about you. ðŸ’—','Your smile deserves its own little universe. âœ¨','If I could teleport anywhere right now, I would choose wherever you are. ðŸ«‚','You found a tiny piece of my heart. ðŸ˜½',"One day, let's make a memory that beats every message here. ðŸŒ™"];
 let found=new Set();
 function makeHearts(){const area=$('#heartGame');area.replaceChildren();found=new Set();$('#heartMessage').textContent='Your first little surprise is waiting. âœ¨';for(let i=0;i<5;i++){const b=document.createElement('button');b.className='tapheart';b.textContent='ðŸ’—';b.setAttribute('aria-label','Catch heart '+(i+1));b.style.left=(5+Math.random()*75)+'%';b.style.top=(5+Math.random()*70)+'%';b.addEventListener('click',()=>{if(found.has(i))return;found.add(i);b.textContent='âœ¨';b.disabled=true;$('#heartMessage').textContent=heartMessages[i];if(found.size===5)$('#heartMessage').textContent='You found all five! Keep these little reminders close. ðŸ’—';});area.appendChild(b)}}
 $('#resetHearts').addEventListener('click',makeHearts);
