@@ -3,39 +3,39 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#170b24">
+<meta name="theme-color" content="#050509">
 <meta name="description" content="A tiny, flirty love letter made for Shibu.">
 <title>For Shibu 💗</title>
 <style>
-:root{color-scheme:dark;--pink:#ff9bd2;--lav:#d9b8ff;--cream:#fff5fc}
+:root{color-scheme:dark;--pink:#ff4fa3;--blue:#45d9ff;--red:#ff355e;--lav:#c5a0ff;--cream:#fff7ff}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html{min-height:100%;background:#100817;scroll-behavior:smooth}
-body{margin:0;min-height:100vh;color:var(--cream);font:17px/1.8 system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(145deg,#180d24,#24132f 60%,#140b20);overflow-x:hidden}
+html{min-height:100%;background:#050509;scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--cream);font:17px/1.8 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 10% 10%,#19274c 0,transparent 38%),radial-gradient(ellipse at 90% 25%,#47122f 0,transparent 36%),linear-gradient(145deg,#090a14,#1c1028 55%,#100a1c);overflow-x:hidden}
 #stars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
-.star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.55;animation:twinkle 3s ease-in-out infinite alternate}
+.star{position:absolute;width:2px;height:2px;border-radius:50%;background:var(--blue);box-shadow:0 0 8px var(--blue);opacity:.55;animation:twinkle 3s ease-in-out infinite alternate}
 @keyframes twinkle{to{opacity:1;transform:scale(2.1)}}
 main{position:relative;z-index:1;width:min(100% - 28px,620px);margin:auto;padding:30px 0 44px;text-align:center}
-.brand{font-size:11px;letter-spacing:3px;font-weight:900;color:#ffd4ec}
-.heart{font-size:63px;line-height:1.25;margin:18px 0 6px;filter:drop-shadow(0 0 18px #ff4b9d);animation:heartbeat 2s ease-in-out infinite}
+.brand{font-size:11px;letter-spacing:3px;font-weight:900;color:#ff8acb;text-shadow:0 0 14px #ff4fa355}
+.heart{font-size:63px;line-height:1.25;margin:18px 0 6px;filter:drop-shadow(0 0 18px #ff4b9d) drop-shadow(0 0 24px #44d9ff55);animation:heartbeat 2s ease-in-out infinite}
 @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.1)}27%{transform:scale(1)}38%{transform:scale(1.06)}}
-h1{font-size:clamp(38px,10vw,55px);line-height:1.18;letter-spacing:-2px;margin:8px 0 12px;background:linear-gradient(100deg,#ffc0e3,#d5baff);color:transparent;background-clip:text;-webkit-background-clip:text}.heading-emoji{display:inline-block;background:none!important;color:initial;-webkit-text-fill-color:initial;letter-spacing:0;vertical-align:baseline;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+h1{font-size:clamp(38px,10vw,55px);line-height:1.18;letter-spacing:-2px;margin:8px 0 12px;background:linear-gradient(100deg,#ff4fa3 0%,#ff5e70 42%,#5be3ff 75%,#d3a2ff 100%);color:transparent;background-clip:text;-webkit-background-clip:text}.heading-emoji{display:inline-block;background:none!important;color:initial;-webkit-text-fill-color:initial;letter-spacing:0;vertical-align:baseline;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
 .subtitle{color:#e8d5ed;margin:0 auto 18px;max-width:440px}
-.tease{display:inline-block;padding:6px 13px;margin:0 0 18px;border:1px solid #ffb4e443;border-radius:999px;color:#ffd7ed;background:#ffffff09;font-size:13px}
+.tease{display:inline-block;padding:6px 13px;margin:0 0 18px;border:1px solid #ff4fa366;border-radius:999px;color:#ffcae6;background:linear-gradient(90deg,#ff4fa311,#45d9ff0c);box-shadow:0 0 18px #ff4fa314;font-size:13px}
 .cats{display:flex;justify-content:center;align-items:center;gap:12px;margin:12px auto 20px}
-.catgif{display:block;width:clamp(104px,31vw,148px);height:clamp(100px,30vw,140px);object-fit:cover;border-radius:22px;border:1px solid #ffc1e955;box-shadow:0 0 22px #ff6bb52b;background:#ffffff0d;}
+.catgif{display:block;width:clamp(104px,31vw,148px);height:clamp(100px,30vw,140px);object-fit:cover;border-radius:22px;border:1px solid #ff4fa966;box-shadow:0 0 22px #ff4fa52b,0 0 22px #45d9ff12;background:#ffffff0d;}
 .catgif:nth-child(2){animation-delay:-2s}
 
 .catcaption{font-size:12px;color:#d9c7e5;margin:-10px 0 21px}
-.paper{position:relative;isolation:isolate;overflow:hidden;text-align:left;padding:clamp(24px,6vw,38px);border:1px solid #ffb5e8a8;border-radius:27px;background:linear-gradient(145deg,#fff0fb1b,#d8baff0c 60%,#ffffff08);box-shadow:0 0 0 1px #ffc8ef15,0 0 30px #ff5bb12b,0 22px 80px #0004;opacity:0;transform:translateY(18px) scale(.985);transition:opacity .65s ease,transform .7s ease}
+.paper{position:relative;isolation:isolate;overflow:hidden;text-align:left;padding:clamp(24px,6vw,38px);border:1px solid #ff4fa988;border-radius:27px;background:linear-gradient(145deg,#ff4fa318,#45d9ff0c 52%,#ff355e12);box-shadow:0 0 0 1px #45d9ff15,0 0 30px #ff5bb12b,0 0 26px #45d9ff10,0 22px 80px #0004;opacity:0;transform:translateY(18px) scale(.985);transition:opacity .65s ease,transform .7s ease}
 .paper:before{content:"";position:absolute;inset:7px;border:1px solid #ffc3e530;border-radius:20px;pointer-events:none;z-index:-1}
 .paper:after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 22px #ff80d122;pointer-events:none}
 
 .paper.show{opacity:1;transform:translateY(0) scale(1)}
 
 .paper p{position:relative;margin:0 0 17px;color:#f9ecfa}
-.paper .dear{font-size:22px;font-weight:850;color:#ffc1e2}
-.paper .punchline{color:#ffd2ea;font-weight:750}
-.signature{font-weight:900;color:#ffb4dc!important;font-size:20px;margin-top:23px!important;text-align:right}
+.paper .dear{font-size:22px;font-weight:850;color:#ff8acb}
+.paper .punchline{color:#ff8acb;font-weight:750}
+.signature{font-weight:900;color:#ff6fae!important;font-size:20px;margin-top:23px!important;text-align:right}
 .tiny-note{color:#dfcce8;font-size:13px;text-align:center;margin:19px 0 0}
 footer{color:#c8b4d0;font-size:12px;margin-top:27px}
 #magicdust{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
@@ -43,9 +43,37 @@ footer{color:#c8b4d0;font-size:12px;margin-top:27px}
 @keyframes dustrise{0%{opacity:0;transform:translate(0,18px) scale(.3)}18%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-100px) scale(1.25)}}
 @media(max-width:370px){main{width:calc(100% - 20px);padding-top:24px}.paper{padding:22px 19px}.cats{gap:8px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.paper{filter:none;transform:none}}
+
+/* Love-code gate: deliberately pure black until both codes are accepted */
+#love-lock{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#000;color:#fff;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
+#love-lock[hidden]{display:none!important}
+.lock-card{width:min(100%,360px);text-align:center;padding:30px 22px;border:1px solid #25252c;border-radius:18px;background:#050505;box-shadow:0 18px 70px #000}
+.lock-mark{font-size:26px;letter-spacing:8px;color:#f5f5f7;margin-bottom:15px}
+.lock-kicker{font-size:10px;letter-spacing:4px;color:#777;margin-bottom:9px}
+.lock-title{font-size:25px;line-height:1.2;font-weight:850;letter-spacing:-.7px;margin:0 0 10px;color:#fff}
+.lock-help{font-size:13px;line-height:1.6;color:#999;margin:0 0 22px}
+#love-code{display:block;width:100%;height:52px;border:1px solid #35353d;border-radius:10px;background:#0a0a0c;color:#fff;text-align:center;font-size:19px;font-weight:800;letter-spacing:5px;outline:none;text-transform:uppercase}
+#love-code:focus{border-color:#eee;box-shadow:0 0 0 2px #ffffff12}
+#love-submit{width:100%;height:48px;margin-top:12px;border:0;border-radius:10px;background:#f5f5f7;color:#050505;font-size:13px;font-weight:900;letter-spacing:2px}
+#love-error{min-height:20px;margin:12px 0 0;color:#aaa;font-size:12px}
+.lock-bottom{margin-top:20px;font-size:9px;letter-spacing:2px;color:#555}
+body.locked{overflow:hidden}
+
 </style>
 </head>
-<body>
+<body class="locked">
+<div id="love-lock" role="dialog" aria-modal="true" aria-labelledby="lock-title">
+ <form class="lock-card" id="love-lock-form" autocomplete="off">
+  <div class="lock-mark" aria-hidden="true">✳</div>
+  <div class="lock-kicker">PRIVATE ACCESS ONLY</div>
+  <h2 class="lock-title" id="lock-title">Love Security</h2>
+  <p class="lock-help" id="lock-help">Enter the private access word to continue.</p>
+  <input id="love-code" type="password" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="12" placeholder="ACCESS CODE" aria-label="Access code" required>
+  <button id="love-submit" type="submit">CONTINUE ↗</button>
+  <p id="love-error" role="status" aria-live="polite"></p>
+  <div class="lock-bottom">JUST FOR ONE PERSON · ♡</div>
+ </form>
+</div>
 <div id="stars" aria-hidden="true"></div><div id="magicdust" aria-hidden="true"></div>
 <main>
 <div class="brand">✦ A LITTLE SURPRISE, JUST FOR YOU ✦</div>
@@ -73,6 +101,55 @@ footer{color:#c8b4d0;font-size:12px;margin-top:27px}
 <footer>Made with pyaar, pagal energy, and way too many thoughts about you. ✦💗</footer>
 </main>
 <script>
+
+(function(){
+ const gate=document.getElementById("love-lock");
+ const form=document.getElementById("love-lock-form");
+ const input=document.getElementById("love-code");
+ const help=document.getElementById("lock-help");
+ const title=document.getElementById("lock-title");
+ const button=document.getElementById("love-submit");
+ const error=document.getElementById("love-error");
+ let stage=0;
+ form.addEventListener("submit",function(event){
+  event.preventDefault();
+  const value=input.value.trim();
+  if(stage===0){
+   if(value.toLowerCase()==="vsf"){
+    stage=1;
+    title.textContent="One Last Check";
+    help.textContent="Enter the 3-digit security code.";
+    input.value="";
+    input.type="password";
+    input.inputMode="numeric";
+    input.maxLength=3;
+    input.pattern="[0-9]{3}";
+    input.placeholder="•••";
+    input.setAttribute("aria-label","3-digit security code");
+    button.textContent="UNLOCK ♡";
+    error.textContent="";
+    input.focus();
+   }else{
+    error.textContent="That code doesn't match. Try again.";
+    input.value="";
+    input.focus();
+   }
+  }else{
+   if(value==="143"){
+    gate.hidden=true;
+    document.body.classList.remove("locked");
+    input.value="";
+   }else{
+    error.textContent="Incorrect 3-digit code. Try again.";
+    input.value="";
+    input.focus();
+   }
+  }
+ });
+ input.addEventListener("input",function(){error.textContent="";});
+ input.focus();
+})();
+
 (function(){
  const stars=document.getElementById("stars");
  for(let i=0;i<24;i++){const s=document.createElement("i");s.className="star";s.style.left=(Math.random()*100)+"%";s.style.top=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*3)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";stars.appendChild(s)}
