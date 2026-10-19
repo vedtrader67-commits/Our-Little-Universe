@@ -60,45 +60,51 @@ footer{color:#c8b4d0;font-size:12px;margin-top:27px}
 body.locked{overflow:hidden}
 
 
-/* Cinematic heavy fighter fly-by, symbolic sadness box, oversized blast and two-second impact shake */
+/* Cinematic jet entrance, pilot line, small sadness crate and visible bomb impact */
 #plane-intro{position:fixed;inset:0;z-index:99990;overflow:hidden;pointer-events:none;background:#03040a;opacity:0;visibility:hidden;isolation:isolate}
 #plane-intro.active{opacity:1;visibility:visible}
 #plane-intro .flight-sky{position:absolute;inset:0;background:radial-gradient(ellipse at 52% 48%,#24345d 0,transparent 48%),linear-gradient(110deg,#02030a,#11152b 50%,#080511)}
 #plane-intro .flight-stars{position:absolute;inset:0;background-image:radial-gradient(#b8eaff 1px,transparent 1.8px),radial-gradient(#ff8fd1 1px,transparent 2px);background-size:83px 83px,127px 127px;background-position:10px 20px,53px 61px;opacity:.6}
-#plane-svg{position:absolute;width:min(76vw,480px);min-width:250px;height:auto;left:0;top:42%;transform:translate(-130%,-50%) rotate(-4deg);filter:drop-shadow(0 3px 3px #000a) drop-shadow(0 0 7px #8deaff88)}
-#plane-intro.active #plane-svg{animation:plane-fly 4.15s cubic-bezier(.16,.68,.25,1) forwards}
-#pilot-line{position:absolute;left:50%;top:16%;width:min(90vw,430px);transform:translate(-50%,-12px) scale(.8);opacity:0;text-align:center;font-size:clamp(15px,4.5vw,24px);font-weight:1000;letter-spacing:1.4px;color:#fff;background:linear-gradient(100deg,#ff68b7,#fff,#65e5ff);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 3px 8px #000);z-index:5}
-#pilot-line:after{content:"✦  PILOT ONLINE  ✦";display:block;margin-top:5px;font-size:9px;letter-spacing:4px;color:#9eeeff;-webkit-text-fill-color:#9eeeff}
-#plane-intro.active #pilot-line{animation:pilot-speech .45s 1.05s cubic-bezier(.2,.8,.2,1) forwards}
-#plane-intro .contrail{position:absolute;left:-45%;top:42%;width:48%;height:3px;background:linear-gradient(90deg,transparent,#5ee5ffb5,#ff7fcb);filter:blur(2px);opacity:0}
-#plane-intro.active .contrail{animation:contrail-fly 1.9s ease-out forwards}
-#sadness-box{position:absolute;left:50%;top:69%;width:min(48vw,190px);height:68px;transform:translate(-50%,-50%);border:2px solid #9b7552;border-radius:5px;background:linear-gradient(135deg,#67442e,#3c261d 55%,#241914);box-shadow:inset 0 0 0 4px #0004,0 10px 24px #0009,0 0 20px #ff9d4930;display:flex;align-items:center;justify-content:center;text-align:center;transition:opacity .3s,transform .3s;z-index:1}\n#sadness-box:before,#sadness-box:after{content:"";position:absolute;top:0;bottom:0;width:12px;background:repeating-linear-gradient(180deg,#b78a5b 0 7px,#704b30 7px 13px);opacity:.75}\n#sadness-box:before{left:14px}#sadness-box:after{right:14px}\n#sadness-box span{position:relative;z-index:2;padding:0 22px;color:#fff0d8;font-size:clamp(9px,2.5vw,12px);font-weight:900;letter-spacing:1.2px;line-height:1.4;text-shadow:0 2px 3px #000}\n#plane-intro.boom #sadness-box{animation:box-break .55s ease-in forwards}\n@keyframes box-break{0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}35%{opacity:1;transform:translate(-50%,-50%) scale(1.08) rotate(-2deg)}100%{opacity:0;transform:translate(-50%,-40%) scale(.65) rotate(8deg);filter:brightness(2)}}\n#falling-bomb{position:absolute;left:50%;top:46%;width:18px;height:39px;opacity:0;transform:rotate(-18deg);filter:drop-shadow(0 0 5px #ffb45c)}
-#falling-bomb .bomb-body{position:absolute;inset:0 2px 5px;border-radius:48% 48% 35% 35%;background:linear-gradient(90deg,#222936,#9aa6b8 35%,#313744 70%,#11151d);border:1px solid #d8e2ef}
-#falling-bomb .bomb-tip{position:absolute;left:3px;bottom:0;width:6px;height:8px;background:#ff9c48;clip-path:polygon(0 0,100% 0,50% 100%)}
-#falling-bomb .bomb-tail{position:absolute;left:0;top:0;width:100%;height:6px;background:linear-gradient(90deg,#30394a,#a8b3c4,#30394a);clip-path:polygon(0 0,100% 0,76% 100%,24% 100%)}
-#plane-intro.bomb-drop #falling-bomb{animation:bomb-fall .82s cubic-bezier(.35,.05,.8,.5) forwards}
-#blast{position:absolute;left:50%;top:69%;width:28px;height:28px;opacity:0;transform:translate(-50%,-50%);border-radius:50%;background:#fff;box-shadow:0 0 12px 5px #fff,0 0 35px 18px #ffd46c,0 0 70px 34px #ff6b2d,0 0 110px 55px #ff3e91}
+#plane-svg{position:absolute;display:block;width:min(82vw,440px);min-width:240px;height:auto;left:-45%;top:39%;transform:translateY(-50%) rotate(-5deg);z-index:3;filter:drop-shadow(0 4px 5px #000c) drop-shadow(0 0 10px #8deaffaa)}
+#plane-intro.active #plane-svg{animation:jet-flight 4.5s linear both}
+#pilot-line{position:absolute;left:50%;top:16%;width:min(92vw,440px);opacity:0;transform:translate(-50%,12px) scale(.86);text-align:center;z-index:6;font-size:clamp(15px,4.6vw,25px);font-weight:1000;letter-spacing:1px;color:#fff;text-shadow:0 0 8px #ff5da7,0 0 24px #4edfff,0 3px 5px #000}
+#pilot-line:after{content:"✦  PILOT ONLINE  ✦";display:block;margin-top:5px;font-size:9px;letter-spacing:4px;color:#9eeeff;text-shadow:0 0 12px #45d9ff}
+#plane-intro.active #pilot-line{animation:pilot-speech .45s 1.05s ease-out both}
+#plane-intro .contrail{position:absolute;left:-45%;top:39%;width:50%;height:3px;background:linear-gradient(90deg,transparent,#5ee5ffb5,#ff7fcb);filter:blur(2px);opacity:0;z-index:2}
+#plane-intro.active .contrail{animation:contrail-fly 2.1s ease-out both}
+#sadness-box{position:absolute;left:50%;top:69%;width:116px;height:54px;transform:translate(-50%,-50%);border:2px solid #9b7552;border-radius:4px;background:linear-gradient(135deg,#67442e,#3c261d 55%,#241914);box-shadow:inset 0 0 0 3px #0005,0 8px 18px #0009;display:flex;align-items:center;justify-content:center;text-align:center;z-index:2}
+#sadness-box:before,#sadness-box:after{content:"";position:absolute;top:0;bottom:0;width:7px;background:repeating-linear-gradient(180deg,#b78a5b 0 6px,#704b30 6px 11px);opacity:.9}
+#sadness-box:before{left:8px}#sadness-box:after{right:8px}
+#sadness-box span{position:relative;z-index:2;padding:0 16px;color:#fff0d8;font-size:8px;font-weight:1000;letter-spacing:.45px;line-height:1.3;text-shadow:0 2px 3px #000}
+#plane-intro.boom #sadness-box{animation:box-break .48s ease-in both}
+@keyframes box-break{0%{opacity:1;transform:translate(-50%,-50%) scale(1) rotate(0)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.12) rotate(-5deg)}100%{opacity:0;transform:translate(-50%,-42%) scale(.25) rotate(20deg);filter:brightness(2)}}
+#falling-bomb{position:absolute;left:50%;top:42%;width:17px;height:34px;opacity:0;transform:translateX(-50%) rotate(-12deg);filter:drop-shadow(0 0 5px #ffb45c);z-index:4}
+#falling-bomb .bomb-body{position:absolute;inset:4px 3px 5px;border-radius:48% 48% 35% 35%;background:linear-gradient(90deg,#222936,#d1dbe7 35%,#313744 70%,#11151d);border:1px solid #d8e2ef}
+#falling-bomb .bomb-tip{position:absolute;left:5px;bottom:0;width:7px;height:8px;background:#ff9c48;clip-path:polygon(0 0,100% 0,50% 100%)}
+#falling-bomb .bomb-tail{position:absolute;left:0;top:0;width:100%;height:8px;background:linear-gradient(90deg,#30394a,#a8b3c4,#30394a);clip-path:polygon(0 0,100% 0,76% 100%,24% 100%)}
+#plane-intro.bomb-drop #falling-bomb{animation:bomb-fall .82s cubic-bezier(.35,.05,.8,.5) both}
+#blast{position:absolute;left:50%;top:69%;width:20px;height:20px;opacity:0;transform:translate(-50%,-50%);border-radius:50%;background:#fff;z-index:5;box-shadow:0 0 12px 5px #fff,0 0 35px 18px #ffd46c,0 0 70px 34px #ff6b2d,0 0 110px 55px #ff3e91}
 #blast:before,#blast:after{content:"";position:absolute;inset:-18px;border-radius:50%;border:5px solid #ffe7a0;box-shadow:0 0 24px #ff9d48}
 #blast:after{inset:-38px;border-color:#ff784a;border-width:3px}
-#plane-intro.boom #blast{animation:blast-core 1.25s cubic-bezier(.12,.65,.22,1) forwards}
-#plane-intro.boom #blast:before{animation:blast-ring .95s ease-out forwards}
-#plane-intro.boom #blast:after{animation:blast-ring 1.2s .08s ease-out forwards}
-#plane-intro.boom:before{content:"";position:absolute;left:50%;top:69%;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#fff 0 8%,#fff8c8 14%,#ff8a3d 36%,#ed286c 58%,transparent 72%);box-shadow:0 0 28px 16px #ffb33d,0 0 70px 35px #ff4e88;transform:translate(-50%,-50%);animation:fireball 1.2s ease-out forwards}
-#plane-intro.boom:after{content:"";position:absolute;inset:0;background:#fff;opacity:0;animation:boom-flash .55s ease-out forwards}
-#blast-particles{position:absolute;inset:0;overflow:hidden}
+#plane-intro.boom #blast{animation:blast-core 1.25s cubic-bezier(.12,.65,.22,1) both}
+#plane-intro.boom #blast:before{animation:blast-ring .95s ease-out both}
+#plane-intro.boom #blast:after{animation:blast-ring 1.2s .08s ease-out both}
+#plane-intro.boom:before{content:"";position:absolute;left:50%;top:69%;width:12px;height:12px;border-radius:50%;background:radial-gradient(circle,#fff 0 8%,#fff8c8 14%,#ff8a3d 36%,#ed286c 58%,transparent 72%);box-shadow:0 0 28px 16px #ffb33d,0 0 70px 35px #ff4e88;transform:translate(-50%,-50%);animation:fireball 1.2s ease-out both;z-index:4}
+#plane-intro.boom:after{content:"";position:absolute;inset:0;background:#fff;opacity:0;animation:boom-flash .55s ease-out both;z-index:7}
+#blast-particles{position:absolute;inset:0;overflow:hidden;z-index:6}
 #blast-particles i{position:absolute;left:50%;top:69%;width:4px;height:4px;border-radius:50%;background:#ffcf83;box-shadow:0 0 8px #ff6b2d;opacity:0}
-#plane-intro.boom #blast-particles i{animation:debris-burst var(--dur,.8s) cubic-bezier(.12,.45,.2,1) var(--delay,0s) forwards}
-@keyframes plane-fly{0%{left:-40%;top:35%;transform:translate(0,-50%) rotate(-6deg) scale(.82)}24%{left:35%;top:37%;transform:translate(0,-50%) rotate(0) scale(1.04)}38%,62%{left:39%;top:37%;transform:translate(0,-50%) rotate(0) scale(1.04)}100%{left:140%;top:33%;transform:translate(0,-50%) rotate(5deg) scale(.96)}}
-@keyframes pilot-speech{0%{opacity:0;transform:translate(-50%,-12px) scale(.8)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}18%{transform:translate(0,-50%) rotate(-2deg) scale(.95)}48%{left:40%;top:37%;transform:translate(0,-50%) rotate(1deg) scale(1.08)}72%{transform:translate(0,-50%) rotate(0) scale(1.04)}100%{left:140%;top:33%;transform:translate(0,-50%) rotate(5deg) scale(.96)}}
+#plane-intro.boom #blast-particles i{animation:debris-burst var(--dur,.8s) cubic-bezier(.12,.45,.2,1) var(--delay,0s) both}
+@keyframes jet-flight{0%{left:-45%;top:39%;transform:translateY(-50%) rotate(-7deg) scale(.72)}22%{left:34%;top:38%;transform:translateY(-50%) rotate(0) scale(1)}35%,72%{left:37%;top:38%;transform:translateY(-50%) rotate(0) scale(1)}100%{left:145%;top:32%;transform:translateY(-50%) rotate(5deg) scale(.86)}}
+@keyframes pilot-speech{0%{opacity:0;transform:translate(-50%,12px) scale(.86)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
 @keyframes contrail-fly{0%{left:-45%;opacity:0}18%{opacity:.85}100%{left:62%;opacity:0}}
-@keyframes bomb-fall{0%{opacity:0;left:50%;top:45%;transform:rotate(-18deg) scale(.65)}12%{opacity:1}72%{opacity:1;left:50%;top:63%;transform:rotate(5deg) scale(1)}100%{opacity:0;left:50%;top:69%;transform:rotate(14deg) scale(1.15)}}
+@keyframes bomb-fall{0%{opacity:0;left:50%;top:43%;transform:translateX(-50%) rotate(-12deg) scale(.7)}12%{opacity:1}72%{opacity:1;left:50%;top:62%;transform:translateX(-50%) rotate(5deg) scale(1)}100%{opacity:0;left:50%;top:68%;transform:translateX(-50%) rotate(14deg) scale(1.1)}}
 @keyframes blast-core{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}8%{opacity:1;transform:translate(-50%,-50%) scale(2)}28%{opacity:1;transform:translate(-50%,-50%) scale(8)}62%{opacity:.7;transform:translate(-50%,-50%) scale(15)}100%{opacity:0;transform:translate(-50%,-50%) scale(22)}}
 @keyframes blast-ring{0%{opacity:0;transform:scale(.15)}12%{opacity:1}100%{opacity:0;transform:scale(13)}}
 @keyframes fireball{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}8%{opacity:1}32%{opacity:1;transform:translate(-50%,-50%) scale(18)}100%{opacity:0;transform:translate(-50%,-50%) scale(38)}}
 @keyframes debris-burst{0%{opacity:0;transform:translate(0,0) scale(1)}12%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.15)}}
 @keyframes boom-flash{0%{opacity:0}12%{opacity:.86}100%{opacity:0}}
-body.impact-shake{animation:impact-shake 2s cubic-bezier(.36,.07,.19,.97) both;transform-origin:center}
-@keyframes impact-shake{0%{transform:translate(0,0) rotate(0)}5%{transform:translate(-11px,7px) rotate(-.65deg)}10%{transform:translate(13px,-9px) rotate(.72deg)}16%{transform:translate(-12px,-5px) rotate(-.58deg)}22%{transform:translate(10px,8px) rotate(.5deg)}29%{transform:translate(-9px,6px) rotate(-.42deg)}36%{transform:translate(8px,-7px) rotate(.35deg)}44%{transform:translate(-7px,-3px) rotate(-.3deg)}53%{transform:translate(6px,5px) rotate(.24deg)}62%{transform:translate(-4px,3px) rotate(-.18deg)}72%{transform:translate(3px,-3px) rotate(.12deg)}82%{transform:translate(-2px,1px) rotate(-.06deg)}92%{transform:translate(1px,0)}100%{transform:translate(0,0) rotate(0)}}
+body.impact-shake{animation:impact-shake 2s linear both;transform-origin:center}
+@keyframes impact-shake{0%,100%{transform:translate(0,0)}5%{transform:translate(-13px,9px) rotate(-.8deg)}10%{transform:translate(14px,-10px) rotate(.8deg)}15%{transform:translate(-12px,-8px) rotate(-.7deg)}20%{transform:translate(12px,9px) rotate(.65deg)}25%{transform:translate(-11px,7px) rotate(-.6deg)}30%{transform:translate(10px,-9px) rotate(.55deg)}35%{transform:translate(-10px,-6px) rotate(-.5deg)}40%{transform:translate(9px,8px) rotate(.45deg)}45%{transform:translate(-8px,5px) rotate(-.4deg)}50%{transform:translate(8px,-7px) rotate(.35deg)}55%{transform:translate(-7px,-5px) rotate(-.3deg)}60%{transform:translate(6px,6px) rotate(.25deg)}65%{transform:translate(-6px,4px) rotate(-.22deg)}70%{transform:translate(5px,-5px) rotate(.18deg)}75%{transform:translate(-4px,-3px) rotate(-.15deg)}80%{transform:translate(4px,4px) rotate(.12deg)}85%{transform:translate(-3px,2px) rotate(-.1deg)}90%{transform:translate(2px,-2px) rotate(.07deg)}95%{transform:translate(-1px,1px)}}
 body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:0}
 body.intro-revealed main{animation:main-reveal .85s ease-out both}
 body.intro-revealed .brand{animation:item-reveal .55s .05s both}
@@ -111,7 +117,8 @@ body.intro-revealed .tiny-note,body.intro-revealed footer{animation:item-reveal 
 @keyframes main-reveal{from{filter:brightness(2.2) saturate(1.7)}to{filter:brightness(1) saturate(1)}}
 @keyframes item-reveal{from{opacity:0;transform:translateY(20px) scale(.98);filter:brightness(1.8)}to{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}}
 @keyframes heart-reveal{0%{opacity:0;transform:scale(.2)}65%{opacity:1;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
-@media(prefers-reduced-motion:reduce){#plane-intro{display:none!important}body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:1!important}body.intro-revealed main,body.intro-revealed main *{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}body.impact-shake{animation:none!important}}</style>
+@media(prefers-reduced-motion:reduce){#plane-intro{display:none!important}body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:1!important}body.intro-revealed main,body.intro-revealed main *{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}body.impact-shake{animation:none!important}}
+</style>
 </head>
 <body class="locked">
 <div id="plane-intro" aria-hidden="true">
