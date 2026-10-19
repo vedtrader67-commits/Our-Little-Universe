@@ -64,10 +64,9 @@ body.locked{overflow:hidden}
 <body class="locked">
 <div id="love-lock" role="dialog" aria-modal="true" aria-labelledby="lock-title">
  <form class="lock-card" id="love-lock-form" autocomplete="off">
-  <div class="lock-mark" aria-hidden="true">✳</div>
   <div class="lock-kicker">PRIVATE ACCESS ONLY</div>
-  <h2 class="lock-title" id="lock-title">Love Security</h2>
-  <p class="lock-help" id="lock-help">Enter the private access code to continue.</p>
+  <h2 class="lock-title" id="lock-title">Security Code</h2>
+  <p class="lock-help" id="lock-help">Enter the security code we made.</p>
   <input id="love-code" type="password" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="12" placeholder="ACCESS CODE" aria-label="Access code" required>
   <button id="love-submit" type="submit">UNLOCK ♡</button>
   <p id="love-error" role="status" aria-live="polite"></p>
@@ -114,7 +113,7 @@ body.locked{overflow:hidden}
    document.body.classList.remove("locked");
    input.value="";
   }else{
-   error.textContent="Incorrect code. Try again.";
+   error.textContent="Why u hate me? 🥺 Try again.";
    input.value="";
    input.focus();
   }
