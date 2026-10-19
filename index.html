@@ -197,7 +197,8 @@ body.intro-revealed .tiny-note,body.intro-revealed footer{animation:item-reveal 
 .hud-count-wrap{color:#ffb7de;white-space:nowrap}
 .hud-count-wrap b{display:inline-block;min-width:22px;margin-left:3px;color:#fff;font-size:14px;letter-spacing:2px;text-align:center;text-shadow:0 0 12px #ff72c4;animation:count-tick .35s ease-out}
 .hud-rule{height:2px;margin:7px 0 6px;overflow:hidden;background:#45d9ff21}
-.hud-rule i{display:block;width:100%;height:100%;transform-origin:left;background:linear-gradient(90deg,#45d9ff,#ff64bd,#fff);box-shadow:0 0 10px #45d9ff;animation:hud-load 4s linear both}
+.hud-rule i{display:block;width:100%;height:100%;transform-origin:left;background:linear-gradient(90deg,#45d9ff,#ff64bd,#fff);box-shadow:0 0 10px #45d9ff;animation:none}
+#plane-intro.active .hud-rule i{animation:hud-load 4s linear both}
 .hud-bottom{color:#90dce9;font-size:8px}
 .hud-coordinates{color:#c9a6d6;font-size:7px;letter-spacing:.8px}
 @keyframes hud-blink{50%{opacity:.2}}
@@ -265,6 +266,8 @@ body.intro-revealed .tiny-note,body.intro-revealed footer{animation:item-reveal 
  #love-submit:hover{filter:brightness(1.08);box-shadow:0 0 22px #ffffff20}
  .catgif:hover{transform:translateY(-5px) scale(1.035);filter:saturate(1.3);box-shadow:0 0 28px #ff4fa566,0 0 32px #45d9ff24}
 }
+/* Keep the jet centred over the box at bomb release, so the drop visually connects to the aircraft. */
+@keyframes jet-flight{0%{left:-45%;top:39%;transform:translateY(-50%) rotate(-7deg) scale(.72)}24%{left:8%;top:38%;transform:translateY(-50%) rotate(0) scale(1)}42%,60%{left:9%;top:38%;transform:translateY(-50%) rotate(0) scale(1)}100%{left:145%;top:32%;transform:translateY(-50%) rotate(5deg) scale(.86)}}
 </style>
 </head>
 <body class="locked">
