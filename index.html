@@ -23,19 +23,19 @@
 /* Ten-second ink-and-colour anime short */
 .stage{height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:9/5;padding:0!important;margin:18px 0 12px;background:#edb5cf;border:1px solid #ffffff66;box-shadow:0 15px 42px #14091d45,0 0 28px #ffc0dc26}
 .animeFilm{display:block;width:100%;height:100%;overflow:hidden}
-.animeFilm .ink{stroke-dasharray:900;stroke-dashoffset:900;animation:animeInk 10s cubic-bezier(.45,0,.25,1) infinite;animation-delay:var(--delay,0s);stroke-linecap:round;stroke-linejoin:round}
-.animeFilm .paint{fill-opacity:0;animation:animePaint 10s ease-in-out infinite;animation-delay:var(--delay,0s)}
-.animeFilm .ink.paint[opacity=".26"],.animeFilm .ink.paint[opacity=".22"]{opacity:0;animation:animeShadow 10s ease-in-out infinite;animation-delay:var(--delay,0s)}
-@keyframes animeInk{0%,2%{stroke-dashoffset:900}45%,100%{stroke-dashoffset:0}}
-@keyframes animePaint{0%,43%{fill-opacity:0}58%,100%{fill-opacity:1}}
-@keyframes animeShadow{0%,43%{opacity:0}60%,100%{opacity:.25}}
+.animeFilm .ink{stroke-dasharray:900;stroke-dashoffset:900;stroke-linecap:round;stroke-linejoin:round}
+.animeFilm .paint{fill-opacity:0}
+.animeFilm .ink.paint[opacity=".26"],.animeFilm .ink.paint[opacity=".22"]{opacity:0}
+.animeFilm .ink[stroke="none"]{stroke:none;stroke-dasharray:none;stroke-dashoffset:0}
+.animeFilm .petalArt{transform-box:fill-box;transform-origin:center;animation:animePetalDrift 4.8s ease-in-out 1 both}
+@keyframes animePetalDrift{0%{transform:translate(-15px,-20px) rotate(-15deg)}100%{transform:translate(10px,42px) rotate(35deg)}}
 .animeFilm .ink[fill="none"]{fill:none}
 .animeFilm .ink[stroke="none"]{stroke:none;stroke-dasharray:none;stroke-dashoffset:0;animation:none}
 .animeFilm .paint[stroke="none"]{stroke:none}
 .caption{z-index:6;top:8px;left:8px;right:8px;width:max-content;max-width:calc(100% - 16px);margin:auto;padding:6px 12px;border-radius:999px;border:1px solid #fff8;background:#fff0f4d9;backdrop-filter:blur(8px);color:#5b3155;font-size:clamp(10px,2.4vw,14px);box-shadow:0 3px 16px #49254522}
 .music-dock{max-width:760px;margin:12px auto 18px;padding:12px;border:1px solid #ffffff2e;border-radius:18px;background:linear-gradient(135deg,#2b173bcc,#563052b8);box-shadow:0 12px 32px #08040d55}
 .music-dock-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}.music-dock-top b{color:#ffe3f2}.music-sub,.music-hint{font-size:12px;color:#e8c9e8}.music-hint{text-align:center;margin:7px 0 0}.yt-link{color:#fff1fa;text-decoration:none;font-size:12px;font-weight:800;padding:8px 10px;border:1px solid #ffffff28;border-radius:999px;background:#ffffff0e}
-.ytplayer{width:min(100%,560px);min-width:200px;height:200px;margin:12px auto 0;overflow:hidden;border-radius:12px;background:#11091e}.ytplayer iframe{display:block;width:100%;height:200px;border:0;border-radius:12px}
+.ytplayer{width:min(100%,560px);min-width:200px;min-height:200px;aspect-ratio:16/9;height:auto;margin:12px auto 0;overflow:hidden;border-radius:12px;background:#11091e}.ytplayer iframe{display:block;width:100%;height:100%;min-height:200px;aspect-ratio:16/9;border:0;border-radius:12px}
 @media(max-width:390px){.stage{aspect-ratio:9/5}.music-dock{padding:10px}.music-dock-top{justify-content:flex-start}.ytplayer{height:200px}}
 @media(prefers-reduced-motion:reduce){.animeFilm .ink,.animeFilm .paint{animation:none!important;stroke-dashoffset:0!important;fill-opacity:1!important}}
 
@@ -103,7 +103,7 @@
 </g>
 <!-- Boy: layered hair, school jacket, moving legs, hand and rose bouquet -->
 <g id="boyMotion">
- <animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 0;300 0;300 0" keyTimes="0;0.48;0.63;0.82;1" dur="10s" repeatCount="indefinite"/>
+ <animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 0;300 0;300 0" keyTimes="0;0.48;0.63;0.82;1" dur="10s" repeatCount="1" fill="freeze"/>
  <g transform="translate(145 122)">
   <ellipse class="ink paint" style="--delay:1.42s" cx="72" cy="328" rx="56" ry="8" fill="#473257" opacity=".26" stroke="none"/>
   <!-- rear hair and neck -->
@@ -194,7 +194,7 @@
 "use strict";
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));let toastTimer;
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2300)}
-function go(id){$$("main section").forEach(s=>s.classList.toggle("active",s.id===id));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done)type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done)type($("#finalLetter"),finalText)}
+function go(id){$("main section").forEach(s=>s.classList.toggle("active",s.id===id));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done)type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done)type($("#finalLetter"),finalText);if(id==="anime")replayAnime()}
 $$("[data-go]").forEach(b=>b.addEventListener("click",()=>go(b.dataset.go)));
 const letter="Shibu,\n\nI don't think you realise how much happiness you bring into my life. A simple message from you can turn an ordinary day into one I want to remember. I love the little things we share, the silly moments, and how someone who isn't beside me can still feel so close to my heart.\n\nI can't promise every day will be perfect. But I can promise that you matter to me, that your feelings matter, and that I'll keep trying to make you smile. If I could put all the affection I have for you into a box, it would probably burst open with pink sparkles and an unreasonable amount of chocolate.\n\nThis tiny universe is nowhere near as beautiful as you are to me. It's my little way of saying: I'm really, really glad it's you.\n\nAlways your favourite troublemaker,\nMe 💗";
 const finalText="If you ever wonder what makes this little universe special, it isn't the stars or colours or silly cats. It's the person I made it for.\n\nYou, Shibu. You're the surprise, the favourite part, and the reason behind every little detail here. I hope this made you smile, even for a moment.\n\nIf I could choose in a thousand different universes, I'd still hope to find you. 🌙💗";
@@ -230,26 +230,46 @@ function startYouTubeMusic(fromTap=false){
   ytFrame.src="https://www.youtube.com/embed/nyuo9-OjNNg?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1&origin=https%3A%2F%2Fvedtrader67-commits.github.io";
  }
  $("#music").textContent="♫ Open music player";
- dock.scrollIntoView({behavior:fromTap?"smooth":"auto",block:"nearest"});
+ if(fromTap)dock.scrollIntoView({behavior:"smooth",block:"nearest"});
  if(fromTap)toast("Music player opened. Tap ▶ if Chrome asks you first. 🎶");
 }
 $("#music").onclick=()=>startYouTubeMusic(true);
-$("#hideMusic").onclick=()=>{$("#musicDock").style.display="none";$("#music").textContent="♫ Play “I Wanna Be Yours”";};
+$("#hideMusic").onclick=()=>{$("#musicDock").style.display="none";$("#music").textContent="♫ Play “I Wanna Be Yours”";if(ytFrame){ytFrame.src="about:blank";ytFrame.remove();ytFrame=null;ytStarted=false;$("#ytplayer").innerHTML="";}};
 window.addEventListener("load",()=>{setTimeout(()=>{try{startYouTubeMusic(false)}catch(e){/* Playback may be blocked until a tap. */}},900)});
+function playAnimeTimeline(svg){
+ const all=svg.querySelectorAll(".ink, .paint");
+ for(const el of all){
+  const tag=el.tagName.toLowerCase();
+  if(!["path","circle","ellipse","line","polyline","polygon","rect","g"].includes(tag))continue;
+  const inline=el.style.getPropertyValue("--delay")||(el.closest("[style*='--delay']")?.style.getPropertyValue("--delay"))||"0s";
+  const original=Math.max(0,Math.min(4.45,parseFloat(inline)||0));
+  const phaseDelay=(original/4.45)*1150;
+  if(el.classList.contains("ink")&&getComputedStyle(el).stroke!=="none"){
+   el.animate([{strokeDashoffset:900},{strokeDashoffset:0}],{duration:Math.max(100,4500-phaseDelay),delay:phaseDelay,easing:"cubic-bezier(.45,0,.25,1)",fill:"forwards"});
+  }
+  if(el.classList.contains("paint")){
+   const colourDelay=(original/4.45)*700;
+   el.animate([{fillOpacity:0},{fillOpacity:1}],{duration:Math.max(100,2600-colourDelay),delay:4750+colourDelay,easing:"ease-in-out",fill:"forwards"});
+   if(el.hasAttribute("opacity")&&(el.getAttribute("opacity")===".26"||el.getAttribute("opacity")===".22")){
+    el.animate([{opacity:0},{opacity:Number(el.getAttribute("opacity"))}],{duration:1800,delay:4750+colourDelay,easing:"ease-in-out",fill:"forwards"});
+   }
+  }
+ }
+}
 function replayAnime(){
  const film=$("#animeFilm");
- if(film){const fresh=film.cloneNode(true);film.replaceWith(fresh);}
+ if(film){const fresh=film.cloneNode(true);film.replaceWith(fresh);playAnimeTimeline(fresh);}
  const s=$("#stage");s.querySelectorAll(".petal").forEach(p=>p.remove());
- for(let i=0;i<18;i++){const p=document.createElement("span");p.className="petal";p.textContent="✿";p.style.left=Math.random()*100+"%";p.style.animationDelay=(-Math.random()*5)+"s";p.style.animationDuration=(4+Math.random()*4)+"s";s.append(p)}
- const c=$("#caption");
- c.textContent="First, a few pencil lines… ✍️";
+ for(let i=0;i<18;i++){const p=document.createElement("span");p.className="petal";p.textContent="✿";p.style.left=Math.random()*100+"%";p.style.animationDelay=(-Math.random()*4)+"s";p.style.animationDuration=(4+Math.random()*4)+"s";s.append(p)}
+ const c=$("#caption");c.textContent="First, a few pencil lines… ✍️";
  setTimeout(()=>c.textContent="The sunset colours their little world. 🌅",2500);
  setTimeout(()=>c.textContent="He runs to her, bouquet in hand. 🌷",5000);
  setTimeout(()=>c.textContent="A shy smile. Her whole universe in one person. 💗",7500);
+ setTimeout(()=>c.textContent="And for one little moment, the world goes quiet. ♡",9600);
 }
 $("#replayAnime").onclick=()=>{replayAnime();toast("Replaying our 10-second anime scene 🌅")};
 // Add layered drifting petals for a more cinematic anime atmosphere.
 $("#replayAll").onclick=()=>{reset();restartQ();$("#loveLetter").textContent="";$("#loveLetter").dataset.done="";$("#loveLetter").dataset.typing="0";$("#finalLetter").textContent="";$("#finalLetter").dataset.done="";$("#finalLetter").dataset.typing="0";go("welcome");toast("Back to the beginning, Shibu 💗")};
 document.addEventListener("click",e=>{if(!e.target.closest("button"))return;const x=document.createElement("span");x.className="spark";x.textContent=["✦","♡","✧"][Math.random()*3|0];x.style.left=(e.clientX||innerWidth/2)+"px";x.style.top=(e.clientY||innerHeight/2)+"px";document.body.append(x);setTimeout(()=>x.remove(),850)});
-for(let i=0;i<65;i++){const s=document.createElement("i");s.className="star";s.style.left=Math.random()*100+"%";s.style.top=Math.random()*100+"%";s.style.animationDelay=(-Math.random()*4)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";$("#stars").append(s)}renderQ();replayAnime();
+for(let i=0;i<65;i++){const s=document.createElement("i");s.className="star";s.style.left=Math.random()*100+"%";s.style.top=Math.random()*100+"%";s.style.animationDelay=(-Math.random()*4)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";$("#stars").append(s)}renderQ();
 </script></body></html>
