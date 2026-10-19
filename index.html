@@ -42,7 +42,7 @@ footer{color:#c8b4d0;font-size:12px;margin-top:27px}
 .dust{position:absolute;color:#ffd3f0;text-shadow:0 0 10px #ff71c2,0 0 22px #d9a0ff;animation:dustrise 1.9s ease-out forwards}
 @keyframes dustrise{0%{opacity:0;transform:translate(0,18px) scale(.3)}18%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-100px) scale(1.25)}}
 @media(max-width:370px){main{width:calc(100% - 20px);padding-top:24px}.paper{padding:22px 19px}.cats{gap:8px}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.paper{filter:none;transform:none}}
+
 
 /* Love-code gate: deliberately pure black until both codes are accepted */
 #love-lock{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:24px;background:#000;color:#fff;font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -120,7 +120,7 @@ body.intro-revealed .tiny-note,body.intro-revealed footer{animation:item-reveal 
 @keyframes main-reveal{from{filter:brightness(2.2) saturate(1.7)}to{filter:brightness(1) saturate(1)}}
 @keyframes item-reveal{from{opacity:0;transform:translateY(20px) scale(.98);filter:brightness(1.8)}to{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}}
 @keyframes heart-reveal{0%{opacity:0;transform:scale(.2)}65%{opacity:1;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
-@media(prefers-reduced-motion:reduce){#plane-intro{display:none!important}body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:1!important}body.intro-revealed main,body.intro-revealed main *{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}body.impact-shake{animation:none!important}}
+
 </style>
 </head>
 <body class="locked">
@@ -176,7 +176,7 @@ body.intro-revealed .tiny-note,body.intro-revealed footer{animation:item-reveal 
 
 function startPlaneIntro(){
  const intro=document.getElementById("plane-intro"),body=document.body;
- if(!intro||window.matchMedia("(prefers-reduced-motion: reduce)").matches){body.classList.add("intro-revealed");return;}
+ if(!intro){body.classList.add("intro-revealed");return;}
  const particles=document.getElementById("blast-particles");
  if(particles&&!particles.dataset.ready){
   for(let i=0;i<38;i++){
