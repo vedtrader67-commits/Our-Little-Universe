@@ -105,10 +105,40 @@ body.locked{overflow:hidden}
 @keyframes fireball{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}8%{opacity:1}32%{opacity:1;transform:translate(-50%,-50%) scale(18)}100%{opacity:0;transform:translate(-50%,-50%) scale(38)}}
 @keyframes debris-burst{0%{opacity:0;transform:translate(0,0) scale(1)}12%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.15)}}
 @keyframes boom-flash{0%{opacity:0}12%{opacity:.86}100%{opacity:0}}
-body.impact-shake{animation:impact-shake 2s linear both;transform-origin:center}
+body.impact-shake{animation:impact-shake-hard 2s linear both;transform-origin:center;will-change:transform}
+@keyframes impact-shake-hard{
+0%,100%{transform:translate(0,0) rotate(0)}
+2%{transform:translate(-20px,15px) rotate(-1.5deg) scale(1.012)}
+4%{transform:translate(21px,-16px) rotate(1.6deg) scale(1.012)}
+6%{transform:translate(-19px,-14px) rotate(-1.4deg)}
+8%{transform:translate(19px,15px) rotate(1.4deg)}
+10%{transform:translate(-18px,13px) rotate(-1.3deg)}
+12%{transform:translate(18px,-14px) rotate(1.3deg)}
+15%{transform:translate(-16px,-12px) rotate(-1.15deg)}
+18%{transform:translate(16px,12px) rotate(1.15deg)}
+21%{transform:translate(-15px,10px) rotate(-1deg)}
+24%{transform:translate(15px,-11px) rotate(1deg)}
+28%{transform:translate(-13px,-10px) rotate(-.9deg)}
+32%{transform:translate(13px,10px) rotate(.9deg)}
+36%{transform:translate(-11px,8px) rotate(-.75deg)}
+40%{transform:translate(11px,-9px) rotate(.75deg)}
+45%{transform:translate(-9px,-7px) rotate(-.6deg)}
+50%{transform:translate(9px,7px) rotate(.6deg)}
+56%{transform:translate(-7px,6px) rotate(-.45deg)}
+62%{transform:translate(7px,-6px) rotate(.45deg)}
+68%{transform:translate(-5px,-4px) rotate(-.3deg)}
+74%{transform:translate(5px,4px) rotate(.3deg)}
+82%{transform:translate(-3px,3px) rotate(-.15deg)}
+90%{transform:translate(3px,-2px) rotate(.12deg)}
+96%{transform:translate(-1px,1px)}
+}
 @keyframes impact-shake{0%,100%{transform:translate(0,0)}5%{transform:translate(-13px,9px) rotate(-.8deg)}10%{transform:translate(14px,-10px) rotate(.8deg)}15%{transform:translate(-12px,-8px) rotate(-.7deg)}20%{transform:translate(12px,9px) rotate(.65deg)}25%{transform:translate(-11px,7px) rotate(-.6deg)}30%{transform:translate(10px,-9px) rotate(.55deg)}35%{transform:translate(-10px,-6px) rotate(-.5deg)}40%{transform:translate(9px,8px) rotate(.45deg)}45%{transform:translate(-8px,5px) rotate(-.4deg)}50%{transform:translate(8px,-7px) rotate(.35deg)}55%{transform:translate(-7px,-5px) rotate(-.3deg)}60%{transform:translate(6px,6px) rotate(.25deg)}65%{transform:translate(-6px,4px) rotate(-.22deg)}70%{transform:translate(5px,-5px) rotate(.18deg)}75%{transform:translate(-4px,-3px) rotate(-.15deg)}80%{transform:translate(4px,4px) rotate(.12deg)}85%{transform:translate(-3px,2px) rotate(-.1deg)}90%{transform:translate(2px,-2px) rotate(.07deg)}95%{transform:translate(-1px,1px)}}
-body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:0}
+body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:0!important;visibility:hidden!important}
 body.pre-jet-wait main,body.pre-jet-wait #stars,body.pre-jet-wait #magicdust{opacity:1}
+#plane-intro.box-preview #plane-svg,#plane-intro.box-preview #falling-bomb,#plane-intro.box-preview #pilot-line,#plane-intro.box-preview .contrail{visibility:hidden!important;animation:none!important}
+#plane-intro.box-preview #sadness-box{width:min(76vw,300px);height:94px;border-width:3px;box-shadow:inset 0 0 0 4px #0005,0 0 18px #ff8fcb88,0 12px 35px #000b;animation:box-preview-pulse 1.2s ease-in-out infinite alternate}
+#plane-intro.box-preview #sadness-box span{font-size:clamp(10px,3vw,13px);letter-spacing:1px;line-height:1.5;padding:0 22px}
+@keyframes box-preview-pulse{from{filter:brightness(.9);transform:translate(-50%,-50%) scale(.98)}to{filter:brightness(1.35);transform:translate(-50%,-50%) scale(1.025)}}
 body.intro-revealed main{animation:main-reveal .85s ease-out both}
 body.intro-revealed .brand{animation:item-reveal .55s .05s both}
 body.intro-revealed .heart{animation:heart-reveal .65s .18s both,heartbeat 2s 1s ease-in-out infinite}
@@ -187,14 +217,29 @@ function startPlaneIntro(){
    p.style.width=(2+Math.random()*4)+"px";p.style.height=p.style.width;if(i%4===0)p.style.background="#8feaff";particles.appendChild(p);
   }particles.dataset.ready="1";
  }
- body.classList.add("pre-jet-wait");
- /* Let her read the love page for 4 seconds before the jet interrupts. */
- window.setTimeout(()=>{body.classList.remove("pre-jet-wait");body.classList.add("intro-playing");intro.classList.add("active");},4000);
- window.setTimeout(()=>intro.classList.add("bomb-drop"),5050);
- window.setTimeout(()=>{intro.classList.add("boom");body.classList.remove("impact-shake");void body.offsetWidth;body.classList.add("impact-shake");},5750);
- window.setTimeout(()=>body.classList.remove("impact-shake"),7750);
- window.setTimeout(()=>{intro.classList.add("exit-wipe");},7750);
- window.setTimeout(()=>{intro.classList.remove("active","bomb-drop","boom","exit-wipe");body.classList.remove("intro-playing","impact-shake","pre-jet-wait");body.classList.add("intro-revealed");},8250);
+ /* Hide the love page immediately. Show only the sadness box for four seconds. */
+ body.classList.remove("pre-jet-wait","intro-revealed","impact-shake");
+ body.classList.add("intro-playing");
+ intro.classList.remove("bomb-drop","boom","exit-wipe");
+ intro.classList.add("active","box-preview");
+ window.setTimeout(()=>{
+  /* Four-second box preview ends: launch the jet, then drop the bomb. */
+  intro.classList.remove("box-preview");
+  window.setTimeout(()=>intro.classList.add("bomb-drop"),1050);
+  window.setTimeout(()=>{
+   intro.classList.add("boom");
+   body.classList.remove("impact-shake");
+   void body.offsetWidth;
+   body.classList.add("impact-shake");
+  },1750);
+  window.setTimeout(()=>body.classList.remove("impact-shake"),3750);
+  window.setTimeout(()=>intro.classList.add("exit-wipe"),3750);
+  window.setTimeout(()=>{
+   intro.classList.remove("active","box-preview","bomb-drop","boom","exit-wipe");
+   body.classList.remove("intro-playing","impact-shake","pre-jet-wait");
+   body.classList.add("intro-revealed");
+  },4250);
+ },4000);
 }
 (function(){
  const gate=document.getElementById("love-lock");
