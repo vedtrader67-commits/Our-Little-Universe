@@ -43,7 +43,7 @@
 /* Japanese anime-film finish: quiet parallax, sakura drift, lantern glow and hand-inked details */
 .animeFilm{transform-box:fill-box;transform-origin:center;animation:animeCameraBreath 12s ease-in-out infinite alternate}
 @keyframes animeCameraBreath{0%{transform:scale(1)}100%{transform:scale(1.022)}}
-.animeFilm #afSun,.animeFilm .lanternAura{transform-box:fill-box;transform-origin:center;animation:animeSunPulse 4.8s ease-in-out infinite alternate}
+.animeFilm circle[fill="url(#afSun)"],.animeFilm .lanternAura{transform-box:fill-box;transform-origin:center;animation:animeSunPulse 4.8s ease-in-out infinite alternate}
 @keyframes animeSunPulse{0%{opacity:.38;transform:scale(.96)}100%{opacity:.72;transform:scale(1.08)}}
 .animeFilm .ambientPetal{transform-box:fill-box;transform-origin:center;animation:animeFloatPetal 7s ease-in-out infinite alternate}
 .animeFilm .petalSlow{animation-duration:9s;animation-delay:-3s}
@@ -56,12 +56,14 @@
 .animeFilm .cinemaSweep{animation:animeLightSweep 11s ease-in-out infinite;mix-blend-mode:screen}
 @keyframes animeLightSweep{0%,17%{transform:translateX(-300px);opacity:0}40%{opacity:.6}78%,100%{transform:translateX(1550px);opacity:0}}
 .animeFilm .japaneseTitle text{paint-order:stroke;filter:drop-shadow(0 2px 3px #713d7040)}
+.animeFilm #boyFringe,.animeFilm #girlFringe{transform-box:fill-box;transform-origin:50% 20%;animation:animeHairSway 3.6s ease-in-out infinite alternate}
+@keyframes animeHairSway{0%{transform:rotate(-.6deg) translateX(-.3px)}100%{transform:rotate(1deg) translateX(1.2px)}}
 .animeFilm #japanShrine,.animeFilm #japanVillage,.animeFilm #japanBridge,.animeFilm #stoneLanternLeft,.animeFilm #stoneLanternRight{stroke-linejoin:round}
 .animeFilm #boyMotion,.animeFilm #girlReaction{transform-box:fill-box}
 .animeFilm .jacketDetail{stroke-linecap:round}
 .animeFilm .cinemaCorner{animation:cornerGlow 4s ease-in-out infinite alternate}
 @keyframes cornerGlow{0%{stroke-opacity:.18}100%{stroke-opacity:.7}}
-@media(prefers-reduced-motion:reduce){.animeFilm,.animeFilm .ambientPetal,.animeFilm .romanceBokeh circle,.animeFilm .cinemaSweep,.animeFilm .lanternAura,.animeFilm .cinemaCorner{animation:none!important;transform:none!important}}
+@media(prefers-reduced-motion:reduce){.animeFilm,.animeFilm .ambientPetal,.animeFilm .romanceBokeh circle,.animeFilm .cinemaSweep,.animeFilm .lanternAura,.animeFilm .cinemaCorner,.animeFilm #boyFringe,.animeFilm #girlFringe{animation:none!important;transform:none!important}}
 </style></head><body><div id="stars" aria-hidden="true"></div>
 <header><div class="top"><div class="brand">✦ THE BOX OF US</div><button class="pill" id="music">♫ Play “I Wanna Be Yours”</button></div></header>
 <main>
@@ -76,7 +78,7 @@
 <section id="game"><div class="card"><div class="eyebrow">Page 03 · Tiny challenge</div><h2 class="grad">Catch some love 💗</h2><p>Tap falling hearts before they disappear. Catch 10 to unlock your reward!</p><div class="score"><span>Hearts caught: <b id="score">0</b>/10</span><span id="gameStatus">Ready ✨</span></div><div id="arena"><div id="hint" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:22px;color:#e8cbe9;pointer-events:none">Your love-catching mission<br><b>Tap Start Game</b> below 💞</div></div><div class="btns"><button class="btn" id="startGame">Start game 💘</button><button class="btn alt" id="resetGame">Reset</button></div><div id="reward" class="note">YOU DID IT! 🥹💗 I'd trade every heart for one real hug from you. Your reward: unlimited imaginary kisses. Redeem whenever you want.</div><div class="nav"><button class="btn alt" data-go="flirt">← Back</button><button class="btn" data-go="quiz">Next: us quiz →</button></div></div></section>
 <section id="quiz"><div class="card"><div class="eyebrow">Page 04 · Extremely important quiz</div><h2 class="grad">How well do you know us? 💞</h2><p>No pressure, Shibu. This is a love quiz, not an exam.</p><div class="score"><span id="progress">Question 1 of 5</span><span>💗</span></div><h3 id="question"></h3><div id="options"></div><div id="feedback" class="feedback" aria-live="polite">Choose what feels right 💌</div><div class="btns"><button class="btn" id="nextQ" disabled>Next question →</button><button class="btn alt" id="restartQ">Start over ↻</button></div><div class="nav"><button class="btn alt" data-go="game">← Back</button><button class="btn" data-go="openwhen">Open when… →</button></div></div></section>
 <section id="openwhen"><div class="card"><div class="eyebrow">Page 05 · Little envelopes</div><h2 class="grad">Open when… 💌</h2><p>Pick whichever one you need right now. Imagine I'm giving you the biggest hug.</p><div class="grid"><button class="tile" data-note="missing">💗<b>You're missing me</b><span>Open envelope</span></button><button class="tile" data-note="sad">🥺<b>You're feeling sad</b><span>Open envelope</span></button><button class="tile" data-note="smile">😊<b>You need a smile</b><span>Open envelope</span></button><button class="tile" data-note="sleep">🌙<b>You can't sleep</b><span>Open envelope</span></button><button class="tile" data-note="hug">🫂<b>You need a hug</b><span>Open envelope</span></button><button class="tile" data-note="love">💌<b>You need to feel loved</b><span>Open envelope</span></button></div><div id="openNote" class="note" aria-live="polite"></div><div class="cat"><img loading="lazy" src="https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif" alt="Animated cat" onerror="this.style.display='none'"><div><b>Emergency cuddle department 🐈</b><p>Open daily. Refills unlimited.</p></div></div><div class="nav"><button class="btn alt" data-go="quiz">← Back</button><button class="btn" data-go="anime">Our anime moment →</button></div></div></section>
-<section id="anime"><div class="card"><div class="eyebrow">Page 06 · Our little daydream</div><h2 class="grad">If we were in an anime… 🌅</h2><p>Golden sunset. A boy trying to look calm. A girl who makes him forget every cool thing he planned to say.</p><div class="stage" id="stage">
+<section id="anime"><div class="card"><div class="eyebrow">Page 06 · Our little daydream</div><h2 class="grad">If we were in an anime… 🌅</h2><p>A sunset beside a quiet Japanese lakeside shrine. Sakura drifts through the lantern light as a boy gathers the courage to offer roses to the girl who feels like home.</p><div class="stage" id="stage">
 <svg id="animeFilm" class="animeFilm" viewBox="0 0 900 500" role="img" aria-label="Japanese anime inspired sunset scene by a lakeside shrine, with cherry blossoms, a vermilion torii gate, a curved bridge, detailed school uniforms and sparkling eyes. The ink is drawn, colours appear, and a boy runs to offer roses." xmlns="http://www.w3.org/2000/svg">
 <defs>
  <linearGradient id="afSky" x2="0" y2="1"><stop stop-color="#f3a2cf"/><stop offset=".43" stop-color="#ffd0cc"/><stop offset=".72" stop-color="#ffcda7"/><stop offset="1" stop-color="#9b668f"/></linearGradient>
@@ -215,7 +217,7 @@
   <path class="ink paint" style="--delay:2.05s" d="M99 137Q118 143 130 158L154 157Q164 156 166 165Q161 174 146 172L115 180L91 164Z" fill="#f3b99f" stroke="#473349" stroke-width="3.2"/>
   <!-- face and ear -->
   <ellipse class="ink paint" style="--delay:2.13s" cx="77" cy="67" rx="31" ry="38" fill="#ffd4bd" stroke="#473349" stroke-width="3.2"/>
-  <path class="ink paint" style="--delay:2.20s" d="M47 61Q41 35 58 25Q82 10 104 31Q117 47 106 72L100 93Q91 79 90 62L77 51L64 67Z" fill="url(#afHair)" stroke="#38253f" stroke-width="3.3"/>
+  <path class="ink paint" id="boyFringe" style="--delay:2.20s" d="M47 61Q41 35 58 25Q82 10 104 31Q117 47 106 72L100 93Q91 79 90 62L77 51L64 67Z fill="url(#afHair)" stroke="#38253f" stroke-width="3.3"/>
   <path class="ink paint" style="--delay:2.27s" d="M49 41Q43 13 63 13Q62 28 75 23Q91 8 102 23Q121 38 106 51L94 40L89 31L77 43L65 34L55 49Z" fill="#4c304f" stroke="#38253f" stroke-width="3"/>
   <!-- individual hair shine strokes, eyebrows, eyes and blush -->
   <path class="ink" style="--delay:2.34s" d="M58 28Q70 18 82 25M88 26Q97 26 103 36" fill="none" stroke="#b38aa9" stroke-width="2.4"/>
@@ -223,8 +225,8 @@
   <ellipse class="ink paint" style="--delay:2.38s" cx="68" cy="65" rx="5.4" ry="8.1" fill="url(#afIris)" stroke="#3d2a41" stroke-width="1.3"/>
   <ellipse class="ink paint" style="--delay:2.38s" cx="91" cy="64" rx="5.4" ry="8.1" fill="url(#afIris)" stroke="#3d2a41" stroke-width="1.3"/>
   <path class="ink" style="--delay:2.4s" d="M61 65Q68 59 74 65M84 64Q91 58 97 64" fill="none" stroke="#54334a" stroke-width="2.3"/>
-  <ellipse class="ink paint" style="--delay:2.45s" cx="69" cy="72" rx="4.2" ry="6.5" fill="#4b394e" stroke="#3d2a41" stroke-width="1.4"/>
-  <ellipse class="ink paint" style="--delay:2.49s" cx="92" cy="71" rx="4.2" ry="6.5" fill="#4b394e" stroke="#3d2a41" stroke-width="1.4"/>
+  <ellipse class="ink paint" style="--delay:2.45s" cx="69" cy="72" rx="2.7" ry="5.2" fill="#29243d" stroke="#3d2a41" stroke-width="1.1/>
+  <ellipse class="ink paint" style="--delay:2.49s" cx="92" cy="71" rx="2.7" ry="5.2" fill="#29243d" stroke="#3d2a41" stroke-width="1.1/>
   <circle class="ink paint" style="--delay:2.53s" cx="70" cy="70" r="1.5" fill="#fff7ff" stroke="none"/><circle class="ink paint" style="--delay:2.57s" cx="93" cy="69" r="1.5" fill="#fff7ff" stroke="none"/>
   <path class="ink" style="--delay:2.61s" d="M78 78q4 3 8 0M74 88q7 5 15 -1" fill="none" stroke="#a95776" stroke-width="2"/>
   <!-- a shy pink cheek only paints in after the line work -->
@@ -270,15 +272,15 @@
  <!-- face and fringe -->
  <ellipse class="ink paint" style="--delay:3.8s" cx="68" cy="65" rx="29" ry="37" fill="#ffdbc8" stroke="#56374d" stroke-width="3.3"/>
  <path class="ink paint" style="--delay:3.87s" d="M40 57Q31 27 51 16Q78 -1 99 19Q119 38 102 73L100 104L88 125L35 109L30 83Z" fill="url(#afHair)" stroke="#3c2944" stroke-width="3.2"/>
- <path class="ink paint" style="--delay:3.94s" d="M39 46Q40 12 67 14Q93 8 103 35L91 32L82 24L70 39L59 27L48 48Z" fill="#60415c" stroke="#3c2944" stroke-width="2.8"/>
+ <path class="ink paint" id="girlFringe" style="--delay:3.94s" d="M39 46Q40 12 67 14Q93 8 103 35L91 32L82 24L70 39L59 27L48 48Z fill="#60415c" stroke="#3c2944" stroke-width="2.8"/>
  <path class="ink" style="--delay:4.01s" d="M45 29Q56 15 68 23M78 20Q92 20 98 31" fill="none" stroke="#bc91aa" stroke-width="2.3"/>
  <!-- shining anime eyes, lashes, smile, and blush -->
  <path class="ink paint" style="--delay:4.035s" d="M43 63Q51 53 63 62Q57 74 47 68Z M70 63Q81 53 92 62Q85 74 75 68Z" fill="#fff9ff" stroke="#503348" stroke-width="1.8"/>
  <ellipse class="ink paint" style="--delay:4.05s" cx="55" cy="65" rx="5.5" ry="8.4" fill="url(#afIris)" stroke="#35283e" stroke-width="1.3"/>
  <ellipse class="ink paint" style="--delay:4.05s" cx="82" cy="65" rx="5.5" ry="8.4" fill="url(#afIris)" stroke="#35283e" stroke-width="1.3"/>
  <path class="ink" style="--delay:4.07s" d="M46 62Q54 54 62 63M74 63Q82 54 90 62" fill="none" stroke="#503348" stroke-width="2.5"/>
- <ellipse class="ink paint" style="--delay:4.12s" cx="55" cy="68" rx="4.2" ry="6.7" fill="#5b506e" stroke="#412d48" stroke-width="1.4"/>
- <ellipse class="ink paint" style="--delay:4.16s" cx="82" cy="68" rx="4.2" ry="6.7" fill="#5b506e" stroke="#412d48" stroke-width="1.4"/>
+ <ellipse class="ink paint" style="--delay:4.12s" cx="55" cy="68" rx="2.8" ry="5.4" fill="#29243d" stroke="#29243d" stroke-width="1.1/>
+ <ellipse class="ink paint" style="--delay:4.16s" cx="82" cy="68" rx="2.8" ry="5.4" fill="#29243d" stroke="#29243d" stroke-width="1.1/>
  <circle class="ink paint" style="--delay:4.2s" cx="56" cy="66" r="1.8" fill="#fff" stroke="none"/><circle class="ink paint" style="--delay:4.23s" cx="83" cy="66" r="1.8" fill="#fff" stroke="none"/>
  <path class="ink" style="--delay:4.26s" d="M65 77Q69 80 72 77M61 87Q69 94 78 86" fill="none" stroke="#c16b83" stroke-width="2.2"/>
  <ellipse class="paint" style="--delay:4.3s" cx="43" cy="79" rx="8" ry="4" fill="#f58caf" opacity=".72" stroke="none"/><ellipse class="paint" style="--delay:4.34s" cx="91" cy="79" rx="8" ry="4" fill="#f58caf" opacity=".72" stroke="none"/>
@@ -309,8 +311,8 @@
 <!-- The last sunlight sweeps softly across the frame -->
 <rect class="cinemaSweep" x="-600" y="0" width="520" height="500" fill="url(#afLightSweep)" opacity=".55" pointer-events="none"/>
 </svg>
-<div class="caption" id="caption">First, a few pencil lines… ✍️</div>
-</div><button class="btn alt" id="replayAnime">Replay the 10-second scene ↻</button><p class="center" style="margin-top:14px">Somewhere in every universe, I'd still look for you first. 🌷</p><div class="nav"><button class="btn alt" data-go="openwhen">← Back</button><button class="btn" data-go="final">One last thing… →</button></div></div></section>
+<div class="caption" id="caption">桜の花びらが舞う夕暮れ… 🌸</div>
+</div><button class="btn alt" id="replayAnime">Replay our Japanese anime scene ↻</button><p class="center" style="margin-top:14px">Somewhere in every universe, I'd still look for you first. 🌷</p><div class="nav"><button class="btn alt" data-go="openwhen">← Back</button><button class="btn" data-go="final">One last thing… →</button></div></div></section>
 <section id="final"><div class="card center"><div class="eyebrow">The last page · Never the last feeling</div><div class="finalheart">💗</div><h2 class="grad">You are my favourite little universe.</h2><div id="finalLetter" class="typebox" aria-live="polite"></div><div class="btns center"><button class="btn" id="finalReveal">Open your final surprise ✨</button><button class="btn alt" id="replayAll">Visit again ↻</button></div><div class="cat"><img loading="lazy" src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" alt="Cute animated cats" onerror="this.style.display='none'"><div><b>One last important reminder</b><p>You are loved, precious, and make ordinary days magical.</p></div></div></div></section>
 <footer>Made with a little code, a lot of feelings, and one very special girl in mind. ✦</footer></main><div id="toast" class="toast" role="status" aria-live="polite"></div>
 <script>
@@ -396,11 +398,11 @@ function replayAnime(){
  if(film){const fresh=film.cloneNode(true);film.replaceWith(fresh);playAnimeTimeline(fresh);}
  const s=$("#stage");s.querySelectorAll(".petal").forEach(p=>p.remove());
  for(let i=0;i<18;i++){const p=document.createElement("span");p.className="petal";p.textContent="✿";p.style.left=Math.random()*100+"%";p.style.animationDelay=(-Math.random()*4)+"s";p.style.animationDuration=(4+Math.random()*4)+"s";s.append(p)}
- const c=$("#caption");c.textContent="First, a few pencil lines… ✍️";
- animeCaptionTimers.push(setTimeout(()=>c.textContent="The sunset colours their little world. 🌅",2500));
- animeCaptionTimers.push(setTimeout(()=>c.textContent="He runs to her, bouquet in hand. 🌷",5000));
- animeCaptionTimers.push(setTimeout(()=>c.textContent="A shy smile. Her whole universe in one person. 💗",7500));
- animeCaptionTimers.push(setTimeout(()=>c.textContent="And for one little moment, the world goes quiet. ♡",9600));
+ const c=$("#caption");c.textContent="桜の花びらが舞う夕暮れ… 🌸";
+ animeCaptionTimers.push(setTimeout(()=>c.textContent="The shrine lanterns begin to glow. 灯りがともる 🏮",2500));
+ animeCaptionTimers.push(setTimeout(()=>c.textContent="He takes one breath, then runs to you. 君のもとへ 🌸",5000));
+ animeCaptionTimers.push(setTimeout(()=>c.textContent="この花束を、君に。 These flowers are for you. 💐",7500));
+ animeCaptionTimers.push(setTimeout(()=>c.textContent="どんな世界でも、君を見つける。 In every world, I will find you. 💗",9600));
 }
 $("#replayAnime").onclick=()=>{replayAnime();toast("Replaying our 10-second anime scene 🌅")};
 // Add layered drifting petals for a more cinematic anime atmosphere.
