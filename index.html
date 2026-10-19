@@ -67,9 +67,9 @@ body.locked{overflow:hidden}
   <div class="lock-mark" aria-hidden="true">✳</div>
   <div class="lock-kicker">PRIVATE ACCESS ONLY</div>
   <h2 class="lock-title" id="lock-title">Love Security</h2>
-  <p class="lock-help" id="lock-help">Enter the private access word to continue.</p>
+  <p class="lock-help" id="lock-help">Enter the private access code to continue.</p>
   <input id="love-code" type="password" inputmode="text" autocapitalize="characters" autocomplete="off" spellcheck="false" maxlength="12" placeholder="ACCESS CODE" aria-label="Access code" required>
-  <button id="love-submit" type="submit">CONTINUE ↗</button>
+  <button id="love-submit" type="submit">UNLOCK ♡</button>
   <p id="love-error" role="status" aria-live="polite"></p>
   <div class="lock-bottom">JUST FOR ONE PERSON · ♡</div>
  </form>
@@ -106,50 +106,22 @@ body.locked{overflow:hidden}
  const gate=document.getElementById("love-lock");
  const form=document.getElementById("love-lock-form");
  const input=document.getElementById("love-code");
- const help=document.getElementById("lock-help");
- const title=document.getElementById("lock-title");
- const button=document.getElementById("love-submit");
  const error=document.getElementById("love-error");
- let stage=0;
  form.addEventListener("submit",function(event){
   event.preventDefault();
-  const value=input.value.trim();
-  if(stage===0){
-   if(value.toLowerCase()==="vsf"){
-    stage=1;
-    title.textContent="One Last Check";
-    help.textContent="Enter the 3-digit security code.";
-    input.value="";
-    input.type="password";
-    input.inputMode="numeric";
-    input.maxLength=3;
-    input.pattern="[0-9]{3}";
-    input.placeholder="•••";
-    input.setAttribute("aria-label","3-digit security code");
-    button.textContent="UNLOCK ♡";
-    error.textContent="";
-    input.focus();
-   }else{
-    error.textContent="That code doesn't match. Try again.";
-    input.value="";
-    input.focus();
-   }
+  if(input.value.trim().toLowerCase()==="vsf"){
+   gate.hidden=true;
+   document.body.classList.remove("locked");
+   input.value="";
   }else{
-   if(value==="143"){
-    gate.hidden=true;
-    document.body.classList.remove("locked");
-    input.value="";
-   }else{
-    error.textContent="Incorrect 3-digit code. Try again.";
-    input.value="";
-    input.focus();
-   }
+   error.textContent="Incorrect code. Try again.";
+   input.value="";
+   input.focus();
   }
  });
  input.addEventListener("input",function(){error.textContent="";});
  input.focus();
 })();
-
 (function(){
  const stars=document.getElementById("stars");
  for(let i=0;i<24;i++){const s=document.createElement("i");s.className="star";s.style.left=(Math.random()*100)+"%";s.style.top=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*3)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";stars.appendChild(s)}
