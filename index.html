@@ -111,8 +111,12 @@
   <path class="ink paint" style="--delay:1.54s" d="M59 82L58 111Q73 125 89 107L85 79Z" fill="#f0b89f" stroke="#55364b" stroke-width="2.5"/>
   <!-- legs and shoes -->
   <g class="ink paint" style="--delay:1.61s" fill="#34425f" stroke="#34304d" stroke-width="3">
-   <path d="M48 241Q65 247 77 238L72 285L57 311L48 307L55 277Z"/>
-   <path d="M79 242Q98 241 107 231L117 273L106 306L95 303L99 273Z"/>
+   <path d="M48 241Q65 247 77 238L72 285L57 311L48 307L55 277Z">
+    <animateTransform attributeName="transform" type="rotate" values="-8 64 244;12 64 244;-8 64 244" keyTimes="0;.5;1" begin="6.3s" dur=".38s" repeatCount="5"/>
+   </path>
+   <path d="M79 242Q98 241 107 231L117 273L106 306L95 303L99 273Z">
+    <animateTransform attributeName="transform" type="rotate" values="10 91 241;-9 91 241;10 91 241" keyTimes="0;.5;1" begin="6.49s" dur=".38s" repeatCount="5"/>
+   </path>
   </g>
   <path class="ink paint" style="--delay:1.69s" d="M49 302Q62 300 67 311L68 324Q52 332 31 324Q29 318 38 313Z" fill="#fff8ff" stroke="#2f2b45" stroke-width="3"/>
   <path class="ink paint" style="--delay:1.75s" d="M95 299Q107 296 113 307L125 317Q126 325 113 326L91 321Z" fill="#fff8ff" stroke="#2f2b45" stroke-width="3"/>
@@ -147,7 +151,7 @@
  </g>
 </g>
 <!-- Girl, long flowing hair and a soft pink school cardigan -->
-<g transform="translate(625 122)">
+<g transform="translate(625 122)"><g id="girlReaction"><animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 -7;0 0;0 0" keyTimes="0;.75;.82;.9;1" dur="10s" repeatCount="1" fill="freeze"/>
  <ellipse class="ink paint" style="--delay:3.02s" cx="67" cy="328" rx="53" ry="8" fill="#473257" opacity=".22" stroke="none"/>
  <!-- long hair behind her shoulders -->
  <path class="ink paint" style="--delay:3.08s" d="M38 66Q26 19 62 10Q104 1 113 41Q124 74 111 151L117 224L99 255L35 245L20 173L29 107Z" fill="url(#afHair)" stroke="#3c2944" stroke-width="3.5"/>
@@ -178,7 +182,7 @@
  <ellipse class="paint" style="--delay:4.3s" cx="43" cy="79" rx="8" ry="4" fill="#f58caf" opacity=".72" stroke="none"/><ellipse class="paint" style="--delay:4.34s" cx="91" cy="79" rx="8" ry="4" fill="#f58caf" opacity=".72" stroke="none"/>
  <!-- petal-shaped hair clip -->
  <path class="ink paint" style="--delay:4.4s" d="M93 28Q81 17 87 9Q97 7 100 20Q111 9 118 19Q120 30 107 33Q114 45 103 49Q94 46 96 37Q83 42 80 32Q84 27 93 28Z" fill="#ff89bb" stroke="#55344f" stroke-width="2"/>
-</g>
+</g></g>
 <!-- Soft petals are coloured and then drift through the completed frame -->
 <g class="ink paint" style="--delay:4.45s" fill="#fff0f7" stroke="#bf719d" stroke-width="1.2">
  <path d="M247 87Q235 74 244 68Q254 67 258 80Q268 69 275 78Q279 89 266 93Q270 104 260 107Q250 102 253 94Q241 101 235 91Q236 84 247 87Z"/>
