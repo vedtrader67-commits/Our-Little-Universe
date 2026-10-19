@@ -63,15 +63,17 @@ body.locked{overflow:hidden}
 /* Cinematic jet entrance, pilot line, small sadness crate and visible bomb impact */
 #plane-intro{position:fixed;inset:0;z-index:99990;overflow:hidden;pointer-events:none;background:#03040a;opacity:0;visibility:hidden;isolation:isolate}
 #plane-intro.active{opacity:1;visibility:visible}
+#plane-intro.exit-wipe{animation:cinematic-wipe .5s cubic-bezier(.7,0,.2,1) both;pointer-events:none}
+@keyframes cinematic-wipe{0%{opacity:1;clip-path:circle(150% at 50% 69%);filter:brightness(1)}45%{opacity:1;filter:brightness(2.2)}100%{opacity:0;clip-path:circle(0% at 50% 69%);filter:brightness(3)}}
 #plane-intro .flight-sky{position:absolute;inset:0;background:radial-gradient(ellipse at 52% 48%,#24345d 0,transparent 48%),linear-gradient(110deg,#02030a,#11152b 50%,#080511)}
 #plane-intro .flight-stars{position:absolute;inset:0;background-image:radial-gradient(#b8eaff 1px,transparent 1.8px),radial-gradient(#ff8fd1 1px,transparent 2px);background-size:83px 83px,127px 127px;background-position:10px 20px,53px 61px;opacity:.6}
 #plane-svg{position:absolute;display:block;width:min(82vw,440px);min-width:240px;height:auto;left:-45%;top:39%;transform:translateY(-50%) rotate(-5deg);z-index:3;filter:drop-shadow(0 4px 5px #000c) drop-shadow(0 0 10px #8deaffaa)}
-#plane-intro.active #plane-svg{animation:jet-flight 4.5s linear both}
+#plane-intro.active #plane-svg{animation:jet-flight 3s linear both}
 #pilot-line{position:absolute;left:50%;top:16%;width:min(92vw,440px);opacity:0;transform:translate(-50%,12px) scale(.86);text-align:center;z-index:6;font-size:clamp(15px,4.6vw,25px);font-weight:1000;letter-spacing:1px;color:#fff;text-shadow:0 0 8px #ff5da7,0 0 24px #4edfff,0 3px 5px #000}
 #pilot-line:after{content:"✦  PILOT ONLINE  ✦";display:block;margin-top:5px;font-size:9px;letter-spacing:4px;color:#9eeeff;text-shadow:0 0 12px #45d9ff}
-#plane-intro.active #pilot-line{animation:pilot-speech .45s 1.05s ease-out both}
+#plane-intro.active #pilot-line{animation:pilot-speech .4s .45s ease-out both}
 #plane-intro .contrail{position:absolute;left:-45%;top:39%;width:50%;height:3px;background:linear-gradient(90deg,transparent,#5ee5ffb5,#ff7fcb);filter:blur(2px);opacity:0;z-index:2}
-#plane-intro.active .contrail{animation:contrail-fly 2.1s ease-out both}
+#plane-intro.active .contrail{animation:contrail-fly 1.5s ease-out both}
 #sadness-box{position:absolute;left:50%;top:69%;width:116px;height:54px;transform:translate(-50%,-50%);border:2px solid #9b7552;border-radius:4px;background:linear-gradient(135deg,#67442e,#3c261d 55%,#241914);box-shadow:inset 0 0 0 3px #0005,0 8px 18px #0009;display:flex;align-items:center;justify-content:center;text-align:center;z-index:2}
 #sadness-box:before,#sadness-box:after{content:"";position:absolute;top:0;bottom:0;width:7px;background:repeating-linear-gradient(180deg,#b78a5b 0 6px,#704b30 6px 11px);opacity:.9}
 #sadness-box:before{left:8px}#sadness-box:after{right:8px}
@@ -82,7 +84,7 @@ body.locked{overflow:hidden}
 #falling-bomb .bomb-body{position:absolute;inset:4px 3px 5px;border-radius:48% 48% 35% 35%;background:linear-gradient(90deg,#222936,#d1dbe7 35%,#313744 70%,#11151d);border:1px solid #d8e2ef}
 #falling-bomb .bomb-tip{position:absolute;left:5px;bottom:0;width:7px;height:8px;background:#ff9c48;clip-path:polygon(0 0,100% 0,50% 100%)}
 #falling-bomb .bomb-tail{position:absolute;left:0;top:0;width:100%;height:8px;background:linear-gradient(90deg,#30394a,#a8b3c4,#30394a);clip-path:polygon(0 0,100% 0,76% 100%,24% 100%)}
-#plane-intro.bomb-drop #falling-bomb{animation:bomb-fall .82s cubic-bezier(.35,.05,.8,.5) both}
+#plane-intro.bomb-drop #falling-bomb{animation:bomb-fall .7s cubic-bezier(.35,.05,.8,.5) both}
 #blast{position:absolute;left:50%;top:69%;width:20px;height:20px;opacity:0;transform:translate(-50%,-50%);border-radius:50%;background:#fff;z-index:5;box-shadow:0 0 12px 5px #fff,0 0 35px 18px #ffd46c,0 0 70px 34px #ff6b2d,0 0 110px 55px #ff3e91}
 #blast:before,#blast:after{content:"";position:absolute;inset:-18px;border-radius:50%;border:5px solid #ffe7a0;box-shadow:0 0 24px #ff9d48}
 #blast:after{inset:-38px;border-color:#ff784a;border-width:3px}
@@ -94,7 +96,7 @@ body.locked{overflow:hidden}
 #blast-particles{position:absolute;inset:0;overflow:hidden;z-index:6}
 #blast-particles i{position:absolute;left:50%;top:69%;width:4px;height:4px;border-radius:50%;background:#ffcf83;box-shadow:0 0 8px #ff6b2d;opacity:0}
 #plane-intro.boom #blast-particles i{animation:debris-burst var(--dur,.8s) cubic-bezier(.12,.45,.2,1) var(--delay,0s) both}
-@keyframes jet-flight{0%{left:-45%;top:39%;transform:translateY(-50%) rotate(-7deg) scale(.72)}22%{left:34%;top:38%;transform:translateY(-50%) rotate(0) scale(1)}35%,72%{left:37%;top:38%;transform:translateY(-50%) rotate(0) scale(1)}100%{left:145%;top:32%;transform:translateY(-50%) rotate(5deg) scale(.86)}}
+@keyframes jet-flight{0%{left:-45%;top:39%;transform:translateY(-50%) rotate(-7deg) scale(.72)}24%{left:34%;top:38%;transform:translateY(-50%) rotate(0) scale(1)}42%,60%{left:37%;top:38%;transform:translateY(-50%) rotate(0) scale(1)}100%{left:145%;top:32%;transform:translateY(-50%) rotate(5deg) scale(.86)}}
 @keyframes pilot-speech{0%{opacity:0;transform:translate(-50%,12px) scale(.86)}100%{opacity:1;transform:translate(-50%,0) scale(1)}}
 @keyframes contrail-fly{0%{left:-45%;opacity:0}18%{opacity:.85}100%{left:62%;opacity:0}}
 @keyframes bomb-fall{0%{opacity:0;left:50%;top:43%;transform:translateX(-50%) rotate(-12deg) scale(.7)}12%{opacity:1}72%{opacity:1;left:50%;top:62%;transform:translateX(-50%) rotate(5deg) scale(1)}100%{opacity:0;left:50%;top:68%;transform:translateX(-50%) rotate(14deg) scale(1.1)}}
@@ -185,10 +187,11 @@ function startPlaneIntro(){
   }particles.dataset.ready="1";
  }
  body.classList.add("intro-playing");intro.classList.add("active");
- window.setTimeout(()=>intro.classList.add("bomb-drop"),3100);
- window.setTimeout(()=>{intro.classList.add("boom");body.classList.remove("impact-shake");void body.offsetWidth;body.classList.add("impact-shake");},3920);
- window.setTimeout(()=>body.classList.remove("impact-shake"),5920);
- window.setTimeout(()=>{intro.classList.remove("active","bomb-drop","boom");body.classList.remove("intro-playing","impact-shake");body.classList.add("intro-revealed");},6300);
+ window.setTimeout(()=>intro.classList.add("bomb-drop"),1050);
+ window.setTimeout(()=>{intro.classList.add("boom");body.classList.remove("impact-shake");void body.offsetWidth;body.classList.add("impact-shake");},1750);
+ window.setTimeout(()=>body.classList.remove("impact-shake"),3750);
+ window.setTimeout(()=>{intro.classList.add("exit-wipe");},3750);
+ window.setTimeout(()=>{intro.classList.remove("active","bomb-drop","boom","exit-wipe");body.classList.remove("intro-playing","impact-shake");body.classList.add("intro-revealed");},4250);
 }
 (function(){
  const gate=document.getElementById("love-lock");
