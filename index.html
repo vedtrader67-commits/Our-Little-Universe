@@ -60,22 +60,41 @@ footer{color:#c8b4d0;font-size:12px;margin-top:27px}
 body.locked{overflow:hidden}
 
 
-/* Cinematic plane fly-by intro, played after the security code is accepted */
-#plane-intro{position:fixed;inset:0;z-index:99990;overflow:hidden;pointer-events:none;background:#03040a;opacity:0;visibility:hidden}
+/* Cinematic fighter fly-by, falling bomb, layered blast and one-second impact shake */
+#plane-intro{position:fixed;inset:0;z-index:99990;overflow:hidden;pointer-events:none;background:#03040a;opacity:0;visibility:hidden;isolation:isolate}
 #plane-intro.active{opacity:1;visibility:visible}
-#plane-intro .flight-sky{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 52%,#172044 0,transparent 52%),linear-gradient(110deg,#02030a,#11152b 50%,#080511)}
+#plane-intro .flight-sky{position:absolute;inset:0;background:radial-gradient(ellipse at 52% 48%,#24345d 0,transparent 48%),linear-gradient(110deg,#02030a,#11152b 50%,#080511)}
 #plane-intro .flight-stars{position:absolute;inset:0;background-image:radial-gradient(#b8eaff 1px,transparent 1.8px),radial-gradient(#ff8fd1 1px,transparent 2px);background-size:83px 83px,127px 127px;background-position:10px 20px,53px 61px;opacity:.6}
-#plane-svg{position:absolute;width:min(42vw,250px);min-width:150px;height:auto;left:0;top:48%;transform:translate(-120%,-50%) rotate(-2deg);filter:drop-shadow(0 0 9px #8deaffaa)}
-#plane-intro.active #plane-svg{animation:plane-fly 1.8s cubic-bezier(.22,.55,.38,1) forwards}
-#plane-intro .contrail{position:absolute;left:-45%;top:50%;width:46%;height:3px;background:linear-gradient(90deg,transparent,#5ee5ffb5,#ff7fcb);filter:blur(2px);opacity:0}
-#plane-intro.active .contrail{animation:contrail-fly 1.7s ease-out forwards}
-#plane-boom{position:absolute;left:50%;top:50%;width:12px;height:12px;border-radius:50%;opacity:0;transform:translate(-50%,-50%) scale(.1);background:#fff;box-shadow:0 0 18px 10px #fff,0 0 55px 28px #5ce8ff,0 0 100px 50px #ff4fa3}
-#plane-intro.boom #plane-boom{animation:boom-bloom 1.05s ease-out forwards}
-#plane-intro.boom:after{content:"";position:absolute;inset:0;background:#fff;opacity:0;animation:boom-flash .65s ease-out forwards}
-@keyframes plane-fly{0%{left:-30%;top:47%;transform:translate(0,-50%) rotate(-2deg)}58%{left:43%;top:49%;transform:translate(0,-50%) rotate(0)}100%{left:130%;top:50%;transform:translate(0,-50%) rotate(3deg)}}
-@keyframes contrail-fly{0%{left:-45%;opacity:0}18%{opacity:.85}100%{left:60%;opacity:0}}
-@keyframes boom-bloom{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}18%{opacity:1;transform:translate(-50%,-50%) scale(3)}65%{opacity:.8;transform:translate(-50%,-50%) scale(15)}100%{opacity:0;transform:translate(-50%,-50%) scale(28)}}
-@keyframes boom-flash{0%{opacity:0}15%{opacity:.9}100%{opacity:0}}
+#plane-svg{position:absolute;width:min(54vw,330px);min-width:190px;height:auto;left:0;top:42%;transform:translate(-130%,-50%) rotate(-4deg);filter:drop-shadow(0 3px 3px #000a) drop-shadow(0 0 7px #8deaff88)}
+#plane-intro.active #plane-svg{animation:plane-fly 2.05s cubic-bezier(.16,.68,.25,1) forwards}
+#plane-intro .contrail{position:absolute;left:-45%;top:42%;width:48%;height:3px;background:linear-gradient(90deg,transparent,#5ee5ffb5,#ff7fcb);filter:blur(2px);opacity:0}
+#plane-intro.active .contrail{animation:contrail-fly 1.9s ease-out forwards}
+#falling-bomb{position:absolute;left:51%;top:37%;width:12px;height:27px;opacity:0;transform:rotate(-18deg);filter:drop-shadow(0 0 5px #ffb45c)}
+#falling-bomb .bomb-body{position:absolute;inset:0 2px 5px;border-radius:48% 48% 35% 35%;background:linear-gradient(90deg,#222936,#9aa6b8 35%,#313744 70%,#11151d);border:1px solid #d8e2ef}
+#falling-bomb .bomb-tip{position:absolute;left:3px;bottom:0;width:6px;height:8px;background:#ff9c48;clip-path:polygon(0 0,100% 0,50% 100%)}
+#falling-bomb .bomb-tail{position:absolute;left:0;top:0;width:100%;height:6px;background:linear-gradient(90deg,#30394a,#a8b3c4,#30394a);clip-path:polygon(0 0,100% 0,76% 100%,24% 100%)}
+#plane-intro.bomb-drop #falling-bomb{animation:bomb-fall .72s cubic-bezier(.35,.05,.8,.5) forwards}
+#blast{position:absolute;left:50%;top:58%;width:20px;height:20px;opacity:0;transform:translate(-50%,-50%);border-radius:50%;background:#fff;box-shadow:0 0 12px 5px #fff,0 0 35px 18px #ffd46c,0 0 70px 34px #ff6b2d,0 0 110px 55px #ff3e91}
+#blast:before,#blast:after{content:"";position:absolute;inset:-12px;border-radius:50%;border:5px solid #ffe7a0;box-shadow:0 0 24px #ff9d48}
+#blast:after{inset:-25px;border-color:#ff784a;border-width:3px}
+#plane-intro.boom #blast{animation:blast-core 1.25s cubic-bezier(.12,.65,.22,1) forwards}
+#plane-intro.boom #blast:before{animation:blast-ring .95s ease-out forwards}
+#plane-intro.boom #blast:after{animation:blast-ring 1.2s .08s ease-out forwards}
+#plane-intro.boom:before{content:"";position:absolute;left:50%;top:58%;width:8px;height:8px;border-radius:50%;background:radial-gradient(circle,#fff 0 8%,#fff8c8 14%,#ff8a3d 36%,#ed286c 58%,transparent 72%);box-shadow:0 0 28px 16px #ffb33d,0 0 70px 35px #ff4e88;transform:translate(-50%,-50%);animation:fireball 1.2s ease-out forwards}
+#plane-intro.boom:after{content:"";position:absolute;inset:0;background:#fff;opacity:0;animation:boom-flash .55s ease-out forwards}
+#blast-particles{position:absolute;inset:0;overflow:hidden}
+#blast-particles i{position:absolute;left:50%;top:58%;width:4px;height:4px;border-radius:50%;background:#ffcf83;box-shadow:0 0 8px #ff6b2d;opacity:0}
+#plane-intro.boom #blast-particles i{animation:debris-burst var(--dur,.8s) cubic-bezier(.12,.45,.2,1) var(--delay,0s) forwards}
+@keyframes plane-fly{0%{left:-34%;top:42%;transform:translate(0,-50%) rotate(-4deg) scale(.88)}18%{transform:translate(0,-50%) rotate(-1deg) scale(.96)}54%{left:42%;top:44%;transform:translate(0,-50%) rotate(1deg) scale(1)}78%{transform:translate(0,-50%) rotate(0) scale(1)}100%{left:135%;top:40%;transform:translate(0,-50%) rotate(4deg) scale(.92)}}
+@keyframes contrail-fly{0%{left:-45%;opacity:0}18%{opacity:.85}100%{left:62%;opacity:0}}
+@keyframes bomb-fall{0%{opacity:0;left:51%;top:38%;transform:rotate(-18deg) scale(.7)}12%{opacity:1}72%{opacity:1;left:50.5%;top:54%;transform:rotate(5deg) scale(1)}100%{opacity:0;left:50%;top:58%;transform:rotate(14deg) scale(1.12)}}
+@keyframes blast-core{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}10%{opacity:1;transform:translate(-50%,-50%) scale(1.4)}35%{opacity:.95;transform:translate(-50%,-50%) scale(4)}68%{opacity:.65;transform:translate(-50%,-50%) scale(7)}100%{opacity:0;transform:translate(-50%,-50%) scale(10)}}
+@keyframes blast-ring{0%{opacity:0;transform:scale(.15)}18%{opacity:1}100%{opacity:0;transform:scale(8)}}
+@keyframes fireball{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}12%{opacity:1}40%{opacity:.9;transform:translate(-50%,-50%) scale(12)}100%{opacity:0;transform:translate(-50%,-50%) scale(25)}}
+@keyframes debris-burst{0%{opacity:0;transform:translate(0,0) scale(1)}12%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.15)}}
+@keyframes boom-flash{0%{opacity:0}12%{opacity:.86}100%{opacity:0}}
+body.impact-shake{animation:impact-shake 1s cubic-bezier(.36,.07,.19,.97) both;transform-origin:center}
+@keyframes impact-shake{0%{transform:translate(0,0) rotate(0)}8%{transform:translate(-5px,3px) rotate(-.22deg)}16%{transform:translate(6px,-4px) rotate(.24deg)}25%{transform:translate(-5px,-2px) rotate(-.18deg)}35%{transform:translate(4px,3px) rotate(.15deg)}45%{transform:translate(-3px,1px) rotate(-.1deg)}58%{transform:translate(2px,-2px) rotate(.07deg)}72%{transform:translate(-1px,1px)}86%{transform:translate(1px,0)}100%{transform:translate(0,0) rotate(0)}}
 body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:0}
 body.intro-revealed main{animation:main-reveal .85s ease-out both}
 body.intro-revealed .brand{animation:item-reveal .55s .05s both}
@@ -88,27 +107,17 @@ body.intro-revealed .tiny-note,body.intro-revealed footer{animation:item-reveal 
 @keyframes main-reveal{from{filter:brightness(2.2) saturate(1.7)}to{filter:brightness(1) saturate(1)}}
 @keyframes item-reveal{from{opacity:0;transform:translateY(20px) scale(.98);filter:brightness(1.8)}to{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}}
 @keyframes heart-reveal{0%{opacity:0;transform:scale(.2)}65%{opacity:1;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
-@media(prefers-reduced-motion:reduce){#plane-intro{display:none!important}body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:1!important}body.intro-revealed main,body.intro-revealed main *{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}}
-
-</style>
+@media(prefers-reduced-motion:reduce){#plane-intro{display:none!important}body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:1!important}body.intro-revealed main,body.intro-revealed main *{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}body.impact-shake{animation:none!important}}</style>
 </head>
 <body class="locked">
 <div id="plane-intro" aria-hidden="true">
  <div class="flight-sky"></div><div class="flight-stars"></div><div class="contrail"></div>
- <svg id="plane-svg" viewBox="0 0 320 150" role="img" aria-label="">
-  <defs><linearGradient id="fuselage" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".48" stop-color="#c9d9ef"/><stop offset="1" stop-color="#7185a6"/></linearGradient><linearGradient id="wing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8f3ff"/><stop offset="1" stop-color="#637b9f"/></linearGradient></defs>
-  <g stroke="#253954" stroke-width="1.6" stroke-linejoin="round">
-   <path fill="url(#wing)" d="M139 72 L77 30 Q69 25 72 35 L105 79 L37 94 Q28 97 39 101 L126 108 L153 121 L169 120 L165 105 L238 100 Q253 98 237 91 L168 73 L158 36 Q155 27 150 38 Z"/>
-   <path fill="url(#fuselage)" d="M8 82 Q1 80 7 76 L115 60 L246 62 Q277 63 308 77 Q318 82 308 86 Q277 98 246 98 L115 96 Z"/>
-   <path fill="#4c6384" d="M249 64 Q280 66 308 77 Q317 81 309 85 Q281 95 249 97 L267 84 Z"/>
-   <path fill="#eff7ff" d="M17 79 L116 64 L242 65 Q266 67 285 76 L117 77 Z" stroke="none"/>
-   <path fill="#72dfff" d="M215 69 L233 69 L243 76 L219 76 Z" stroke="none"/>
-   <path fill="#72dfff" d="M186 69 L204 69 L214 76 L190 76 Z" stroke="none"/>
-   <path fill="#72dfff" d="M157 70 L175 69 L185 76 L161 76 Z" stroke="none"/>
-   <path fill="#a5b8d1" d="M40 91 L122 88 L241 89 L226 94 L115 93 Z" stroke="none"/>
-  </g>
+ <svg id="plane-svg" viewBox="0 0 360 190" role="img" aria-label="Detailed modern fighter jet">
+  <defs><linearGradient id="jetHull" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f7fb"/><stop offset=".25" stop-color="#9daec5"/><stop offset=".58" stop-color="#53657f"/><stop offset="1" stop-color="#202b3d"/></linearGradient><linearGradient id="jetWing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e4edf7"/><stop offset=".45" stop-color="#8295ad"/><stop offset="1" stop-color="#29374c"/></linearGradient><linearGradient id="jetGlass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d5fbff"/><stop offset=".4" stop-color="#3da6d3"/><stop offset="1" stop-color="#102844"/></linearGradient><linearGradient id="afterburner" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffb14d" stop-opacity=".1"/><stop offset=".5" stop-color="#5deaff"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+  <g stroke="#1b2738" stroke-width="1.7" stroke-linejoin="round"><path fill="url(#jetWing)" d="M149 91 L62 31 Q55 25 61 43 L96 94 L29 111 Q19 115 35 120 L127 126 L157 145 L176 143 L172 122 L268 115 Q286 112 268 103 L178 83 L166 37 Q163 27 157 42 Z"/><path fill="#637890" d="M142 89 L69 42 L105 96 L39 115 L128 117 Z"/><path fill="url(#jetWing)" d="M146 88 L108 24 Q104 17 111 18 L167 72 L189 83 L175 104 Z"/><path fill="url(#jetHull)" d="M8 101 L126 79 L244 79 Q293 81 343 96 Q352 100 343 105 Q295 121 244 122 L126 119 L8 106 Q1 104 8 101 Z"/><path fill="#dbe6f4" stroke="none" d="M14 101 L127 84 L244 84 Q288 86 322 96 L127 99 Z"/><path fill="#26354a" d="M252 82 Q300 86 343 96 Q351 100 343 105 Q299 118 252 120 L274 102 Z"/><path fill="url(#jetGlass)" d="M179 84 Q194 71 213 82 L232 89 L202 92 Z"/><path fill="#1b2a40" d="M185 85 L200 78 L214 84 L202 88 Z" stroke="none"/><path fill="#6bdff7" d="M202 82 L211 84 L204 86 Z" stroke="none"/><path fill="#4e637d" d="M129 80 L149 56 L166 78 L154 86 Z"/><path fill="#35465d" d="M135 84 L155 73 L170 85 L158 91 Z"/><path fill="#29384c" d="M126 117 L145 120 L158 145 L171 143 L165 119 Z"/><path fill="#c6d5e7" d="M32 107 L125 105 L249 106 L229 112 L125 113 Z" stroke="none"/><path fill="#d7e5f3" d="M72 98 L125 90 L141 92 L123 100 Z" stroke="none"/><path fill="#9eafc6" d="M226 87 L243 88 L257 94 L234 93 Z" stroke="none"/><path fill="#ffbd66" d="M3 101 L15 99 L15 107 L3 106 Z" stroke="none"/><path fill="#a8bbd1" d="M42 115 L57 115 L64 118 L45 118 Z" stroke="none"/></g><path d="M7 101 L-17 104 L7 107 Z" fill="url(#afterburner)" opacity=".95"/><g fill="#d8e4f2" opacity=".8"><path d="M105 94 l18 -3 7 2 -20 4z"/><path d="M242 99 l17 1 -13 3 -10 -1z"/></g>
  </svg>
- <div id="plane-boom"></div>
+ <div id="falling-bomb" aria-hidden="true"><span class="bomb-tail"></span><span class="bomb-body"></span><span class="bomb-tip"></span></div>
+ <div id="blast-particles" aria-hidden="true"></div><div id="blast" aria-hidden="true"></div>
 </div>
 <div id="love-lock" role="dialog" aria-modal="true" aria-labelledby="lock-title">
  <form class="lock-card" id="love-lock-form" autocomplete="off">
@@ -151,16 +160,23 @@ body.intro-revealed .tiny-note,body.intro-revealed footer{animation:item-reveal 
 
 
 function startPlaneIntro(){
- const intro=document.getElementById("plane-intro");
- if(!intro||window.matchMedia("(prefers-reduced-motion: reduce)").matches){document.body.classList.add("intro-revealed");return;}
- document.body.classList.add("intro-playing");
- intro.classList.add("active");
- window.setTimeout(()=>intro.classList.add("boom"),1050);
- window.setTimeout(()=>{
-  intro.classList.remove("active","boom");
-  document.body.classList.remove("intro-playing");
-  document.body.classList.add("intro-revealed");
- },2600);
+ const intro=document.getElementById("plane-intro"),body=document.body;
+ if(!intro||window.matchMedia("(prefers-reduced-motion: reduce)").matches){body.classList.add("intro-revealed");return;}
+ const particles=document.getElementById("blast-particles");
+ if(particles&&!particles.dataset.ready){
+  for(let i=0;i<38;i++){
+   const p=document.createElement("i"),angle=(Math.PI*2*i/38)+(Math.random()-.5)*.22;
+   const distance=65+Math.random()*Math.min(window.innerWidth*.42,230);
+   p.style.setProperty("--dx",Math.cos(angle)*distance+"px");p.style.setProperty("--dy",Math.sin(angle)*distance+"px");
+   p.style.setProperty("--dur",(.55+Math.random()*.65)+"s");p.style.setProperty("--delay",(Math.random()*.09)+"s");
+   p.style.width=(2+Math.random()*4)+"px";p.style.height=p.style.width;if(i%4===0)p.style.background="#8feaff";particles.appendChild(p);
+  }particles.dataset.ready="1";
+ }
+ body.classList.add("intro-playing");intro.classList.add("active");
+ window.setTimeout(()=>intro.classList.add("bomb-drop"),820);
+ window.setTimeout(()=>{intro.classList.add("boom");body.classList.remove("impact-shake");void body.offsetWidth;body.classList.add("impact-shake");},1510);
+ window.setTimeout(()=>body.classList.remove("impact-shake"),2510);
+ window.setTimeout(()=>{intro.classList.remove("active","bomb-drop","boom");body.classList.remove("intro-playing","impact-shake");body.classList.add("intro-revealed");},3050);
 }
 (function(){
  const gate=document.getElementById("love-lock");
