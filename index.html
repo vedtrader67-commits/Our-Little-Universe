@@ -4,82 +4,88 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#170b24">
-<meta name="description" content="A little letter made with love, just for Shibu.">
-<title>A Letter for Shibu 💗</title>
+<meta name="description" content="A tiny, flirty love letter made for Shibu.">
+<title>For Shibu 💗</title>
 <style>
-:root{color-scheme:dark;--pink:#ff9bcf;--lav:#d7baff;--cream:#fff5fc}
-*{box-sizing:border-box}
-html{min-height:100%;background:#100817}
-body{margin:0;min-height:100vh;color:var(--cream);font:17px/1.8 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 15% 15%,#54264f 0,transparent 38%),radial-gradient(ellipse at 85% 65%,#39265d 0,transparent 42%),linear-gradient(145deg,#100817,#21112e 60%,#100817);overflow-x:hidden}
+:root{color-scheme:dark;--pink:#ff9bd2;--lav:#d9b8ff;--cream:#fff5fc}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{min-height:100%;background:#100817;scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--cream);font:17px/1.8 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 12% 12%,#642b59 0,transparent 38%),radial-gradient(ellipse at 88% 54%,#44306e 0,transparent 42%),linear-gradient(145deg,#100817,#21112f 60%,#100817);overflow-x:hidden}
 #stars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
-.star{position:absolute;width:2px;height:2px;border-radius:50%;background:white;opacity:.6;animation:twinkle 3s ease-in-out infinite alternate}
-@keyframes twinkle{to{opacity:1;transform:scale(1.8)}}
-main{position:relative;z-index:1;width:min(100% - 28px,620px);margin:auto;padding:36px 0 48px;text-align:center}
-.brand{font-size:12px;letter-spacing:3px;font-weight:900;color:#ffd4ec}
-.heart{font-size:66px;line-height:1.3;margin:26px 0 6px;filter:drop-shadow(0 0 22px #ff4b9d);animation:heartbeat 1.8s infinite}
-@keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.09)}22%{transform:scale(1)}32%{transform:scale(1.06)}}
-h1{font-size:clamp(36px,10vw,54px);line-height:1.12;letter-spacing:-2px;margin:8px 0 12px;background:linear-gradient(100deg,#ffc0e3,#d5baff);color:transparent;background-clip:text}
-.subtitle{color:#e8d5ed;margin:0 0 28px}
-.paper{position:relative;text-align:left;padding:clamp(23px,6vw,38px);border:1px solid #ffffff26;border-radius:26px;background:linear-gradient(145deg,#ffffff12,#ffffff06);box-shadow:0 22px 80px #0003;backdrop-filter:blur(12px);opacity:0;transform:translateY(22px) scale(.98);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
-.paper.show{opacity:1;transform:translateY(0) scale(1)}
-.paper:before{content:"";position:absolute;inset:8px;border:1px solid #ffc3e51c;border-radius:19px;pointer-events:none}
-.paper p{position:relative;margin:0 0 18px;color:#f7eaf8}
-.paper .dear{font-size:22px;font-weight:800;color:#ffc1e2}
-.signature{font-weight:800;color:#ffb4dc!important;font-size:20px;margin-top:25px!important}
-.music{margin:22px auto 0;width:100%;max-width:420px}
-.music button{border:1px solid #ffffff30;background:#ffffff12;color:white;border-radius:999px;padding:13px 20px;font-size:15px;font-weight:750;min-height:48px}
-.music small{display:block;color:#d9c9e1;font-size:12px;margin-top:9px}
-.player{position:absolute;width:1px;height:1px;left:-10000px;top:-10000px}
-footer{color:#c8b4d0;font-size:12px;margin-top:28px}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+.star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.55;animation:twinkle 3s ease-in-out infinite alternate}
+@keyframes twinkle{to{opacity:1;transform:scale(2.1)}}
+main{position:relative;z-index:1;width:min(100% - 28px,620px);margin:auto;padding:30px 0 44px;text-align:center}
+.brand{font-size:11px;letter-spacing:3px;font-weight:900;color:#ffd4ec}
+.heart{font-size:63px;line-height:1.25;margin:18px 0 6px;filter:drop-shadow(0 0 18px #ff4b9d);animation:heartbeat 2s ease-in-out infinite}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.1)}27%{transform:scale(1)}38%{transform:scale(1.06)}}
+h1{font-size:clamp(38px,10vw,55px);line-height:1.12;letter-spacing:-2px;margin:8px 0 12px;background:linear-gradient(100deg,#ffc0e3,#d5baff);color:transparent;background-clip:text;-webkit-background-clip:text}
+.subtitle{color:#e8d5ed;margin:0 auto 18px;max-width:440px}
+.tease{display:inline-block;padding:6px 13px;margin:0 0 18px;border:1px solid #ffb4e443;border-radius:999px;color:#ffd7ed;background:#ffffff09;font-size:13px}
+.cats{display:flex;justify-content:center;align-items:center;gap:12px;margin:12px auto 20px}
+.catgif{display:block;width:clamp(104px,31vw,148px);height:clamp(100px,30vw,140px);object-fit:cover;border-radius:22px;border:1px solid #ffc1e955;box-shadow:0 0 22px #ff6bb52b;background:#ffffff0d;animation:catfloat 4s ease-in-out infinite}
+.catgif:nth-child(2){animation-delay:-2s}
+@keyframes catfloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1deg)}}
+.catcaption{font-size:12px;color:#d9c7e5;margin:-10px 0 21px}
+.paper{position:relative;isolation:isolate;overflow:hidden;text-align:left;padding:clamp(24px,6vw,38px);border:1px solid #ffb5e8a8;border-radius:27px;background:linear-gradient(145deg,#fff0fb1b,#d8baff0c 60%,#ffffff08);box-shadow:0 0 0 1px #ffc8ef15,0 0 30px #ff5bb12b,0 22px 80px #0004;backdrop-filter:blur(12px);opacity:0;transform:translateY(24px) scale(.94);filter:blur(8px);transition:opacity 1.05s ease,transform 1.15s cubic-bezier(.16,1,.3,1),filter 1s ease}
+.paper:before{content:"";position:absolute;inset:7px;border:1px solid #ffc3e530;border-radius:20px;pointer-events:none;z-index:-1}
+.paper:after{content:"";position:absolute;top:-45%;left:-70%;width:48%;height:200%;background:linear-gradient(90deg,transparent,#fff5ff2b,transparent);transform:rotate(18deg);animation:shimmer 5.5s 1.35s ease-in-out infinite;pointer-events:none}
+@keyframes shimmer{0%,65%{left:-70%}100%{left:140%}}
+.paper.show{opacity:1;transform:translateY(0) scale(1);filter:blur(0);animation:letterglow 3.8s 1.1s ease-in-out infinite alternate}
+@keyframes letterglow{from{box-shadow:0 0 0 1px #ffc8ef16,0 0 25px #ff5bb128,0 22px 80px #0004}to{box-shadow:0 0 0 1px #ffc8ef4a,0 0 44px #ff80d15c,0 22px 80px #0004}}
+.paper p{position:relative;margin:0 0 17px;color:#f9ecfa}
+.paper .dear{font-size:22px;font-weight:850;color:#ffc1e2}
+.paper .punchline{color:#ffd2ea;font-weight:750}
+.signature{font-weight:900;color:#ffb4dc!important;font-size:20px;margin-top:23px!important;text-align:right}
+.tiny-note{color:#dfcce8;font-size:13px;text-align:center;margin:19px 0 0}
+footer{color:#c8b4d0;font-size:12px;margin-top:27px}
+#magicdust{position:fixed;inset:0;pointer-events:none;z-index:3;overflow:hidden}
+.dust{position:absolute;color:#ffd3f0;text-shadow:0 0 10px #ff71c2,0 0 22px #d9a0ff;animation:dustrise 1.9s ease-out forwards}
+@keyframes dustrise{0%{opacity:0;transform:translate(0,18px) scale(.3)}18%{opacity:1}100%{opacity:0;transform:translate(var(--dx),-100px) scale(1.25)}}
+@media(max-width:370px){main{width:calc(100% - 20px);padding-top:24px}.paper{padding:22px 19px}.cats{gap:8px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.paper{filter:none;transform:none}}
 </style>
 </head>
 <body>
-<div id="stars" aria-hidden="true"></div>
+<div id="stars" aria-hidden="true"></div><div id="magicdust" aria-hidden="true"></div>
 <main>
-<div class="brand">✦ A LITTLE SOMETHING FOR YOU ✦</div>
+<div class="brand">✦ SECRET DELIVERY: ONE GIRL ONLY ✦</div>
 <div class="heart" aria-hidden="true">💗</div>
-<h1>Hi, Shibu.</h1>
-<p class="subtitle">I made this little corner of the universe just for you.</p>
-<article class="paper" id="letter" aria-label="A letter for Shibu">
-<p class="dear">My favourite girl,</p>
-<p>I don't need a special date to remind you how much you mean to me. Somewhere between our conversations, your little updates, and all the ordinary moments we share, you became one of my favourite parts of life.</p>
-<p>If I could give you one thing, it would be a chance to see yourself through my eyes, even for a minute. Maybe then you'd understand why a message from you can change my whole mood, why I remember the little things, and why you matter to me so much.</p>
-<p>This page is small, but every bit of it was made thinking about you. Whenever the world feels loud, I hope this reminds you that someone is quietly cheering for you, missing you, and choosing you in all the little ways.</p>
-<p>So here's your tiny universe. No occasion needed. Just you, me, and a whole lot of love. 💗</p>
-<p class="signature">Always yours, ♡</p>
-</article>
-<div class="music">
-<button id="musicButton" type="button">♫ Tap to play our song</button>
-<small id="musicNote">I’ll try to start it automatically. Your browser may need one tap first. 🎧</small>
-<div class="player" id="player"></div>
+<h1>Hiii, Shibu.</h1>
+<p class="subtitle">Your daily reminder has arrived: you're cute. Annoyingly, suspiciously cute.</p>
+<div class="tease">⚠️ Warning: contains flirting and zero chill</div>
+<div class="cats" aria-label="Cute cat couple GIFs">
+<img class="catgif" src="https://media1.giphy.com/media/XaikVL6qbrJSJoQmCR/giphy.gif" alt="Two cats hugging like a couple" loading="eager">
+<img class="catgif" src="https://media1.giphy.com/media/VOIWW9Fjv7QOQQ9oLx/giphy.gif" alt="Cute cat couple cuddling" loading="eager">
 </div>
-<footer>Made with a little code, a lot of feelings, and you in mind. ✦</footer>
+<p class="catcaption">Us, probably. One clingy cat. One pretending not to enjoy it. 😼</p>
+<article class="paper" id="letter" aria-label="A magical letter for Shibu">
+<p class="dear">Okay, listen here, pretty girl. 💌</p>
+<p>I had a very important plan to act cool around you. Then you showed up being <span class="punchline">YOU</span>, and now look at me. Making you a whole website. My cool-person application has officially been rejected.</p>
+<p>You're kind of a problem, you know that? I see your name pop up and suddenly I'm smiling at my phone like it just told me I won a million rupees. Absolutely embarrassing behaviour. I'm blaming you.</p>
+<p>Also, I hope you know you're ridiculously cute. Like, please be reasonable. Some of us are trying to function here. 😭💗</p>
+<p>Anyway, this is me saying I like you a stupid amount. I want your random stories, your silly moods, your laughs, your little updates, and even your dramatic moments. Yes, even those. Don't get too powerful though. You already have enough power over me.</p>
+<p class="punchline">Official relationship notice:</p>
+<p>You're hereby sentenced to unlimited affection, terrible jokes, random compliments, virtual forehead kisses, and me bothering you because I miss you. Appeals will not be accepted. The court is a cat in a tiny hat. 🐈‍⬛⚖️</p>
+<p>And if you catch yourself smiling at this, just know I'm taking full credit. No evidence needed.</p>
+<p class="signature">Now gimme a smile, cutie. ♡</p>
+</article>
+<p class="tiny-note">P.S. The cats approved this message. One cried. The other asked for snacks.</p>
+<footer>Made for you, cutie. Don't let it go to your head. (It absolutely should.) ✦</footer>
 </main>
 <script>
 (function(){
  const stars=document.getElementById("stars");
- for(let i=0;i<48;i++){const s=document.createElement("i");s.className="star";s.style.left=(Math.random()*100)+"%";s.style.top=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*3)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";stars.appendChild(s)}
+ for(let i=0;i<54;i++){const s=document.createElement("i");s.className="star";s.style.left=(Math.random()*100)+"%";s.style.top=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*3)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";stars.appendChild(s)}
  const letter=document.getElementById("letter");
- window.setTimeout(()=>letter.classList.add("show"),650);
- const button=document.getElementById("musicButton");
- const note=document.getElementById("musicNote");
- let started=false;
- function startMusic(){
-   if(started)return;
-   started=true;
-   const frame=document.createElement("iframe");
-   frame.title="I Wanna Be Yours by Arctic Monkeys";
-   frame.allow="autoplay; encrypted-media; picture-in-picture";
-   frame.referrerPolicy="strict-origin-when-cross-origin";
-   frame.src="https://www.youtube.com/embed/nyuo9-OjNNg?autoplay=1&playsinline=1&controls=1&rel=0";
-   document.getElementById("player").appendChild(frame);
-   note.textContent="If the music doesn't start, tap the player button again or open the song on YouTube.";
-   button.textContent="♫ Song loading…";
+ const dust=document.getElementById("magicdust");
+ function sprinkle(){
+   const box=letter.getBoundingClientRect();
+   const symbols=["✦","✧","♡","✨","·"];
+   for(let i=0;i<24;i++){const p=document.createElement("span");p.className="dust";p.textContent=symbols[Math.floor(Math.random()*symbols.length)];p.style.left=(Math.max(4,Math.min(96,box.left/window.innerWidth*100+(Math.random()*90-45))))+"%";p.style.top=(Math.max(18,Math.min(85,box.top/window.innerHeight*100+Math.random()*28)))+"%";p.style.setProperty("--dx",(Math.random()*90-45)+"px");p.style.animationDelay=(Math.random()*.65)+"s";p.style.fontSize=(12+Math.random()*13)+"px";dust.appendChild(p);window.setTimeout(()=>p.remove(),2700)}
  }
- button.addEventListener("click",function(){if(!started){startMusic();note.textContent="If your browser blocks autoplay, open the song on YouTube.";button.textContent="♫ Song loading…";}else{window.open("https://www.youtube.com/watch?v=nyuo9-OjNNg","_blank","noopener");}});
- // Best effort only: mobile browsers often block audio until the visitor taps.
- startMusic();
+ window.setTimeout(()=>{letter.classList.add("show");sprinkle()},750);
+ window.setTimeout(sprinkle,1900);
+ document.querySelectorAll(".catgif").forEach(img=>img.addEventListener("error",function(){this.style.display="none"}));
 })();
 </script>
 </body>
