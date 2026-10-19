@@ -59,9 +59,57 @@ footer{color:#c8b4d0;font-size:12px;margin-top:27px}
 .lock-bottom{margin-top:20px;font-size:9px;letter-spacing:2px;color:#555}
 body.locked{overflow:hidden}
 
+
+/* Cinematic plane fly-by intro, played after the security code is accepted */
+#plane-intro{position:fixed;inset:0;z-index:99990;overflow:hidden;pointer-events:none;background:#03040a;opacity:0;visibility:hidden}
+#plane-intro.active{opacity:1;visibility:visible}
+#plane-intro .flight-sky{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 52%,#172044 0,transparent 52%),linear-gradient(110deg,#02030a,#11152b 50%,#080511)}
+#plane-intro .flight-stars{position:absolute;inset:0;background-image:radial-gradient(#b8eaff 1px,transparent 1.8px),radial-gradient(#ff8fd1 1px,transparent 2px);background-size:83px 83px,127px 127px;background-position:10px 20px,53px 61px;opacity:.6}
+#plane-svg{position:absolute;width:min(42vw,250px);min-width:150px;height:auto;left:0;top:48%;transform:translate(-120%,-50%) rotate(-2deg);filter:drop-shadow(0 0 9px #8deaffaa)}
+#plane-intro.active #plane-svg{animation:plane-fly 1.8s cubic-bezier(.22,.55,.38,1) forwards}
+#plane-intro .contrail{position:absolute;left:-45%;top:50%;width:46%;height:3px;background:linear-gradient(90deg,transparent,#5ee5ffb5,#ff7fcb);filter:blur(2px);opacity:0}
+#plane-intro.active .contrail{animation:contrail-fly 1.7s ease-out forwards}
+#plane-boom{position:absolute;left:50%;top:50%;width:12px;height:12px;border-radius:50%;opacity:0;transform:translate(-50%,-50%) scale(.1);background:#fff;box-shadow:0 0 18px 10px #fff,0 0 55px 28px #5ce8ff,0 0 100px 50px #ff4fa3}
+#plane-intro.boom #plane-boom{animation:boom-bloom 1.05s ease-out forwards}
+#plane-intro.boom:after{content:"";position:absolute;inset:0;background:#fff;opacity:0;animation:boom-flash .65s ease-out forwards}
+@keyframes plane-fly{0%{left:-30%;top:47%;transform:translate(0,-50%) rotate(-2deg)}58%{left:43%;top:49%;transform:translate(0,-50%) rotate(0)}100%{left:130%;top:50%;transform:translate(0,-50%) rotate(3deg)}}
+@keyframes contrail-fly{0%{left:-45%;opacity:0}18%{opacity:.85}100%{left:60%;opacity:0}}
+@keyframes boom-bloom{0%{opacity:0;transform:translate(-50%,-50%) scale(.1)}18%{opacity:1;transform:translate(-50%,-50%) scale(3)}65%{opacity:.8;transform:translate(-50%,-50%) scale(15)}100%{opacity:0;transform:translate(-50%,-50%) scale(28)}}
+@keyframes boom-flash{0%{opacity:0}15%{opacity:.9}100%{opacity:0}}
+body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:0}
+body.intro-revealed main{animation:main-reveal .85s ease-out both}
+body.intro-revealed .brand{animation:item-reveal .55s .05s both}
+body.intro-revealed .heart{animation:heart-reveal .65s .18s both,heartbeat 2s 1s ease-in-out infinite}
+body.intro-revealed h1{animation:item-reveal .65s .3s both}
+body.intro-revealed .subtitle{animation:item-reveal .65s .42s both}
+body.intro-revealed .tease,body.intro-revealed .cats,body.intro-revealed .catcaption{animation:item-reveal .65s .54s both}
+body.intro-revealed .paper{animation:item-reveal .75s .7s both}
+body.intro-revealed .tiny-note,body.intro-revealed footer{animation:item-reveal .65s .9s both}
+@keyframes main-reveal{from{filter:brightness(2.2) saturate(1.7)}to{filter:brightness(1) saturate(1)}}
+@keyframes item-reveal{from{opacity:0;transform:translateY(20px) scale(.98);filter:brightness(1.8)}to{opacity:1;transform:translateY(0) scale(1);filter:brightness(1)}}
+@keyframes heart-reveal{0%{opacity:0;transform:scale(.2)}65%{opacity:1;transform:scale(1.2)}100%{opacity:1;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){#plane-intro{display:none!important}body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:1!important}body.intro-revealed main,body.intro-revealed main *{animation:none!important;filter:none!important;opacity:1!important;transform:none!important}}
+
 </style>
 </head>
 <body class="locked">
+<div id="plane-intro" aria-hidden="true">
+ <div class="flight-sky"></div><div class="flight-stars"></div><div class="contrail"></div>
+ <svg id="plane-svg" viewBox="0 0 320 150" role="img" aria-label="">
+  <defs><linearGradient id="fuselage" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset=".48" stop-color="#c9d9ef"/><stop offset="1" stop-color="#7185a6"/></linearGradient><linearGradient id="wing" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e8f3ff"/><stop offset="1" stop-color="#637b9f"/></linearGradient></defs>
+  <g stroke="#253954" stroke-width="1.6" stroke-linejoin="round">
+   <path fill="url(#wing)" d="M139 72 L77 30 Q69 25 72 35 L105 79 L37 94 Q28 97 39 101 L126 108 L153 121 L169 120 L165 105 L238 100 Q253 98 237 91 L168 73 L158 36 Q155 27 150 38 Z"/>
+   <path fill="url(#fuselage)" d="M8 82 Q1 80 7 76 L115 60 L246 62 Q277 63 308 77 Q318 82 308 86 Q277 98 246 98 L115 96 Z"/>
+   <path fill="#4c6384" d="M249 64 Q280 66 308 77 Q317 81 309 85 Q281 95 249 97 L267 84 Z"/>
+   <path fill="#eff7ff" d="M17 79 L116 64 L242 65 Q266 67 285 76 L117 77 Z" stroke="none"/>
+   <path fill="#72dfff" d="M215 69 L233 69 L243 76 L219 76 Z" stroke="none"/>
+   <path fill="#72dfff" d="M186 69 L204 69 L214 76 L190 76 Z" stroke="none"/>
+   <path fill="#72dfff" d="M157 70 L175 69 L185 76 L161 76 Z" stroke="none"/>
+   <path fill="#a5b8d1" d="M40 91 L122 88 L241 89 L226 94 L115 93 Z" stroke="none"/>
+  </g>
+ </svg>
+ <div id="plane-boom"></div>
+</div>
 <div id="love-lock" role="dialog" aria-modal="true" aria-labelledby="lock-title">
  <form class="lock-card" id="love-lock-form" autocomplete="off">
   <div class="lock-kicker">PRIVATE ACCESS ONLY</div>
@@ -101,6 +149,19 @@ body.locked{overflow:hidden}
 </main>
 <script>
 
+
+function startPlaneIntro(){
+ const intro=document.getElementById("plane-intro");
+ if(!intro||window.matchMedia("(prefers-reduced-motion: reduce)").matches){document.body.classList.add("intro-revealed");return;}
+ document.body.classList.add("intro-playing");
+ intro.classList.add("active");
+ window.setTimeout(()=>intro.classList.add("boom"),1050);
+ window.setTimeout(()=>{
+  intro.classList.remove("active","boom");
+  document.body.classList.remove("intro-playing");
+  document.body.classList.add("intro-revealed");
+ },2600);
+}
 (function(){
  const gate=document.getElementById("love-lock");
  const form=document.getElementById("love-lock-form");
@@ -112,6 +173,7 @@ body.locked{overflow:hidden}
    gate.hidden=true;
    document.body.classList.remove("locked");
    input.value="";
+   startPlaneIntro();
   }else{
    error.textContent="Why u hate me? 🥺 Try again.";
    input.value="";
