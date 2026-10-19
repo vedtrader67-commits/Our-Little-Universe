@@ -10,7 +10,7 @@
 :root{color-scheme:dark;--pink:#ff9bd2;--lav:#d9b8ff;--cream:#fff5fc}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html{min-height:100%;background:#100817;scroll-behavior:smooth}
-body{margin:0;min-height:100vh;color:var(--cream);font:17px/1.8 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 12% 12%,#642b59 0,transparent 38%),radial-gradient(ellipse at 88% 54%,#44306e 0,transparent 42%),linear-gradient(145deg,#100817,#21112f 60%,#100817);overflow-x:hidden}
+body{margin:0;min-height:100vh;color:var(--cream);font:17px/1.8 system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(145deg,#180d24,#24132f 60%,#140b20);overflow-x:hidden}
 #stars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
 .star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.55;animation:twinkle 3s ease-in-out infinite alternate}
 @keyframes twinkle{to{opacity:1;transform:scale(2.1)}}
@@ -22,16 +22,16 @@ h1{font-size:clamp(38px,10vw,55px);line-height:1.12;letter-spacing:-2px;margin:8
 .subtitle{color:#e8d5ed;margin:0 auto 18px;max-width:440px}
 .tease{display:inline-block;padding:6px 13px;margin:0 0 18px;border:1px solid #ffb4e443;border-radius:999px;color:#ffd7ed;background:#ffffff09;font-size:13px}
 .cats{display:flex;justify-content:center;align-items:center;gap:12px;margin:12px auto 20px}
-.catgif{display:block;width:clamp(104px,31vw,148px);height:clamp(100px,30vw,140px);object-fit:cover;border-radius:22px;border:1px solid #ffc1e955;box-shadow:0 0 22px #ff6bb52b;background:#ffffff0d;animation:catfloat 4s ease-in-out infinite}
+.catgif{display:block;width:clamp(104px,31vw,148px);height:clamp(100px,30vw,140px);object-fit:cover;border-radius:22px;border:1px solid #ffc1e955;box-shadow:0 0 22px #ff6bb52b;background:#ffffff0d;}
 .catgif:nth-child(2){animation-delay:-2s}
-@keyframes catfloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-5px) rotate(1deg)}}
+
 .catcaption{font-size:12px;color:#d9c7e5;margin:-10px 0 21px}
-.paper{position:relative;isolation:isolate;overflow:hidden;text-align:left;padding:clamp(24px,6vw,38px);border:1px solid #ffb5e8a8;border-radius:27px;background:linear-gradient(145deg,#fff0fb1b,#d8baff0c 60%,#ffffff08);box-shadow:0 0 0 1px #ffc8ef15,0 0 30px #ff5bb12b,0 22px 80px #0004;backdrop-filter:blur(12px);opacity:0;transform:translateY(24px) scale(.94);filter:blur(8px);transition:opacity 1.05s ease,transform 1.15s cubic-bezier(.16,1,.3,1),filter 1s ease}
+.paper{position:relative;isolation:isolate;overflow:hidden;text-align:left;padding:clamp(24px,6vw,38px);border:1px solid #ffb5e8a8;border-radius:27px;background:linear-gradient(145deg,#fff0fb1b,#d8baff0c 60%,#ffffff08);box-shadow:0 0 0 1px #ffc8ef15,0 0 30px #ff5bb12b,0 22px 80px #0004;opacity:0;transform:translateY(18px) scale(.985);transition:opacity .65s ease,transform .7s ease}
 .paper:before{content:"";position:absolute;inset:7px;border:1px solid #ffc3e530;border-radius:20px;pointer-events:none;z-index:-1}
-.paper:after{content:"";position:absolute;top:-45%;left:-70%;width:48%;height:200%;background:linear-gradient(90deg,transparent,#fff5ff2b,transparent);transform:rotate(18deg);animation:shimmer 5.5s 1.35s ease-in-out infinite;pointer-events:none}
-@keyframes shimmer{0%,65%{left:-70%}100%{left:140%}}
-.paper.show{opacity:1;transform:translateY(0) scale(1);filter:blur(0);animation:letterglow 3.8s 1.1s ease-in-out infinite alternate}
-@keyframes letterglow{from{box-shadow:0 0 0 1px #ffc8ef16,0 0 25px #ff5bb128,0 22px 80px #0004}to{box-shadow:0 0 0 1px #ffc8ef4a,0 0 44px #ff80d15c,0 22px 80px #0004}}
+.paper:after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 22px #ff80d122;pointer-events:none}
+
+.paper.show{opacity:1;transform:translateY(0) scale(1)}
+
 .paper p{position:relative;margin:0 0 17px;color:#f9ecfa}
 .paper .dear{font-size:22px;font-weight:850;color:#ffc1e2}
 .paper .punchline{color:#ffd2ea;font-weight:750}
@@ -75,16 +75,15 @@ footer{color:#c8b4d0;font-size:12px;margin-top:27px}
 <script>
 (function(){
  const stars=document.getElementById("stars");
- for(let i=0;i<54;i++){const s=document.createElement("i");s.className="star";s.style.left=(Math.random()*100)+"%";s.style.top=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*3)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";stars.appendChild(s)}
+ for(let i=0;i<24;i++){const s=document.createElement("i");s.className="star";s.style.left=(Math.random()*100)+"%";s.style.top=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*3)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";stars.appendChild(s)}
  const letter=document.getElementById("letter");
  const dust=document.getElementById("magicdust");
  function sprinkle(){
    const box=letter.getBoundingClientRect();
    const symbols=["✦","✧","♡","✨","·"];
-   for(let i=0;i<24;i++){const p=document.createElement("span");p.className="dust";p.textContent=symbols[Math.floor(Math.random()*symbols.length)];p.style.left=(Math.max(4,Math.min(96,box.left/window.innerWidth*100+(Math.random()*90-45))))+"%";p.style.top=(Math.max(18,Math.min(85,box.top/window.innerHeight*100+Math.random()*28)))+"%";p.style.setProperty("--dx",(Math.random()*90-45)+"px");p.style.animationDelay=(Math.random()*.65)+"s";p.style.fontSize=(12+Math.random()*13)+"px";dust.appendChild(p);window.setTimeout(()=>p.remove(),2700)}
+   for(let i=0;i<10;i++){const p=document.createElement("span");p.className="dust";p.textContent=symbols[Math.floor(Math.random()*symbols.length)];p.style.left=(Math.max(4,Math.min(96,box.left/window.innerWidth*100+(Math.random()*90-45))))+"%";p.style.top=(Math.max(18,Math.min(85,box.top/window.innerHeight*100+Math.random()*28)))+"%";p.style.setProperty("--dx",(Math.random()*90-45)+"px");p.style.animationDelay=(Math.random()*.65)+"s";p.style.fontSize=(12+Math.random()*13)+"px";dust.appendChild(p);window.setTimeout(()=>p.remove(),2700)}
  }
- window.setTimeout(()=>{letter.classList.add("show");sprinkle()},750);
- window.setTimeout(sprinkle,1900);
+ window.setTimeout(()=>{letter.classList.add("show");sprinkle()},500);
  document.querySelectorAll(".catgif").forEach(img=>img.addEventListener("error",function(){this.style.display="none"}));
 })();
 </script>
