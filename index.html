@@ -175,9 +175,9 @@ function startPlaneIntro(){
  }
  body.classList.add("intro-playing");intro.classList.add("active");
  window.setTimeout(()=>intro.classList.add("bomb-drop"),1120);
- window.setTimeout(()=>{intro.classList.add("boom");body.classList.remove("impact-shake");void body.offsetWidth;body.classList.add("impact-shake");},1510);
+ window.setTimeout(()=>{intro.classList.add("boom");body.classList.remove("impact-shake");void body.offsetWidth;body.classList.add("impact-shake");},1940);
  window.setTimeout(()=>body.classList.remove("impact-shake"),3940);
- window.setTimeout(()=>{intro.classList.remove("active","bomb-drop","boom");body.classList.remove("intro-playing","impact-shake");body.classList.add("intro-revealed");},3050);
+ window.setTimeout(()=>{intro.classList.remove("active","bomb-drop","boom");body.classList.remove("intro-playing","impact-shake");body.classList.add("intro-revealed");},4300);
 }
 (function(){
  const gate=document.getElementById("love-lock");
