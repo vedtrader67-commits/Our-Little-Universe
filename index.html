@@ -108,6 +108,7 @@ body.locked{overflow:hidden}
 body.impact-shake{animation:impact-shake 2s linear both;transform-origin:center}
 @keyframes impact-shake{0%,100%{transform:translate(0,0)}5%{transform:translate(-13px,9px) rotate(-.8deg)}10%{transform:translate(14px,-10px) rotate(.8deg)}15%{transform:translate(-12px,-8px) rotate(-.7deg)}20%{transform:translate(12px,9px) rotate(.65deg)}25%{transform:translate(-11px,7px) rotate(-.6deg)}30%{transform:translate(10px,-9px) rotate(.55deg)}35%{transform:translate(-10px,-6px) rotate(-.5deg)}40%{transform:translate(9px,8px) rotate(.45deg)}45%{transform:translate(-8px,5px) rotate(-.4deg)}50%{transform:translate(8px,-7px) rotate(.35deg)}55%{transform:translate(-7px,-5px) rotate(-.3deg)}60%{transform:translate(6px,6px) rotate(.25deg)}65%{transform:translate(-6px,4px) rotate(-.22deg)}70%{transform:translate(5px,-5px) rotate(.18deg)}75%{transform:translate(-4px,-3px) rotate(-.15deg)}80%{transform:translate(4px,4px) rotate(.12deg)}85%{transform:translate(-3px,2px) rotate(-.1deg)}90%{transform:translate(2px,-2px) rotate(.07deg)}95%{transform:translate(-1px,1px)}}
 body.intro-playing main,body.intro-playing #stars,body.intro-playing #magicdust{opacity:0}
+body.pre-jet-wait main,body.pre-jet-wait #stars,body.pre-jet-wait #magicdust{opacity:1}
 body.intro-revealed main{animation:main-reveal .85s ease-out both}
 body.intro-revealed .brand{animation:item-reveal .55s .05s both}
 body.intro-revealed .heart{animation:heart-reveal .65s .18s both,heartbeat 2s 1s ease-in-out infinite}
@@ -186,12 +187,14 @@ function startPlaneIntro(){
    p.style.width=(2+Math.random()*4)+"px";p.style.height=p.style.width;if(i%4===0)p.style.background="#8feaff";particles.appendChild(p);
   }particles.dataset.ready="1";
  }
- body.classList.add("intro-playing");intro.classList.add("active");
- window.setTimeout(()=>intro.classList.add("bomb-drop"),1050);
- window.setTimeout(()=>{intro.classList.add("boom");body.classList.remove("impact-shake");void body.offsetWidth;body.classList.add("impact-shake");},1750);
- window.setTimeout(()=>body.classList.remove("impact-shake"),3750);
- window.setTimeout(()=>{intro.classList.add("exit-wipe");},3750);
- window.setTimeout(()=>{intro.classList.remove("active","bomb-drop","boom","exit-wipe");body.classList.remove("intro-playing","impact-shake");body.classList.add("intro-revealed");},4250);
+ body.classList.add("pre-jet-wait");
+ /* Let her read the love page for 4 seconds before the jet interrupts. */
+ window.setTimeout(()=>{body.classList.remove("pre-jet-wait");body.classList.add("intro-playing");intro.classList.add("active");},4000);
+ window.setTimeout(()=>intro.classList.add("bomb-drop"),5050);
+ window.setTimeout(()=>{intro.classList.add("boom");body.classList.remove("impact-shake");void body.offsetWidth;body.classList.add("impact-shake");},5750);
+ window.setTimeout(()=>body.classList.remove("impact-shake"),7750);
+ window.setTimeout(()=>{intro.classList.add("exit-wipe");},7750);
+ window.setTimeout(()=>{intro.classList.remove("active","bomb-drop","boom","exit-wipe");body.classList.remove("intro-playing","impact-shake","pre-jet-wait");body.classList.add("intro-revealed");},8250);
 }
 (function(){
  const gate=document.getElementById("love-lock");
