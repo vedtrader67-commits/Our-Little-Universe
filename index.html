@@ -60,6 +60,10 @@
 @keyframes animeHairSway{0%{transform:rotate(-.6deg) translateX(-.3px)}100%{transform:rotate(1deg) translateX(1.2px)}}
 .animeFilm #japanShrine,.animeFilm #japanVillage,.animeFilm #japanBridge,.animeFilm #stoneLanternLeft,.animeFilm #stoneLanternRight{stroke-linejoin:round}
 .animeFilm #boyMotion,.animeFilm #girlReaction{transform-box:fill-box}
+.animeFilm #boyLegs{transform-box:fill-box;transform-origin:50% 0%;animation:boyStepCycle .42s ease-in-out 4.7s 12}
+@keyframes boyStepCycle{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3px) rotate(1.4deg)}50%{transform:translateY(0) rotate(0)}75%{transform:translateY(-2px) rotate(-1.4deg)}}
+.animeFilm #roseBouquet{transform-box:fill-box;transform-origin:0% 50%;animation:roseOffer 3.4s cubic-bezier(.2,.8,.2,1) 5.1s both}
+@keyframes roseOffer{0%{transform:translate(0,0) rotate(-14deg)}38%{transform:translate(7px,-4px) rotate(-3deg)}72%{transform:translate(12px,-2px) rotate(5deg)}100%{transform:translate(12px,0) rotate(2deg)}}
 .animeFilm .jacketDetail{stroke-linecap:round}
 .animeFilm .cinemaCorner{animation:cornerGlow 4s ease-in-out infinite alternate}
 @keyframes cornerGlow{0%{stroke-opacity:.18}100%{stroke-opacity:.7}}
@@ -190,12 +194,12 @@
   <path class="ink paint" style="--delay:1.48s" d="M43 62Q27 39 44 19Q60 -2 87 14Q113 20 111 54L105 111L82 126L42 104Z" fill="url(#afHair)" stroke="#38253f" stroke-width="3.2"/>
   <path class="ink paint" style="--delay:1.54s" d="M59 82L58 111Q73 125 89 107L85 79Z" fill="#f0b89f" stroke="#55364b" stroke-width="2.5"/>
   <!-- legs and shoes -->
-  <g class="ink paint" style="--delay:1.61s" fill="#34425f" stroke="#34304d" stroke-width="3">
+  <g id="boyLegs" class="ink paint" style="--delay:1.61s" fill="#34425f" stroke="#34304d" stroke-width="3">
    <path d="M48 241Q65 247 77 238L72 285L57 311L48 307L55 277Z">
-    <animateTransform attributeName="transform" type="rotate" values="-8 64 244;12 64 244;-8 64 244" keyTimes="0;.5;1" begin="6.3s" dur=".38s" repeatCount="5"/>
+    <animateTransform attributeName="transform" type="rotate" values="-8 64 244;12 64 244;-8 64 244" keyTimes="0;.5;1" begin="4.7s" dur=".38s" repeatCount="12"/>
    </path>
    <path d="M79 242Q98 241 107 231L117 273L106 306L95 303L99 273Z">
-    <animateTransform attributeName="transform" type="rotate" values="10 91 241;-9 91 241;10 91 241" keyTimes="0;.5;1" begin="6.49s" dur=".38s" repeatCount="5"/>
+    <animateTransform attributeName="transform" type="rotate" values="10 91 241;-9 91 241;10 91 241" keyTimes="0;.5;1" begin="4.89s" dur=".38s" repeatCount="12"/>
    </path>
   </g>
   <path class="ink paint" style="--delay:1.69s" d="M49 302Q62 300 67 311L68 324Q52 332 31 324Q29 318 38 313Z" fill="#fff8ff" stroke="#2f2b45" stroke-width="3"/>
@@ -217,7 +221,7 @@
   <path class="ink paint" style="--delay:2.05s" d="M99 137Q118 143 130 158L154 157Q164 156 166 165Q161 174 146 172L115 180L91 164Z" fill="#f3b99f" stroke="#473349" stroke-width="3.2"/>
   <!-- face and ear -->
   <ellipse class="ink paint" style="--delay:2.13s" cx="77" cy="67" rx="31" ry="38" fill="#ffd4bd" stroke="#473349" stroke-width="3.2"/>
-  <path class="ink paint" id="boyFringe" style="--delay:2.20s" d="M47 61Q41 35 58 25Q82 10 104 31Q117 47 106 72L100 93Q91 79 90 62L77 51L64 67Z fill="url(#afHair)" stroke="#38253f" stroke-width="3.3"/>
+  <path class="ink paint" id="boyFringe" style="--delay:2.20s" d="M47 61Q41 35 58 25Q82 10 104 31Q117 47 106 72L100 93Q91 79 90 62L77 51L64 67Z" fill="url(#afHair)" stroke="#38253f" stroke-width="3.3"/>
   <path class="ink paint" style="--delay:2.27s" d="M49 41Q43 13 63 13Q62 28 75 23Q91 8 102 23Q121 38 106 51L94 40L89 31L77 43L65 34L55 49Z" fill="#4c304f" stroke="#38253f" stroke-width="3"/>
   <!-- individual hair shine strokes, eyebrows, eyes and blush -->
   <path class="ink" style="--delay:2.34s" d="M58 28Q70 18 82 25M88 26Q97 26 103 36" fill="none" stroke="#b38aa9" stroke-width="2.4"/>
@@ -225,8 +229,8 @@
   <ellipse class="ink paint" style="--delay:2.38s" cx="68" cy="65" rx="5.4" ry="8.1" fill="url(#afIris)" stroke="#3d2a41" stroke-width="1.3"/>
   <ellipse class="ink paint" style="--delay:2.38s" cx="91" cy="64" rx="5.4" ry="8.1" fill="url(#afIris)" stroke="#3d2a41" stroke-width="1.3"/>
   <path class="ink" style="--delay:2.4s" d="M61 65Q68 59 74 65M84 64Q91 58 97 64" fill="none" stroke="#54334a" stroke-width="2.3"/>
-  <ellipse class="ink paint" style="--delay:2.45s" cx="69" cy="72" rx="2.7" ry="5.2" fill="#29243d" stroke="#3d2a41" stroke-width="1.1/>
-  <ellipse class="ink paint" style="--delay:2.49s" cx="92" cy="71" rx="2.7" ry="5.2" fill="#29243d" stroke="#3d2a41" stroke-width="1.1/>
+  <ellipse class="ink paint" style="--delay:2.45s" cx="69" cy="72" rx="2.7" ry="5.2" fill="#29243d" stroke="#3d2a41" stroke-width="1.1"/>
+  <ellipse class="ink paint" style="--delay:2.49s" cx="92" cy="71" rx="2.7" ry="5.2" fill="#29243d" stroke="#3d2a41" stroke-width="1.1"/>
   <circle class="ink paint" style="--delay:2.53s" cx="70" cy="70" r="1.5" fill="#fff7ff" stroke="none"/><circle class="ink paint" style="--delay:2.57s" cx="93" cy="69" r="1.5" fill="#fff7ff" stroke="none"/>
   <path class="ink" style="--delay:2.61s" d="M78 78q4 3 8 0M74 88q7 5 15 -1" fill="none" stroke="#a95776" stroke-width="2"/>
   <!-- a shy pink cheek only paints in after the line work -->
@@ -234,7 +238,8 @@
   <ellipse class="paint" style="--delay:2.64s" cx="98" cy="79" rx="7" ry="3.8" fill="#ff8cb6" opacity=".68" stroke="none"/>
   <path class="ink" style="--delay:2.65s" d="M49 78L54 77M50 82L55 81M96 81L101 80M95 77L100 76" fill="none" stroke="#d96f91" stroke-width="1.2"/>
   <!-- rose bouquet is part of his reaching hand -->
-  <g transform="translate(150 157) rotate(-14)">
+  <g id="roseBouquet" transform="translate(150 157) rotate(-14)">
+   <animateTransform attributeName="transform" type="rotate" values="-14 0 0;-5 0 0;9 0 0;3 0 0" keyTimes="0;.35;.65;1" begin="5.1s" dur="3.4s" fill="freeze"/>
    <path class="ink paint" style="--delay:2.69s" d="M-5 0L-2 36M4 -2L7 37M0 13L-14 24M3 21L17 17" fill="none" stroke="#36734e" stroke-width="3" stroke-linecap="round"/>
    <path class="ink paint" style="--delay:2.75s" d="M-3 20Q-22 6 -20 23Q-11 34 -3 20M7 26Q23 8 22 25Q15 36 7 26" fill="#65a96d" stroke="#36734e" stroke-width="2"/>
    <path class="ink paint" style="--delay:2.82s" d="M-19 -14Q-14 -29 -3 -17Q7 -32 17 -18Q31 -14 20 0Q12 13 0 4Q-15 11 -22 0Q-24 -7 -19 -14Z" fill="#fc4f91" stroke="#a12d64" stroke-width="2.4"/>
@@ -272,15 +277,15 @@
  <!-- face and fringe -->
  <ellipse class="ink paint" style="--delay:3.8s" cx="68" cy="65" rx="29" ry="37" fill="#ffdbc8" stroke="#56374d" stroke-width="3.3"/>
  <path class="ink paint" style="--delay:3.87s" d="M40 57Q31 27 51 16Q78 -1 99 19Q119 38 102 73L100 104L88 125L35 109L30 83Z" fill="url(#afHair)" stroke="#3c2944" stroke-width="3.2"/>
- <path class="ink paint" id="girlFringe" style="--delay:3.94s" d="M39 46Q40 12 67 14Q93 8 103 35L91 32L82 24L70 39L59 27L48 48Z fill="#60415c" stroke="#3c2944" stroke-width="2.8"/>
+ <path class="ink paint" id="girlFringe" style="--delay:3.94s" d="M39 46Q40 12 67 14Q93 8 103 35L91 32L82 24L70 39L59 27L48 48Z" fill="#60415c" stroke="#3c2944" stroke-width="2.8"/>
  <path class="ink" style="--delay:4.01s" d="M45 29Q56 15 68 23M78 20Q92 20 98 31" fill="none" stroke="#bc91aa" stroke-width="2.3"/>
  <!-- shining anime eyes, lashes, smile, and blush -->
  <path class="ink paint" style="--delay:4.035s" d="M43 63Q51 53 63 62Q57 74 47 68Z M70 63Q81 53 92 62Q85 74 75 68Z" fill="#fff9ff" stroke="#503348" stroke-width="1.8"/>
  <ellipse class="ink paint" style="--delay:4.05s" cx="55" cy="65" rx="5.5" ry="8.4" fill="url(#afIris)" stroke="#35283e" stroke-width="1.3"/>
  <ellipse class="ink paint" style="--delay:4.05s" cx="82" cy="65" rx="5.5" ry="8.4" fill="url(#afIris)" stroke="#35283e" stroke-width="1.3"/>
  <path class="ink" style="--delay:4.07s" d="M46 62Q54 54 62 63M74 63Q82 54 90 62" fill="none" stroke="#503348" stroke-width="2.5"/>
- <ellipse class="ink paint" style="--delay:4.12s" cx="55" cy="68" rx="2.8" ry="5.4" fill="#29243d" stroke="#29243d" stroke-width="1.1/>
- <ellipse class="ink paint" style="--delay:4.16s" cx="82" cy="68" rx="2.8" ry="5.4" fill="#29243d" stroke="#29243d" stroke-width="1.1/>
+ <ellipse class="ink paint" style="--delay:4.12s" cx="55" cy="68" rx="2.8" ry="5.4" fill="#29243d" stroke="#29243d" stroke-width="1.1"/>
+ <ellipse class="ink paint" style="--delay:4.16s" cx="82" cy="68" rx="2.8" ry="5.4" fill="#29243d" stroke="#29243d" stroke-width="1.1"/>
  <circle class="ink paint" style="--delay:4.2s" cx="56" cy="66" r="1.8" fill="#fff" stroke="none"/><circle class="ink paint" style="--delay:4.23s" cx="83" cy="66" r="1.8" fill="#fff" stroke="none"/>
  <path class="ink" style="--delay:4.26s" d="M65 77Q69 80 72 77M61 87Q69 94 78 86" fill="none" stroke="#c16b83" stroke-width="2.2"/>
  <ellipse class="paint" style="--delay:4.3s" cx="43" cy="79" rx="8" ry="4" fill="#f58caf" opacity=".72" stroke="none"/><ellipse class="paint" style="--delay:4.34s" cx="91" cy="79" rx="8" ry="4" fill="#f58caf" opacity=".72" stroke="none"/>
@@ -319,7 +324,7 @@
 "use strict";
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));let toastTimer;
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2300)}
-function go(id,fromHistory=false){const target=document.getElementById(id);if(!target||!target.matches("main section")){toast("That page is not available yet 💗");return}if(!fromHistory){const nextHash="#"+id;if(location.hash!==nextHash)history.pushState({section:id},"",nextHash)}$$("main section").forEach(s=>s.classList.toggle("active",s===target));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done&&$("#loveLetter").dataset.typing!=="1")type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done&&$("#finalLetter").dataset.typing!=="1")type($("#finalLetter"),finalText);if(id==="anime")replayAnime()}
+function go(id,fromHistory=false){const target=document.getElementById(id);if(!target||!target.matches("main section")){toast("That page is not available yet 💗");return}if(!fromHistory){const nextHash="#"+id;if(location.hash!==nextHash)history.pushState({section:id},"",nextHash)}$$$("main section").forEach(s=>s.classList.toggle("active",s===target));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done&&$("#loveLetter").dataset.typing!=="1")type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done&&$("#finalLetter").dataset.typing!=="1")type($("#finalLetter"),finalText);if(id==="anime")replayAnime()}
 window.addEventListener("popstate",()=>{const id=location.hash.slice(1),target=document.getElementById(id);go(target&&target.matches("main section")?id:"welcome",true)});
 // Robust delegated navigation: works for every current and future page button.
 document.addEventListener("click",function(event){
