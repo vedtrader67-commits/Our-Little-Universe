@@ -198,7 +198,7 @@
 "use strict";
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));let toastTimer;
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2300)}
-function go(id){const target=document.getElementById(id);if(!target||!target.matches("main section")){toast("That page is not available yet 💗");return}$("main section").forEach(s=>s.classList.toggle("active",s===target));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done&&$("#loveLetter").dataset.typing!=="1")type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done&&$("#finalLetter").dataset.typing!=="1")type($("#finalLetter"),finalText);if(id==="anime")replayAnime()}
+function go(id){const target=document.getElementById(id);if(!target||!target.matches("main section")){toast("That page is not available yet 💗");return}$$("main section").forEach(s=>s.classList.toggle("active",s===target));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done&&$("#loveLetter").dataset.typing!=="1")type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done&&$("#finalLetter").dataset.typing!=="1")type($("#finalLetter"),finalText);if(id==="anime")replayAnime()}
 // Robust delegated navigation: works for every current and future page button.
 document.addEventListener("click",function(event){
  const button=event.target.closest("[data-go]");
