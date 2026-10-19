@@ -1,417 +1,86 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#170d2c"><meta name="description" content="A tiny universe made with love, just for Shibu."><title>The Box of Us 💗</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#170b24">
+<meta name="description" content="A little letter made with love, just for Shibu.">
+<title>A Letter for Shibu 💗</title>
 <style>
-:root{--p:#ff9bcf;--h:#ff65ad;--l:#c8b4ff;--w:#fff7fc;--m:#e5cfe9;--g:rgba(255,255,255,.08);--b:rgba(255,255,255,.16)}*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html{scroll-behavior:smooth}body{margin:0;min-height:100vh;overflow-x:hidden;color:var(--w);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 12% 12%,#51274f 0,transparent 36%),radial-gradient(ellipse at 88% 48%,#38265f 0,transparent 42%),linear-gradient(145deg,#100919,#21112f 55%,#100b21)}button{font:inherit;cursor:pointer;border:0}button:focus-visible{outline:3px solid white;outline-offset:3px}#stars{position:fixed;inset:0;pointer-events:none;z-index:-1}.star{position:absolute;width:2px;height:2px;border-radius:50%;background:#fff;opacity:.55;animation:tw 3s ease-in-out infinite alternate}@keyframes tw{to{opacity:1;transform:scale(1.8)}}header{position:sticky;top:0;z-index:10;padding:10px 14px;background:#11091ec9;backdrop-filter:blur(16px);border-bottom:1px solid #ffffff12}.top{max-width:850px;margin:auto;display:flex;justify-content:space-between;align-items:center;gap:8px}.brand{font-size:12px;font-weight:900;letter-spacing:2px;color:#ffd7ee}.pill{border:1px solid var(--b);background:var(--g);color:white;border-radius:999px;padding:9px 13px;font-weight:800;font-size:13px;min-height:42px}main{width:min(100% - 26px,760px);margin:auto;padding:25px 0 48px}section{display:none;animation:in .45s ease both;scroll-margin-top:80px}section.active{display:block}@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}.card{position:relative;overflow:hidden;padding:clamp(20px,5vw,38px);border:1px solid var(--b);border-radius:27px;background:linear-gradient(145deg,#ffffff1b,#ffffff08);box-shadow:0 20px 70px #0003;backdrop-filter:blur(12px)}.card:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,var(--p),var(--l),transparent)}.eyebrow{font-size:11px;letter-spacing:2px;text-transform:uppercase;font-weight:900;color:#ffc0e2}h1,h2,h3,p{margin-top:0}h1{font-size:clamp(38px,10vw,68px);line-height:1.02;letter-spacing:-2px;margin:18px 0}h2{font-size:clamp(28px,7vw,42px);line-height:1.12;letter-spacing:-.8px;margin:14px 0}h3{font-size:19px}p{color:var(--m);font-size:15px}.grad{background:linear-gradient(110deg,#fff6fd,#ff9bcf 50%,#cbb7ff);color:transparent;background-clip:text;-webkit-background-clip:text}.center{text-align:center}.heart{font-size:56px;filter:drop-shadow(0 0 20px #ff5caa);animation:beat 1.8s ease-in-out infinite}@keyframes beat{50%{transform:scale(1.12)}}.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.center .btns{justify-content:center}.btn{min-height:48px;padding:12px 18px;border-radius:15px;font-weight:850;color:#35142f;background:linear-gradient(120deg,#ffb5dc,#d3c2ff);box-shadow:0 8px 24px #0002}.btn:active{transform:scale(.97)}.btn.alt{color:white;background:#ffffff12;border:1px solid var(--b);box-shadow:none}.nav{display:flex;gap:10px;margin-top:18px}.nav .btn{flex:1}.cat{display:flex;align-items:center;gap:13px;margin:20px 0;padding:11px;border:1px solid var(--b);border-radius:18px;background:#0002}.cat img{width:82px;height:82px;object-fit:cover;border-radius:15px;background:#fff1fa;flex-shrink:0}.cat p{margin:0;font-size:13px}.typebox{min-height:100px;white-space:pre-wrap;color:#fff1fb;font-size:16px;line-height:1.9}.spark{position:fixed;pointer-events:none;z-index:100;color:#ffd7f0;animation:sparkout .8s ease-out forwards}@keyframes sparkout{to{transform:translateY(-35px) scale(1.5);opacity:0}}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile{min-height:105px;padding:15px;border:1px solid var(--b);border-radius:17px;background:#ffffff0b;color:white;text-align:left}.tile b{display:block;color:#ffd0e9;margin:4px 0}.tile span{font-size:12px;color:#d9c3e4}.note{display:none;margin-top:15px;padding:17px;border-radius:17px;background:#ffb4dd1f;border:1px solid #ffb4dd40;color:#fff0fa}.note.show{display:block;animation:in .3s ease}.score{display:flex;justify-content:space-between;gap:8px;margin:12px 0;color:#ffd5eb;font-weight:800}#arena{height:280px;position:relative;overflow:hidden;border-radius:20px;border:1px solid var(--b);background:radial-gradient(ellipse at bottom,#5d2c66,#201532 70%);touch-action:manipulation}.fall{position:absolute;border:0;background:none;font-size:30px;padding:6px;animation:fall linear forwards;filter:drop-shadow(0 0 8px #ff80c2)}@keyframes fall{to{transform:translateY(330px) rotate(25deg)}}.option{display:block;width:100%;text-align:left;padding:14px;margin:9px 0;border-radius:14px;background:#ffffff0c;border:1px solid var(--b);color:white;font-weight:700;min-height:49px}.option:disabled{opacity:.85}.feedback{padding:12px;border-radius:13px;background:#ff9bcf1f;color:#ffe5f4;min-height:45px;margin-top:10px}.stage{position:relative;overflow:hidden;height:320px;border-radius:20px;border:1px solid #ffffff30;background:linear-gradient(#f6a6cb,#f7b4c5 38%,#f5c7ba 67%,#5b416c);margin:18px 0;isolation:isolate}.sun{position:absolute;width:92px;height:92px;border-radius:50%;right:15%;top:42px;background:#fff0c8;box-shadow:0 0 48px #ffe2ad}.hill{position:absolute;bottom:0;width:120%;height:110px;left:-10%;background:#69466e;clip-path:polygon(0 50%,18% 16%,35% 48%,52% 8%,75% 47%,90% 22%,100% 44%,100% 100%,0 100%)}.hill.back{bottom:35px;height:95px;background:#a46687;transform:scaleX(-1)}.caption{position:absolute;top:12px;left:10px;right:10px;text-align:center;color:#542c53;font-size:13px;font-weight:900}.character{position:absolute;bottom:42px;width:88px;height:155px;z-index:3;filter:drop-shadow(0 5px 4px #4d294d33)}.boy{left:4%;animation:run 8s ease-in-out infinite}.girl{right:8%;transform-origin:bottom;animation:react 8s ease-in-out infinite}.rose{position:absolute;width:54px;height:65px;left:24%;bottom:80px;z-index:4;animation:give 8s ease-in-out infinite}@keyframes run{0%,12%{left:4%;transform:rotate(-5deg)}20%{transform:translateY(-7px) rotate(5deg)}32%{left:25%;transform:rotate(-4deg)}45%,100%{left:37%;transform:rotate(0)}}@keyframes give{0%,20%{left:24%;transform:translateY(0) rotate(-8deg)}38%,55%{left:43%;transform:translateY(-12px) rotate(8deg)}68%,100%{left:44%;transform:none}}@keyframes react{0%,35%{transform:rotate(0)}43%,54%{transform:rotate(-5deg) translateY(-3px)}60%,100%{transform:rotate(0)}}.petal{position:absolute;top:-20px;color:#fff0f7;animation:petalfall 6s linear infinite;z-index:2}@keyframes petalfall{to{transform:translateY(350px) rotate(260deg);opacity:.2}}
-/* cinematic hand-drawn-anime mood */
-.stage{height:370px;background:linear-gradient(180deg,#f6a9d0 0%,#f7c2ca 34%,#ffd6bd 57%,#e8a1ad 72%,#795276 100%);box-shadow:inset 0 0 45px #ffebf533}
-.stage:after{content:"";position:absolute;inset:0;z-index:5;pointer-events:none;background:linear-gradient(90deg,#4a2a5320,transparent 25%,transparent 75%,#4a2a5320);box-shadow:inset 0 -18px 30px #2b183744}
-.sun{width:104px;height:104px;top:57px;right:18%;background:#fff0c8;box-shadow:0 0 20px #fff1c9,0 0 65px #ffe6b4,0 0 110px #ffc6df}
-.hill{height:130px;background:linear-gradient(150deg,#8a547b,#4e3a65);filter:drop-shadow(0 -2px 2px #ffe1d6aa)}
-.hill.back{height:115px;bottom:45px;background:linear-gradient(130deg,#c27b9e,#a45f89)}
-.character{width:102px;height:176px;filter:drop-shadow(0 7px 5px #3a214633)}
-.boy{animation:animeRun 8s cubic-bezier(.45,.05,.25,1) infinite}
-.girl{animation:animeReact 8s ease-in-out infinite}
-.rose{animation:animeGive 8s ease-in-out infinite;filter:drop-shadow(0 4px 4px #77395b55)}
-@keyframes animeRun{0%,8%{left:1%;transform:translateY(0) rotate(-8deg)}15%{transform:translateY(-10px) rotate(5deg)}22%{transform:translateY(0) rotate(-6deg)}34%{left:22%;transform:translateY(-7px) rotate(3deg)}42%,100%{left:35%;transform:translateY(0) rotate(0)}}
-@keyframes animeGive{0%,22%{left:22%;transform:translateY(0) rotate(-12deg)}36%{left:40%;transform:translateY(-12px) rotate(10deg)}47%,60%{left:45%;transform:translateY(-7px) rotate(2deg)}70%,100%{left:45%;transform:none}}
-@keyframes animeReact{0%,35%{transform:translateY(0) rotate(0)}43%{transform:translateY(-7px) rotate(-7deg)}50%{transform:translateY(-2px) rotate(4deg)}62%,100%{transform:translateY(0) rotate(0)}}
-.petal{font-size:17px;text-shadow:0 0 9px #fff;animation:petalfall 6s linear infinite}
-@media(min-width:650px){.stage{height:410px}.character{width:120px;height:198px}.sun{width:120px;height:120px}}
-@media(max-width:390px){.stage{height:300px}.character{width:78px;height:145px}.sun{width:76px;height:76px}}
-.finalheart{font-size:60px;animation:beat 1.5s infinite;filter:drop-shadow(0 0 20px #ff5bab)}footer{text-align:center;color:#bfa7cd;font-size:12px;padding:24px 10px}.toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,20px);opacity:0;z-index:90;max-width:90vw;padding:12px 17px;border:1px solid var(--b);border-radius:999px;background:#2a1738;color:white;transition:.25s;text-align:center;font-size:13px;pointer-events:none}.toast.show{opacity:1;transform:translate(-50%,0)}@media(min-width:650px){main{padding-top:34px}.stage{height:370px}.character{width:106px;height:180px}.rose{width:64px;height:75px}}@media(max-width:390px){main{width:calc(100% - 18px)}.card{padding:19px 15px}.grid{grid-template-columns:1fr}.cat img{width:68px;height:68px}.stage{height:280px}.character{width:76px;height:140px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}}
-
-/* Ten-second ink-and-colour anime short */
-.stage{height:auto!important;min-height:0!important;max-height:none!important;aspect-ratio:9/5;padding:0!important;margin:18px 0 12px;background:#edb5cf;border:1px solid #ffffff66;box-shadow:0 15px 42px #14091d45,0 0 28px #ffc0dc26}
-.animeFilm{display:block;width:100%;height:100%;overflow:hidden}
-.animeFilm .ink{stroke-dasharray:900;stroke-dashoffset:900;stroke-linecap:round;stroke-linejoin:round}
-.animeFilm .paint{fill-opacity:0}
-.animeFilm .ink.paint[opacity=".26"],.animeFilm .ink.paint[opacity=".22"]{opacity:0}
-.animeFilm .ink[stroke="none"]{stroke:none;stroke-dasharray:none;stroke-dashoffset:0}
-.animeFilm .petalArt{transform-box:fill-box;transform-origin:center;animation:animePetalDrift 4.8s ease-in-out 1 both}
-@keyframes animePetalDrift{0%{transform:translate(-15px,-20px) rotate(-15deg)}100%{transform:translate(10px,42px) rotate(35deg)}}
-.animeFilm .ink[fill="none"]{fill:none}
-.animeFilm .ink[stroke="none"]{stroke:none;stroke-dasharray:none;stroke-dashoffset:0;animation:none}
-.animeFilm .paint[stroke="none"]{stroke:none}
-.caption{z-index:6;top:8px;left:8px;right:8px;width:max-content;max-width:calc(100% - 16px);margin:auto;padding:6px 12px;border-radius:999px;border:1px solid #fff8;background:#fff0f4d9;backdrop-filter:blur(8px);color:#5b3155;font-size:clamp(10px,2.4vw,14px);box-shadow:0 3px 16px #49254522}
-.music-dock{max-width:760px;margin:12px auto 18px;padding:12px;border:1px solid #ffffff2e;border-radius:18px;background:linear-gradient(135deg,#2b173bcc,#563052b8);box-shadow:0 12px 32px #08040d55}
-.music-dock-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between}.music-dock-top b{color:#ffe3f2}.music-sub,.music-hint{font-size:12px;color:#e8c9e8}.music-hint{text-align:center;margin:7px 0 0}.yt-link{color:#fff1fa;text-decoration:none;font-size:12px;font-weight:800;padding:8px 10px;border:1px solid #ffffff28;border-radius:999px;background:#ffffff0e}
-.ytplayer{width:min(100%,560px);min-width:200px;min-height:200px;aspect-ratio:16/9;height:auto;margin:12px auto 0;overflow:hidden;border-radius:12px;background:#11091e}.ytplayer iframe{display:block;width:100%;height:100%;min-height:200px;aspect-ratio:16/9;border:0;border-radius:12px}
-@media(max-width:390px){.stage{aspect-ratio:9/5}.music-dock{padding:10px}.music-dock-top{justify-content:flex-start}.ytplayer{height:200px}}
-@media(prefers-reduced-motion:reduce){.animeFilm .ink,.animeFilm .paint{animation:none!important;stroke-dashoffset:0!important;fill-opacity:1!important}}
-
-
-/* Japanese anime-film finish: quiet parallax, sakura drift, lantern glow and hand-inked details */
-.animeFilm{transform-box:fill-box;transform-origin:center;animation:animeCameraBreath 12s ease-in-out infinite alternate}
-@keyframes animeCameraBreath{0%{transform:scale(1)}100%{transform:scale(1.022)}}
-.animeFilm circle[fill="url(#afSun)"],.animeFilm .lanternAura{transform-box:fill-box;transform-origin:center;animation:animeSunPulse 4.8s ease-in-out infinite alternate}
-@keyframes animeSunPulse{0%{opacity:.38;transform:scale(.96)}100%{opacity:.72;transform:scale(1.08)}}
-.animeFilm .ambientPetal{transform-box:fill-box;transform-origin:center;animation:animeFloatPetal 7s ease-in-out infinite alternate}
-.animeFilm .petalSlow{animation-duration:9s;animation-delay:-3s}
-.animeFilm .petalFast{animation-duration:5.5s;animation-delay:-1.4s}
-@keyframes animeFloatPetal{0%{transform:translate(-6px,-8px) rotate(-14deg)}48%{transform:translate(12px,15px) rotate(14deg)}100%{transform:translate(3px,28px) rotate(36deg)}}
-.animeFilm .romanceBokeh circle{transform-box:fill-box;transform-origin:center;animation:animeBokeh 2.7s ease-in-out infinite alternate}
-.animeFilm .romanceBokeh circle:nth-child(2n){animation-delay:-1.2s}
-.animeFilm .romanceBokeh circle:nth-child(3n){animation-delay:-2s}
-@keyframes animeBokeh{0%{opacity:.25;transform:scale(.65)}100%{opacity:1;transform:scale(1.4)}}
-.animeFilm .cinemaSweep{animation:animeLightSweep 11s ease-in-out infinite;mix-blend-mode:screen}
-@keyframes animeLightSweep{0%,17%{transform:translateX(-300px);opacity:0}40%{opacity:.6}78%,100%{transform:translateX(1550px);opacity:0}}
-.animeFilm .japaneseTitle text{paint-order:stroke;filter:drop-shadow(0 2px 3px #713d7040)}
-.animeFilm #boyFringe,.animeFilm #girlFringe{transform-box:fill-box;transform-origin:50% 20%;animation:animeHairSway 3.6s ease-in-out infinite alternate}
-@keyframes animeHairSway{0%{transform:rotate(-.6deg) translateX(-.3px)}100%{transform:rotate(1deg) translateX(1.2px)}}
-.animeFilm #japanShrine,.animeFilm #japanVillage,.animeFilm #japanBridge,.animeFilm #stoneLanternLeft,.animeFilm #stoneLanternRight{stroke-linejoin:round}
-.animeFilm #boyMotion,.animeFilm #girlReaction{transform-box:fill-box}
-.animeFilm #boyLegs{transform-box:fill-box;transform-origin:50% 0%;animation:boyStepCycle .42s ease-in-out 4.7s 12}
-@keyframes boyStepCycle{0%,100%{transform:translateY(0) rotate(0)}25%{transform:translateY(-3px) rotate(1.4deg)}50%{transform:translateY(0) rotate(0)}75%{transform:translateY(-2px) rotate(-1.4deg)}}
-.animeFilm #roseBouquet{transform-box:fill-box;transform-origin:0% 50%;animation:roseOffer 3.4s cubic-bezier(.2,.8,.2,1) 5.1s both}
-@keyframes roseOffer{0%{transform:translate(0,0) rotate(-14deg)}38%{transform:translate(7px,-4px) rotate(-3deg)}72%{transform:translate(12px,-2px) rotate(5deg)}100%{transform:translate(12px,0) rotate(2deg)}}
-.animeFilm .jacketDetail{stroke-linecap:round}
-.animeFilm .cinemaCorner{animation:cornerGlow 4s ease-in-out infinite alternate}
-@keyframes cornerGlow{0%{stroke-opacity:.18}100%{stroke-opacity:.7}}
-@media(prefers-reduced-motion:reduce){.animeFilm,.animeFilm .ambientPetal,.animeFilm .romanceBokeh circle,.animeFilm .cinemaSweep,.animeFilm .lanternAura,.animeFilm .cinemaCorner,.animeFilm #boyFringe,.animeFilm #girlFringe{animation:none!important;transform:none!important}}
-</style></head><body><div id="stars" aria-hidden="true"></div>
-<header><div class="top"><div class="brand">✦ THE BOX OF US</div><button class="pill" id="music">♫ Play “I Wanna Be Yours”</button></div></header>
+:root{color-scheme:dark;--pink:#ff9bcf;--lav:#d7baff;--cream:#fff5fc}
+*{box-sizing:border-box}
+html{min-height:100%;background:#100817}
+body{margin:0;min-height:100vh;color:var(--cream);font:17px/1.8 system-ui,-apple-system,"Segoe UI",sans-serif;background:radial-gradient(ellipse at 15% 15%,#54264f 0,transparent 38%),radial-gradient(ellipse at 85% 65%,#39265d 0,transparent 42%),linear-gradient(145deg,#100817,#21112e 60%,#100817);overflow-x:hidden}
+#stars{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.star{position:absolute;width:2px;height:2px;border-radius:50%;background:white;opacity:.6;animation:twinkle 3s ease-in-out infinite alternate}
+@keyframes twinkle{to{opacity:1;transform:scale(1.8)}}
+main{position:relative;z-index:1;width:min(100% - 28px,620px);margin:auto;padding:36px 0 48px;text-align:center}
+.brand{font-size:12px;letter-spacing:3px;font-weight:900;color:#ffd4ec}
+.heart{font-size:66px;line-height:1.3;margin:26px 0 6px;filter:drop-shadow(0 0 22px #ff4b9d);animation:heartbeat 1.8s infinite}
+@keyframes heartbeat{0%,100%{transform:scale(1)}12%{transform:scale(1.09)}22%{transform:scale(1)}32%{transform:scale(1.06)}}
+h1{font-size:clamp(36px,10vw,54px);line-height:1.12;letter-spacing:-2px;margin:8px 0 12px;background:linear-gradient(100deg,#ffc0e3,#d5baff);color:transparent;background-clip:text}
+.subtitle{color:#e8d5ed;margin:0 0 28px}
+.paper{position:relative;text-align:left;padding:clamp(23px,6vw,38px);border:1px solid #ffffff26;border-radius:26px;background:linear-gradient(145deg,#ffffff12,#ffffff06);box-shadow:0 22px 80px #0003;backdrop-filter:blur(12px);opacity:0;transform:translateY(22px) scale(.98);transition:opacity 1s ease,transform 1s cubic-bezier(.2,.8,.2,1)}
+.paper.show{opacity:1;transform:translateY(0) scale(1)}
+.paper:before{content:"";position:absolute;inset:8px;border:1px solid #ffc3e51c;border-radius:19px;pointer-events:none}
+.paper p{position:relative;margin:0 0 18px;color:#f7eaf8}
+.paper .dear{font-size:22px;font-weight:800;color:#ffc1e2}
+.signature{font-weight:800;color:#ffb4dc!important;font-size:20px;margin-top:25px!important}
+.music{margin:22px auto 0;width:100%;max-width:420px}
+.music button{border:1px solid #ffffff30;background:#ffffff12;color:white;border-radius:999px;padding:13px 20px;font-size:15px;font-weight:750;min-height:48px}
+.music small{display:block;color:#d9c9e1;font-size:12px;margin-top:9px}
+.player{position:absolute;width:1px;height:1px;left:-10000px;top:-10000px}
+footer{color:#c8b4d0;font-size:12px;margin-top:28px}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="stars" aria-hidden="true"></div>
 <main>
-<div id="musicDock" class="music-dock" style="display:none" aria-label="Music player">
- <div class="music-dock-top"><div><b>♫ I Wanna Be Yours</b><div class="music-sub">Arctic Monkeys · YouTube player</div></div><a class="yt-link" href="https://www.youtube.com/watch?v=nyuo9-OjNNg" target="_blank" rel="noopener noreferrer">Open on YouTube ↗</a><button class="pill" id="hideMusic" style="min-height:36px;padding:6px 10px">Close</button></div>
- <div id="ytplayer" class="ytplayer"></div>
- <p class="music-hint">Tap ▶ in the player if your browser blocks autoplay. 💗</p>
+<div class="brand">✦ A LITTLE SOMETHING FOR YOU ✦</div>
+<div class="heart" aria-hidden="true">💗</div>
+<h1>Hi, Shibu.</h1>
+<p class="subtitle">I made this little corner of the universe just for you.</p>
+<article class="paper" id="letter" aria-label="A letter for Shibu">
+<p class="dear">My favourite girl,</p>
+<p>I don't need a special date to remind you how much you mean to me. Somewhere between our conversations, your little updates, and all the ordinary moments we share, you became one of my favourite parts of life.</p>
+<p>If I could give you one thing, it would be a chance to see yourself through my eyes, even for a minute. Maybe then you'd understand why a message from you can change my whole mood, why I remember the little things, and why you matter to me so much.</p>
+<p>This page is small, but every bit of it was made thinking about you. Whenever the world feels loud, I hope this reminds you that someone is quietly cheering for you, missing you, and choosing you in all the little ways.</p>
+<p>So here's your tiny universe. No occasion needed. Just you, me, and a whole lot of love. 💗</p>
+<p class="signature">Always yours, ♡</p>
+</article>
+<div class="music">
+<button id="musicButton" type="button">♫ Tap to play our song</button>
+<small id="musicNote">I’ll try to start it automatically. Your browser may need one tap first. 🎧</small>
+<div class="player" id="player"></div>
 </div>
-<section id="welcome" class="active"><div class="card center"><div class="eyebrow">A tiny universe, made for one girl</div><div class="heart">💗</div><h1 class="grad">Hi, Shibu.</h1><p>Somewhere between all our conversations, you became one of my favourite parts of being alive.</p><p>So I made you a little universe. No big occasion needed. Just you, me, and a whole lot of love.</p><div class="cat"><img loading="lazy" src="https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif" alt="Cute animated cat" onerror="this.src='https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif'"><div><b>Official welcome committee 🐾</b><p>They heard a special girl was arriving. They've been dramatic ever since.</p></div></div><div class="btns center"><button class="btn" data-go="letter">Open your universe ✨</button></div><p style="margin-top:16px">Best experienced with sound on 🎧</p></div></section>
-<section id="letter"><div class="card"><div class="eyebrow">Page 01 · A little truth</div><h2 class="grad">A letter for my Shibu 💌</h2><p>Read it slowly, okay? Imagine every word arriving with a tiny sparkle.</p><div id="loveLetter" class="typebox" aria-live="polite"></div><div class="btns"><button class="btn" id="revealLetter">✨ Reveal my letter</button><button class="btn alt" data-go="flirt">Next, troublemaker →</button></div><div class="cat"><img loading="lazy" src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" alt="Cute animated cat" onerror="this.style.display='none'"><div><b>Small cat, huge feelings.</b><p>Basically me whenever your name pops up on my screen.</p></div></div></div></section>
-<section id="flirt"><div class="card"><div class="eyebrow">Page 02 · Important scientific findings</div><h2 class="grad">Reasons you're trouble 😏</h2><p>Tap a card. These findings are 100% biased and 200% in your favour.</p><div class="grid"><button class="tile" data-message="You have somehow become my favourite notification. My phone should honestly pay you rent.">💌<b>Notification thief</b><span>Tap to investigate</span></button><button class="tile" data-message="Your smile is unfairly powerful. There should be a warning label and a government investigation.">😌<b>Dangerously cute</b><span>Tap to investigate</span></button><button class="tile" data-message="I planned to act cool around you, but I have absolutely no qualifications for that job.">🤭<b>Coolness unavailable</b><span>Tap to investigate</span></button><button class="tile" data-message="If cuddles were Wi-Fi, I'd stand beside you asking for the password.">🫂<b>Need a hug?</b><span>Tap to investigate</span></button></div><div id="flirtNote" class="note" aria-live="polite"></div><div class="cat"><img loading="lazy" src="https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif" alt="Animated cat" onerror="this.style.display='none'"><div><b>Certified boyfriend behaviour</b><p>Compliments, nonsense, and thinking about you too much.</p></div></div><div class="nav"><button class="btn alt" data-go="letter">← Back</button><button class="btn" data-go="game">Play a game →</button></div></div></section>
-<section id="game"><div class="card"><div class="eyebrow">Page 03 · Tiny challenge</div><h2 class="grad">Catch some love 💗</h2><p>Tap falling hearts before they disappear. Catch 10 to unlock your reward!</p><div class="score"><span>Hearts caught: <b id="score">0</b>/10</span><span id="gameStatus">Ready ✨</span></div><div id="arena"><div id="hint" style="position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:22px;color:#e8cbe9;pointer-events:none">Your love-catching mission<br><b>Tap Start Game</b> below 💞</div></div><div class="btns"><button class="btn" id="startGame">Start game 💘</button><button class="btn alt" id="resetGame">Reset</button></div><div id="reward" class="note">YOU DID IT! 🥹💗 I'd trade every heart for one real hug from you. Your reward: unlimited imaginary kisses. Redeem whenever you want.</div><div class="nav"><button class="btn alt" data-go="flirt">← Back</button><button class="btn" data-go="quiz">Next: us quiz →</button></div></div></section>
-<section id="quiz"><div class="card"><div class="eyebrow">Page 04 · Extremely important quiz</div><h2 class="grad">How well do you know us? 💞</h2><p>No pressure, Shibu. This is a love quiz, not an exam.</p><div class="score"><span id="progress">Question 1 of 5</span><span>💗</span></div><h3 id="question"></h3><div id="options"></div><div id="feedback" class="feedback" aria-live="polite">Choose what feels right 💌</div><div class="btns"><button class="btn" id="nextQ" disabled>Next question →</button><button class="btn alt" id="restartQ">Start over ↻</button></div><div class="nav"><button class="btn alt" data-go="game">← Back</button><button class="btn" data-go="openwhen">Open when… →</button></div></div></section>
-<section id="openwhen"><div class="card"><div class="eyebrow">Page 05 · Little envelopes</div><h2 class="grad">Open when… 💌</h2><p>Pick whichever one you need right now. Imagine I'm giving you the biggest hug.</p><div class="grid"><button class="tile" data-note="missing">💗<b>You're missing me</b><span>Open envelope</span></button><button class="tile" data-note="sad">🥺<b>You're feeling sad</b><span>Open envelope</span></button><button class="tile" data-note="smile">😊<b>You need a smile</b><span>Open envelope</span></button><button class="tile" data-note="sleep">🌙<b>You can't sleep</b><span>Open envelope</span></button><button class="tile" data-note="hug">🫂<b>You need a hug</b><span>Open envelope</span></button><button class="tile" data-note="love">💌<b>You need to feel loved</b><span>Open envelope</span></button></div><div id="openNote" class="note" aria-live="polite"></div><div class="cat"><img loading="lazy" src="https://media.giphy.com/media/MDJ9IbxxvDUQM/giphy.gif" alt="Animated cat" onerror="this.style.display='none'"><div><b>Emergency cuddle department 🐈</b><p>Open daily. Refills unlimited.</p></div></div><div class="nav"><button class="btn alt" data-go="quiz">← Back</button><button class="btn" data-go="anime">Our anime moment →</button></div></div></section>
-<section id="anime"><div class="card"><div class="eyebrow">Page 06 · Our little daydream</div><h2 class="grad">If we were in an anime… 🌅</h2><p>A sunset beside a quiet Japanese lakeside shrine. Sakura drifts through the lantern light as a boy gathers the courage to offer roses to the girl who feels like home.</p><div class="stage" id="stage">
-<svg id="animeFilm" class="animeFilm" viewBox="0 0 900 500" role="img" aria-label="Japanese anime inspired sunset scene by a lakeside shrine, with cherry blossoms, a vermilion torii gate, a curved bridge, detailed school uniforms and sparkling eyes. The ink is drawn, colours appear, and a boy runs to offer roses." xmlns="http://www.w3.org/2000/svg">
-<defs>
- <linearGradient id="afSky" x2="0" y2="1"><stop stop-color="#f3a2cf"/><stop offset=".43" stop-color="#ffd0cc"/><stop offset=".72" stop-color="#ffcda7"/><stop offset="1" stop-color="#9b668f"/></linearGradient>
- <linearGradient id="afWater" x2="0" y2="1"><stop stop-color="#ee9fc1"/><stop offset="1" stop-color="#51436f"/></linearGradient>
- <linearGradient id="afHair" x2=".8" y2="1"><stop stop-color="#68435c"/><stop offset="1" stop-color="#31263f"/></linearGradient>
- <linearGradient id="afDress" x2="0" y2="1"><stop stop-color="#fff9ff"/><stop offset="1" stop-color="#ffd2e8"/></linearGradient>
- <radialGradient id="afSun"><stop stop-color="#fffce0"/><stop offset=".65" stop-color="#fff0c9"/><stop offset="1" stop-color="#ffc5d8" stop-opacity=".1"/></radialGradient>
- <filter id="afGlow" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="15"/></filter>
- <radialGradient id="afIris"><stop stop-color="#b7dcff"/><stop offset=".38" stop-color="#637eb5"/><stop offset=".8" stop-color="#36415f"/><stop offset="1" stop-color="#241e3a"/></radialGradient>
- <linearGradient id="afTorii" x2="0" y2="1"><stop stop-color="#ec7b8f"/><stop offset="1" stop-color="#a94367"/></linearGradient>
- <linearGradient id="afLantern" x2="0" y2="1"><stop stop-color="#fff4c9"/><stop offset="1" stop-color="#ff9ab5"/></linearGradient>
- <linearGradient id="afBridge" x2="0" y2="1"><stop stop-color="#d97892"/><stop offset="1" stop-color="#83456d"/></linearGradient>
- <radialGradient id="afDreamGlow"><stop stop-color="#fffbe8" stop-opacity=".82"/><stop offset="1" stop-color="#fff3de" stop-opacity="0"/></radialGradient>
- <filter id="afSoftGlow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="5"/></filter>
- <linearGradient id="afLightSweep" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff" stop-opacity="0"/><stop offset=".48" stop-color="#fff9e8" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-</defs>
-<!-- Sunset wash, painted first -->
-<rect width="900" height="500" fill="url(#afSky)"/>
-<circle cx="687" cy="145" r="102" fill="#fff2d1" opacity=".38" filter="url(#afGlow)"/>
-<circle class="ink paint" style="--delay:.02s" cx="687" cy="145" r="54" fill="url(#afSun)" stroke="#fff2d1" stroke-width="2"/>
-<!-- Cloud contours appear one stroke at a time -->
-<path class="ink paint" style="--delay:.12s" d="M69 113Q79 92 102 104Q119 71 149 93Q177 79 194 107Q222 107 225 125Q174 135 125 128Q88 132 69 113Z" fill="#ffe7e6" stroke="#98658b" stroke-width="2.2"/>
-<path class="ink paint" style="--delay:.18s" d="M485 92Q496 78 512 88Q527 61 550 82Q569 76 583 98Q604 97 608 111Q565 119 526 112Q495 117 485 92Z" fill="#fff0e8" stroke="#b27399" stroke-width="2.2"/>
-<!-- Distant mountains and a small hill village -->
-<path class="ink paint" style="--delay:.28s" d="M0 288L79 205L134 251L225 175L317 271L398 212L496 280L584 214L676 280L756 202L900 293V500H0Z" fill="#c77d9d" stroke="#895576" stroke-width="3"/>
-<path class="ink paint" style="--delay:.38s" d="M0 329Q126 277 251 324T509 310T745 319T900 302V500H0Z" fill="#876088" stroke="#634668" stroke-width="3"/>
-<path class="ink paint" style="--delay:.47s" d="M0 358Q153 327 284 360T555 347T900 351V500H0Z" fill="#61486f" stroke="#4a3a60" stroke-width="3"/>
-<!-- A lake catches the sunset -->
-<path class="ink paint" style="--delay:.54s" d="M0 365Q196 351 361 367T638 360T900 369V500H0Z" fill="url(#afWater)" stroke="#554165" stroke-width="2.5"/>
-<g class="ink" stroke="#ffd8d9" stroke-width="2.3" fill="none">
- <path style="--delay:.62s" d="M525 390q40 -5 79 0"/><path style="--delay:.67s" d="M484 408q58 -5 114 0"/><path style="--delay:.71s" d="M573 426q51 -4 93 0"/><path style="--delay:.76s" d="M445 445q83 -5 138 0"/><path style="--delay:.81s" d="M634 463q40 -3 72 0"/><path style="--delay:.85s" d="M81 421q47 -4 78 0"/>
-</g>
-<!-- Japanese shrine path: a vermilion torii gate beside the lake -->
-<g id="japanShrine">
- <ellipse class="ink paint" style="--delay:.74s" cx="196" cy="350" rx="104" ry="9" fill="#463252" opacity=".16" stroke="none"/>
- <path class="ink paint" style="--delay:.8s" d="M111 257L125 257L130 350L112 350Z M245 257L260 257L267 350L249 350Z" fill="url(#afTorii)" stroke="#783d5e" stroke-width="3"/>
- <path class="ink paint" style="--delay:.84s" d="M90 246Q183 238 283 246L275 263Q187 254 98 265Z" fill="#ef8b9b" stroke="#8e456a" stroke-width="3.5"/>
- <path class="ink paint" style="--delay:.88s" d="M102 239Q183 231 273 239L283 248Q188 243 90 252Z" fill="#f6b0ac" stroke="#8e456a" stroke-width="2.5"/>
- <path class="ink paint" style="--delay:.92s" d="M127 270L129 342M249 270L253 342" fill="none" stroke="#ffc1bd" stroke-width="3"/>
- <path class="ink paint" style="--delay:.95s" d="M106 274L270 274" fill="none" stroke="#943e63" stroke-width="3"/>
- <path class="ink paint" style="--delay:.98s" d="M172 263L172 278L205 278L205 263" fill="#a94c6c" stroke="#793657" stroke-width="2"/>
-</g>
-<!-- A tiny Japanese hillside village with tiled roofs and golden windows -->
-<g id="japanVillage">
- <path class="ink paint" style="--delay:1.05s" d="M321 302L346 281L373 302V333H321Z" fill="#856080" stroke="#4e3c61" stroke-width="2.5"/>
- <path class="ink paint" style="--delay:1.08s" d="M312 303L347 275L383 303L374 306L347 287L321 307Z" fill="#56405f" stroke="#43324f" stroke-width="2.5"/>
- <path class="ink paint" style="--delay:1.12s" d="M331 315H342V328H331Z M352 312H364V325H352Z" fill="#ffe2a9" stroke="#5e4268" stroke-width="1.7"/>
- <path class="ink paint" style="--delay:1.15s" d="M390 319L410 299L435 318V344H390Z" fill="#b87595" stroke="#614362" stroke-width="2.5"/>
- <path class="ink paint" style="--delay:1.18s" d="M383 319L411 292L442 319L433 322L411 303L391 323Z" fill="#594064" stroke="#43324f" stroke-width="2.5"/>
- <path class="ink paint" style="--delay:1.21s" d="M400 328H408V339H400Z M417 326H426V338H417Z" fill="#ffe8b5" stroke="#614362" stroke-width="1.6"/>
- <path class="ink paint" style="--delay:1.24s" d="M294 324Q317 316 340 324M377 345Q406 336 438 345" fill="none" stroke="#f2b3c7" stroke-width="2"/>
-</g>
-<!-- Curved vermilion bridge reflected in the evening water -->
-<g id="japanBridge">
- <path class="ink paint" style="--delay:1.3s" d="M278 367Q393 318 502 367L496 377Q392 337 284 377Z" fill="url(#afBridge)" stroke="#6d3e68" stroke-width="2.8"/>
- <path class="ink paint" style="--delay:1.34s" d="M279 365Q391 316 502 365" fill="none" stroke="#ffc2c9" stroke-width="4" stroke-linecap="round"/>
- <path class="ink paint" style="--delay:1.38s" d="M306 357L308 369M341 345L344 360M380 337L382 352M419 338L418 352M457 348L454 361M485 359L481 370" fill="none" stroke="#9d4d70" stroke-width="2.4"/>
- <path class="ink paint" style="--delay:1.42s" d="M296 372Q392 344 491 372" fill="none" stroke="#ffd1d8" stroke-width="2"/>
-</g>
-<!-- Stone lanterns along the shrine path -->
-<g id="stoneLanternLeft">
- <path class="ink paint" style="--delay:1.48s" d="M67 318L83 318L86 346L64 346Z" fill="#80718c" stroke="#51405f" stroke-width="2.5"/>
- <path class="ink paint" style="--delay:1.52s" d="M59 316L75 302L91 316L87 322L63 322Z" fill="#6a5979" stroke="#4d3d5c" stroke-width="2.5"/>
- <path class="ink paint" style="--delay:1.56s" d="M67 313L75 307L83 313V320H67Z" fill="url(#afLantern)" stroke="#72506e" stroke-width="1.8"/>
- <path class="ink paint" style="--delay:1.6s" d="M61 347L89 347L94 354L57 354Z" fill="#75617f" stroke="#51405f" stroke-width="2"/>
-</g>
-<g id="stoneLanternRight">
- <path class="ink paint" style="--delay:1.48s" d="M828 332L842 332L845 355L826 355Z" fill="#80718c" stroke="#51405f" stroke-width="2"/>
- <path class="ink paint" style="--delay:1.52s" d="M820 330L835 317L850 330L846 336L824 336Z" fill="#6a5979" stroke="#4d3d5c" stroke-width="2"/>
- <path class="ink paint" style="--delay:1.56s" d="M828 328L835 322L842 328V334H828Z" fill="url(#afLantern)" stroke="#72506e" stroke-width="1.5"/>
- <path class="ink paint" style="--delay:1.6s" d="M823 356L848 356L852 362L819 362Z" fill="#75617f" stroke="#51405f" stroke-width="2"/>
-</g>
-<!-- Soft evening glow from the lanterns -->
-<circle class="lanternAura" cx="75" cy="314" r="31" fill="url(#afDreamGlow)" opacity=".5"/>
-<circle class="lanternAura" cx="835" cy="328" r="28" fill="url(#afDreamGlow)" opacity=".42"/>
-<!-- Japanese-style handwritten title, 'A promise at dusk' -->
-<g class="japaneseTitle" opacity=".8">
- <text x="40" y="179" font-family="serif" font-size="18" letter-spacing="3" fill="#fff0f3" stroke="#b66f92" stroke-width=".45">夕暮れ</text>
- <text x="40" y="202" font-family="serif" font-size="14" letter-spacing="2" fill="#fff0f3" stroke="#b66f92" stroke-width=".35">君と</text>
-</g>
-<!-- Sakura bough, inked in curling strokes -->
-<path class="ink" style="--delay:.92s" d="M903 7Q831 75 829 137Q825 184 766 223M850 84Q792 79 772 41M829 137Q862 154 886 187M797 189Q745 178 725 149" fill="none" stroke="#54334e" stroke-width="13" stroke-linecap="round"/>
-<path class="ink" style="--delay:1.03s" d="M903 7Q831 75 829 137Q825 184 766 223M850 84Q792 79 772 41M829 137Q862 154 886 187M797 189Q745 178 725 149" fill="none" stroke="#8e5b78" stroke-width="4.5" stroke-linecap="round"/>
-<!-- Hand-drawn blossom clusters -->
-<g stroke="#673a5b" stroke-width="1.8">
- <g class="paint" style="--delay:1.08s" fill="#ffd9e8">
-  <path class="ink" d="M829 53Q807 35 812 20Q828 13 837 35Q852 15 867 28Q872 43 850 52Q870 65 858 80Q841 82 837 61Q819 79 805 65Q804 52 829 53Z"/>
-  <path class="ink" d="M770 48Q752 32 759 20Q773 16 779 34Q795 20 806 34Q809 47 791 51Q808 65 797 76Q782 76 779 59Q765 74 752 61Q750 49 770 48Z"/>
-  <path class="ink" d="M862 131Q842 114 849 101Q864 95 870 115Q887 99 897 114Q899 128 881 133Q898 145 887 159Q872 159 869 143Q855 157 842 145Q840 132 862 131Z"/>
-  <path class="ink" d="M759 153Q739 137 746 123Q761 118 768 138Q785 121 796 136Q799 149 780 155Q799 168 787 181Q773 181 768 164Q754 180 742 166Q740 154 759 153Z"/>
-  <path class="ink" d="M816 191Q799 177 805 165Q819 160 824 179Q840 165 851 178Q854 191 837 194Q853 206 843 218Q829 220 824 204Q810 217 798 205Q796 193 816 191Z"/>
- </g>
-</g>
-<g class="ink paint" style="--delay:1.2s" fill="#fff4f6" stroke="#8b5578" stroke-width="1.5">
- <circle cx="837" cy="48" r="3"/><circle cx="779" cy="45" r="3"/><circle cx="871" cy="126" r="3"/><circle cx="768" cy="149" r="3"/><circle cx="822" cy="188" r="3"/>
-</g>
-<!-- tiny birds drift through the warm sky -->
-<g class="ink" fill="none" stroke="#6c496e" stroke-width="2.5" stroke-linecap="round">
- <path style="--delay:1.25s" d="M317 128q9 -9 17 0q8 -9 17 0"/>
- <path style="--delay:1.30s" d="M371 152q7 -7 14 0q7 -7 14 0"/>
- <path style="--delay:1.36s" d="M273 166q6 -6 12 0q6 -6 12 0"/>
-</g>
-<!-- Boy: layered hair, school jacket, moving legs, hand and rose bouquet -->
-<g id="boyMotion">
- <animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 0;300 0;300 0" keyTimes="0;0.48;0.63;0.82;1" dur="10s" repeatCount="1" fill="freeze"/>
- <g transform="translate(145 122)">
-  <ellipse class="ink paint" style="--delay:1.42s" cx="72" cy="328" rx="56" ry="8" fill="#473257" opacity=".26" stroke="none"/>
-  <!-- rear hair and neck -->
-  <path class="ink paint" style="--delay:1.48s" d="M43 62Q27 39 44 19Q60 -2 87 14Q113 20 111 54L105 111L82 126L42 104Z" fill="url(#afHair)" stroke="#38253f" stroke-width="3.2"/>
-  <path class="ink paint" style="--delay:1.54s" d="M59 82L58 111Q73 125 89 107L85 79Z" fill="#f0b89f" stroke="#55364b" stroke-width="2.5"/>
-  <!-- legs and shoes -->
-  <g id="boyLegs" class="ink paint" style="--delay:1.61s" fill="#34425f" stroke="#34304d" stroke-width="3">
-   <path d="M48 241Q65 247 77 238L72 285L57 311L48 307L55 277Z">
-    <animateTransform attributeName="transform" type="rotate" values="-8 64 244;12 64 244;-8 64 244" keyTimes="0;.5;1" begin="4.7s" dur=".38s" repeatCount="12"/>
-   </path>
-   <path d="M79 242Q98 241 107 231L117 273L106 306L95 303L99 273Z">
-    <animateTransform attributeName="transform" type="rotate" values="10 91 241;-9 91 241;10 91 241" keyTimes="0;.5;1" begin="4.89s" dur=".38s" repeatCount="12"/>
-   </path>
-  </g>
-  <path class="ink paint" style="--delay:1.69s" d="M49 302Q62 300 67 311L68 324Q52 332 31 324Q29 318 38 313Z" fill="#fff8ff" stroke="#2f2b45" stroke-width="3"/>
-  <path class="ink paint" style="--delay:1.75s" d="M95 299Q107 296 113 307L125 317Q126 325 113 326L91 321Z" fill="#fff8ff" stroke="#2f2b45" stroke-width="3"/>
-  <!-- jacket body -->
-  <path class="ink paint" style="--delay:1.81s" d="M48 115Q69 105 91 113L111 142L101 225Q80 240 45 225L36 154Z" fill="#f8f3fa" stroke="#32324e" stroke-width="3.5"/>
-  <path class="ink paint" style="--delay:1.87s" d="M60 115L76 146L91 115L84 171L68 171Z" fill="#435578" stroke="#30324c" stroke-width="2.5"/>
-  <!-- crisp Japanese school uniform details -->
-  <path class="ink paint" style="--delay:1.89s" d="M50 116L63 127L76 146L65 139Z M91 115L80 128L76 146L88 137Z" fill="#fffaff" stroke="#30324c" stroke-width="2"/>
-  <path class="ink paint" style="--delay:1.91s" d="M72 146L80 146L84 157L77 166L70 157Z" fill="#e58cab" stroke="#514064" stroke-width="1.8"/>
-  <path class="ink paint" style="--delay:1.94s" d="M48 184L60 184M91 184L101 184M48 191L59 191M92 191L100 191" fill="none" stroke="#cad4e7" stroke-width="1.6"/>
-  <circle class="ink paint" style="--delay:1.97s" cx="84" cy="180" r="2.2" fill="#f7dca7" stroke="#435578" stroke-width="1"/>
-  <circle class="ink paint" style="--delay:2s" cx="83" cy="197" r="2.2" fill="#f7dca7" stroke="#435578" stroke-width="1"/>
-  <path class="ink paint" style="--delay:2.02s" d="M87 207L101 204L99 220L87 223Z" fill="#dae4f4" stroke="#30324c" stroke-width="1.7"/>
-  <path class="ink" style="--delay:2.04s" d="M91 211L98 209M90 215L98 213" fill="none" stroke="#7582a0" stroke-width="1.3"/>
-  <path class="ink" style="--delay:1.92s" d="M77 145L77 225M50 165L59 170M93 165L86 171" fill="none" stroke="#ad91b6" stroke-width="2"/>
-  <!-- arms: one swings, the other reaches out with flowers -->
-  <path class="ink paint" style="--delay:1.98s" d="M43 135Q29 144 23 167L10 201Q8 214 18 215Q29 212 32 197L55 163Z" fill="#f4c0a8" stroke="#473349" stroke-width="3.2"/>
-  <path class="ink paint" style="--delay:2.05s" d="M99 137Q118 143 130 158L154 157Q164 156 166 165Q161 174 146 172L115 180L91 164Z" fill="#f3b99f" stroke="#473349" stroke-width="3.2"/>
-  <!-- face and ear -->
-  <ellipse class="ink paint" style="--delay:2.13s" cx="77" cy="67" rx="31" ry="38" fill="#ffd4bd" stroke="#473349" stroke-width="3.2"/>
-  <path class="ink paint" id="boyFringe" style="--delay:2.20s" d="M47 61Q41 35 58 25Q82 10 104 31Q117 47 106 72L100 93Q91 79 90 62L77 51L64 67Z" fill="url(#afHair)" stroke="#38253f" stroke-width="3.3"/>
-  <path class="ink paint" style="--delay:2.27s" d="M49 41Q43 13 63 13Q62 28 75 23Q91 8 102 23Q121 38 106 51L94 40L89 31L77 43L65 34L55 49Z" fill="#4c304f" stroke="#38253f" stroke-width="3"/>
-  <!-- individual hair shine strokes, eyebrows, eyes and blush -->
-  <path class="ink" style="--delay:2.34s" d="M58 28Q70 18 82 25M88 26Q97 26 103 36" fill="none" stroke="#b38aa9" stroke-width="2.4"/>
-  <path class="ink paint" style="--delay:2.365s" d="M58 65Q67 55 76 64Q71 76 62 70Z M81 64Q91 54 100 63Q94 75 85 69Z" fill="#fff9ff" stroke="#54334a" stroke-width="1.7"/>
-  <ellipse class="ink paint" style="--delay:2.38s" cx="68" cy="65" rx="5.4" ry="8.1" fill="url(#afIris)" stroke="#3d2a41" stroke-width="1.3"/>
-  <ellipse class="ink paint" style="--delay:2.38s" cx="91" cy="64" rx="5.4" ry="8.1" fill="url(#afIris)" stroke="#3d2a41" stroke-width="1.3"/>
-  <path class="ink" style="--delay:2.4s" d="M61 65Q68 59 74 65M84 64Q91 58 97 64" fill="none" stroke="#54334a" stroke-width="2.3"/>
-  <ellipse class="ink paint" style="--delay:2.45s" cx="69" cy="72" rx="2.7" ry="5.2" fill="#29243d" stroke="#3d2a41" stroke-width="1.1"/>
-  <ellipse class="ink paint" style="--delay:2.49s" cx="92" cy="71" rx="2.7" ry="5.2" fill="#29243d" stroke="#3d2a41" stroke-width="1.1"/>
-  <circle class="ink paint" style="--delay:2.53s" cx="70" cy="70" r="1.5" fill="#fff7ff" stroke="none"/><circle class="ink paint" style="--delay:2.57s" cx="93" cy="69" r="1.5" fill="#fff7ff" stroke="none"/>
-  <path class="ink" style="--delay:2.61s" d="M78 78q4 3 8 0M74 88q7 5 15 -1" fill="none" stroke="#a95776" stroke-width="2"/>
-  <!-- a shy pink cheek only paints in after the line work -->
-  <ellipse class="paint" style="--delay:2.63s" cx="58" cy="80" rx="7" ry="3.8" fill="#ff8cb6" opacity=".7" stroke="none"/>
-  <ellipse class="paint" style="--delay:2.64s" cx="98" cy="79" rx="7" ry="3.8" fill="#ff8cb6" opacity=".68" stroke="none"/>
-  <path class="ink" style="--delay:2.65s" d="M49 78L54 77M50 82L55 81M96 81L101 80M95 77L100 76" fill="none" stroke="#d96f91" stroke-width="1.2"/>
-  <!-- rose bouquet is part of his reaching hand -->
-  <g id="roseBouquet" transform="translate(150 157) rotate(-14)">
-   <animateTransform attributeName="transform" type="rotate" values="-14 0 0;-5 0 0;9 0 0;3 0 0" keyTimes="0;.35;.65;1" begin="5.1s" dur="3.4s" fill="freeze"/>
-   <path class="ink paint" style="--delay:2.69s" d="M-5 0L-2 36M4 -2L7 37M0 13L-14 24M3 21L17 17" fill="none" stroke="#36734e" stroke-width="3" stroke-linecap="round"/>
-   <path class="ink paint" style="--delay:2.75s" d="M-3 20Q-22 6 -20 23Q-11 34 -3 20M7 26Q23 8 22 25Q15 36 7 26" fill="#65a96d" stroke="#36734e" stroke-width="2"/>
-   <path class="ink paint" style="--delay:2.82s" d="M-19 -14Q-14 -29 -3 -17Q7 -32 17 -18Q31 -14 20 0Q12 13 0 4Q-15 11 -22 0Q-24 -7 -19 -14Z" fill="#fc4f91" stroke="#a12d64" stroke-width="2.4"/>
-   <path class="ink paint" style="--delay:2.89s" d="M-12 -16Q-5 -24 2 -14Q10 -25 16 -15Q21 -5 8 -1Q-2 8 -13 -1Z" fill="#ffb0d0" stroke="#b33e73" stroke-width="1.8"/>
-   <path class="ink" style="--delay:2.95s" d="M-11 -10Q-5 -17 1 -9Q5 -15 11 -9" fill="none" stroke="#fff1f6" stroke-width="1.6"/>
-  </g>
- </g>
-</g>
-<!-- Girl, long flowing hair and a soft pink school cardigan -->
-<g transform="translate(625 122)"><g id="girlReaction"><animateTransform attributeName="transform" type="translate" values="0 0;0 0;0 -7;0 0;0 0" keyTimes="0;.75;.82;.9;1" dur="10s" repeatCount="1" fill="freeze"/>
- <ellipse class="ink paint" style="--delay:3.02s" cx="67" cy="328" rx="53" ry="8" fill="#473257" opacity=".22" stroke="none"/>
- <!-- long hair behind her shoulders -->
- <path class="ink paint" style="--delay:3.08s" d="M38 66Q26 19 62 10Q104 1 113 41Q124 74 111 151L117 224L99 255L35 245L20 173L29 107Z" fill="url(#afHair)" stroke="#3c2944" stroke-width="3.5"/>
- <!-- legs, socks, shoes -->
- <path class="ink paint" style="--delay:3.15s" d="M49 233L44 290L37 311L49 316L65 289L70 244Z" fill="#ffd1dc" stroke="#603b5a" stroke-width="3"/>
- <path class="ink paint" style="--delay:3.21s" d="M78 239L87 286L99 309L111 304L98 277L98 232Z" fill="#ffd1dc" stroke="#603b5a" stroke-width="3"/>
- <path class="ink paint" style="--delay:3.28s" d="M37 308Q49 305 55 315L56 326Q38 334 23 326Q22 320 37 308Z" fill="#fff7ff" stroke="#46304b" stroke-width="3"/>
- <path class="ink paint" style="--delay:3.34s" d="M98 302Q110 300 115 310L131 319Q133 326 117 328L97 323Z" fill="#fff7ff" stroke="#46304b" stroke-width="3"/>
- <!-- dress and cardigan -->
- <path class="ink paint" style="--delay:3.4s" d="M39 112Q64 102 91 115L105 229Q75 251 37 229L31 156Z" fill="url(#afDress)" stroke="#704361" stroke-width="3.5"/>
- <path class="ink paint" style="--delay:3.47s" d="M39 118Q58 112 71 132L63 180L48 225L32 224L29 150Z" fill="#ffadd0" stroke="#704361" stroke-width="2.6"/>
- <path class="ink paint" style="--delay:3.53s" d="M90 117Q105 124 110 151L104 225L88 228L77 179L76 132Z" fill="#ffadd0" stroke="#704361" stroke-width="2.6"/>
- <path class="ink" style="--delay:3.59s" d="M70 132L72 229M48 175L56 179M91 175L84 180M44 209L57 213M90 212L83 215" fill="none" stroke="#d875a2" stroke-width="2"/>
- <!-- cardigan buttons, dress pleats and a small ribbon -->
- <path class="ink paint" style="--delay:3.61s" d="M62 151L70 157L64 164L56 157Z" fill="#fff3fa" stroke="#9a557c" stroke-width="1.5"/>
- <path class="ink paint" style="--delay:3.63s" d="M79 157L86 151L91 158L84 164Z" fill="#fff3fa" stroke="#9a557c" stroke-width="1.5"/>
- <circle class="ink paint" style="--delay:3.65s" cx="77" cy="177" r="2.4" fill="#ffe6af" stroke="#a95d87" stroke-width="1"/>
- <circle class="ink paint" style="--delay:3.67s" cx="78" cy="193" r="2.4" fill="#ffe6af" stroke="#a95d87" stroke-width="1"/>
- <path class="ink" style="--delay:3.69s" d="M46 229L52 242M58 232L62 245M83 233L79 245M95 230L89 243" fill="none" stroke="#fff7ff" stroke-width="2.3"/>
- <path class="ink paint" style="--delay:3.71s" d="M66 133Q72 126 78 134L75 143L70 143Z" fill="#ffd9e8" stroke="#8f4c74" stroke-width="1.5"/>
- <path class="ink paint" style="--delay:3.73s" d="M65 135L55 132L57 142L70 141M78 135L89 130L87 141L74 141" fill="#ff8fbc" stroke="#9f507e" stroke-width="1.8"/>
- <!-- open left arm reaches toward the bouquet -->
- <path class="ink paint" style="--delay:3.66s" d="M39 135Q26 151 18 165L-5 164Q-16 164 -18 173Q-12 182 2 178L32 183L51 157Z" fill="#ffd3c1" stroke="#603b5a" stroke-width="3.1"/>
- <path class="ink paint" style="--delay:3.73s" d="M94 137Q112 152 107 173L96 190L84 181L89 155Z" fill="#ffd3c1" stroke="#603b5a" stroke-width="3.1"/>
- <!-- face and fringe -->
- <ellipse class="ink paint" style="--delay:3.8s" cx="68" cy="65" rx="29" ry="37" fill="#ffdbc8" stroke="#56374d" stroke-width="3.3"/>
- <path class="ink paint" style="--delay:3.87s" d="M40 57Q31 27 51 16Q78 -1 99 19Q119 38 102 73L100 104L88 125L35 109L30 83Z" fill="url(#afHair)" stroke="#3c2944" stroke-width="3.2"/>
- <path class="ink paint" id="girlFringe" style="--delay:3.94s" d="M39 46Q40 12 67 14Q93 8 103 35L91 32L82 24L70 39L59 27L48 48Z" fill="#60415c" stroke="#3c2944" stroke-width="2.8"/>
- <path class="ink" style="--delay:4.01s" d="M45 29Q56 15 68 23M78 20Q92 20 98 31" fill="none" stroke="#bc91aa" stroke-width="2.3"/>
- <!-- shining anime eyes, lashes, smile, and blush -->
- <path class="ink paint" style="--delay:4.035s" d="M43 63Q51 53 63 62Q57 74 47 68Z M70 63Q81 53 92 62Q85 74 75 68Z" fill="#fff9ff" stroke="#503348" stroke-width="1.8"/>
- <ellipse class="ink paint" style="--delay:4.05s" cx="55" cy="65" rx="5.5" ry="8.4" fill="url(#afIris)" stroke="#35283e" stroke-width="1.3"/>
- <ellipse class="ink paint" style="--delay:4.05s" cx="82" cy="65" rx="5.5" ry="8.4" fill="url(#afIris)" stroke="#35283e" stroke-width="1.3"/>
- <path class="ink" style="--delay:4.07s" d="M46 62Q54 54 62 63M74 63Q82 54 90 62" fill="none" stroke="#503348" stroke-width="2.5"/>
- <ellipse class="ink paint" style="--delay:4.12s" cx="55" cy="68" rx="2.8" ry="5.4" fill="#29243d" stroke="#29243d" stroke-width="1.1"/>
- <ellipse class="ink paint" style="--delay:4.16s" cx="82" cy="68" rx="2.8" ry="5.4" fill="#29243d" stroke="#29243d" stroke-width="1.1"/>
- <circle class="ink paint" style="--delay:4.2s" cx="56" cy="66" r="1.8" fill="#fff" stroke="none"/><circle class="ink paint" style="--delay:4.23s" cx="83" cy="66" r="1.8" fill="#fff" stroke="none"/>
- <path class="ink" style="--delay:4.26s" d="M65 77Q69 80 72 77M61 87Q69 94 78 86" fill="none" stroke="#c16b83" stroke-width="2.2"/>
- <ellipse class="paint" style="--delay:4.3s" cx="43" cy="79" rx="8" ry="4" fill="#f58caf" opacity=".72" stroke="none"/><ellipse class="paint" style="--delay:4.34s" cx="91" cy="79" rx="8" ry="4" fill="#f58caf" opacity=".72" stroke="none"/>
- <!-- petal-shaped hair clip -->
- <path class="ink paint" style="--delay:4.4s" d="M93 28Q81 17 87 9Q97 7 100 20Q111 9 118 19Q120 30 107 33Q114 45 103 49Q94 46 96 37Q83 42 80 32Q84 27 93 28Z" fill="#ff89bb" stroke="#55344f" stroke-width="2"/>
-</g></g>
-<!-- Soft petals are coloured and then drift through the completed frame -->
-<g class="ink paint" style="--delay:4.45s" fill="#fff0f7" stroke="#bf719d" stroke-width="1.2">
- <path d="M247 87Q235 74 244 68Q254 67 258 80Q268 69 275 78Q279 89 266 93Q270 104 260 107Q250 102 253 94Q241 101 235 91Q236 84 247 87Z"/>
- <path d="M543 108Q531 96 539 89Q548 88 552 101Q562 90 570 99Q572 109 561 114Q565 124 554 127Q545 122 547 115Q535 120 530 111Q531 104 543 108Z"/>
- <path d="M447 245Q435 233 443 226Q453 225 457 238Q467 227 475 236Q477 246 466 251Q470 261 459 264Q449 259 452 252Q440 257 434 248Q435 241 447 245Z"/>
-</g>
-<!-- foreground sakura petals, drifting across the imaginary camera lens -->
-<g id="foregroundPetals" fill="#fff1f7" stroke="#cc7ca9" stroke-width="1.2">
- <path class="ambientPetal" d="M365 161Q353 145 363 138Q373 138 377 153Q390 141 398 151Q402 163 387 168Q394 181 382 186Q371 182 374 172Q360 179 354 167Q354 160 365 161Z"/>
- <path class="ambientPetal petalSlow" d="M570 280Q558 268 566 258Q575 257 579 270Q590 260 598 270Q600 281 588 285Q594 296 583 300Q575 295 577 289Q565 295 560 285Q560 279 570 280Z"/>
- <path class="ambientPetal petalFast" d="M150 394Q140 383 147 375Q155 374 159 386Q169 376 176 384Q179 394 168 398Q172 407 163 411Q154 408 156 402Q145 407 141 398Q141 392 150 394Z"/>
- <path class="ambientPetal" d="M758 247Q748 236 756 228Q764 227 768 239Q778 229 785 238Q787 248 776 252Q780 262 770 265Q762 261 764 255Q753 260 748 251Q749 245 758 247Z"/>
-</g>
-<!-- luminous glints in the sky and tiny bokeh circles around their moment -->
-<g class="romanceBokeh" fill="#fff7e3">
- <circle cx="319" cy="154" r="2.8"/><circle cx="427" cy="126" r="2"/><circle cx="475" cy="178" r="2.4"/>
- <circle cx="541" cy="216" r="2.2"/><circle cx="592" cy="143" r="2.1"/><circle cx="744" cy="195" r="2.6"/>
- <circle cx="517" cy="300" r="1.8"/><circle cx="274" cy="222" r="2"/>
-</g>
-<!-- Japanese film-title card accents -->
-<path class="cinemaCorner" d="M18 56V24H50M850 24H882V56M18 444V476H50M850 476H882V444" fill="none" stroke="#fff0f5" stroke-opacity=".5" stroke-width="2"/>
-<!-- The last sunlight sweeps softly across the frame -->
-<rect class="cinemaSweep" x="-600" y="0" width="520" height="500" fill="url(#afLightSweep)" opacity=".55" pointer-events="none"/>
-</svg>
-<div class="caption" id="caption">桜の花びらが舞う夕暮れ… 🌸</div>
-</div><button class="btn alt" id="replayAnime">Replay our Japanese anime scene ↻</button><p class="center" style="margin-top:14px">Somewhere in every universe, I'd still look for you first. 🌷</p><div class="nav"><button class="btn alt" data-go="openwhen">← Back</button><button class="btn" data-go="final">One last thing… →</button></div></div></section>
-<section id="final"><div class="card center"><div class="eyebrow">The last page · Never the last feeling</div><div class="finalheart">💗</div><h2 class="grad">You are my favourite little universe.</h2><div id="finalLetter" class="typebox" aria-live="polite"></div><div class="btns center"><button class="btn" id="finalReveal">Open your final surprise ✨</button><button class="btn alt" id="replayAll">Visit again ↻</button></div><div class="cat"><img loading="lazy" src="https://media.giphy.com/media/vFKqnCdLPNOKc/giphy.gif" alt="Cute animated cats" onerror="this.style.display='none'"><div><b>One last important reminder</b><p>You are loved, precious, and make ordinary days magical.</p></div></div></div></section>
-<footer>Made with a little code, a lot of feelings, and one very special girl in mind. ✦</footer></main><div id="toast" class="toast" role="status" aria-live="polite"></div>
+<footer>Made with a little code, a lot of feelings, and you in mind. ✦</footer>
+</main>
 <script>
-"use strict";
-const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));let toastTimer;
-function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2300)}
-function go(id,fromHistory=false){const target=document.getElementById(id);if(!target||!target.matches("main section")){toast("That page is not available yet 💗");return}if(!fromHistory){const nextHash="#"+id;if(location.hash!==nextHash)history.pushState({section:id},"",nextHash)}$$("main section").forEach(s=>s.classList.toggle("active",s===target));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done&&$("#loveLetter").dataset.typing!=="1")type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done&&$("#finalLetter").dataset.typing!=="1")type($("#finalLetter"),finalText);if(id==="anime")replayAnime()}
-window.addEventListener("popstate",()=>{const id=location.hash.slice(1),target=document.getElementById(id);go(target&&target.matches("main section")?id:"welcome",true)});
-// Robust delegated navigation: works for every current and future page button.
-document.addEventListener("click",function(event){
- const button=event.target.closest("[data-go]");
- if(!button)return;
- const target=button.dataset.go;
- if(!target||!document.getElementById(target))return;
- event.preventDefault();
- go(target);
-});
-const letter="Shibu,\n\nI don't think you realise how much happiness you bring into my life. A simple message from you can turn an ordinary day into one I want to remember. I love the little things we share, the silly moments, and how someone who isn't beside me can still feel so close to my heart.\n\nI can't promise every day will be perfect. But I can promise that you matter to me, that your feelings matter, and that I'll keep trying to make you smile. If I could put all the affection I have for you into a box, it would probably burst open with pink sparkles and an unreasonable amount of chocolate.\n\nThis tiny universe is nowhere near as beautiful as you are to me. It's my little way of saying: I'm really, really glad it's you.\n\nAlways your favourite troublemaker,\nMe 💗";
-const finalText="If you ever wonder what makes this little universe special, it isn't the stars or colours or silly cats. It's the person I made it for.\n\nYou, Shibu. You're the surprise, the favourite part, and the reason behind every little detail here. I hope this made you smile, even for a moment.\n\nIf I could choose in a thousand different universes, I'd still hope to find you. 🌙💗";
-let typeRunCounter=0;
-function type(el,text){if(el.dataset.typing==="1")return;const run=String(++typeRunCounter);el.dataset.typeRun=run;el.dataset.typing="1";el.textContent="";let i=0;const cursor=document.createElement("span");cursor.className="spark";cursor.textContent="▏";el.append(cursor);function tick(){if(!el.isConnected||el.dataset.typeRun!==run)return;if(i>=text.length){cursor.remove();el.dataset.done="1";el.dataset.typing="0";return}cursor.before(document.createTextNode(text[i++]));if(Math.random()<.12){const s=document.createElement("span");s.className="spark";s.textContent="✦";s.style.left=Math.random()*90+"vw";s.style.top=Math.random()*80+"vh";document.body.append(s);setTimeout(()=>s.remove(),850)}setTimeout(tick,text[i-1]==="\\n"?110:26)}tick()}
-$("#revealLetter").onclick=()=>{const el=$("#loveLetter");if(el.dataset.typing==="1")return;if(el.dataset.done){el.dataset.done="";el.dataset.typing="0";el.textContent=""}type(el,letter)};
-$("#finalReveal").onclick=()=>{if($("#finalLetter").dataset.done){$("#finalLetter").dataset.done="";$("#finalLetter").dataset.typing="0";$("#finalLetter").textContent=""}type($("#finalLetter"),finalText);toast("A little love, just for you 💗")};
-$$("[data-message]").forEach(b=>b.onclick=()=>{$("#flirtNote").textContent=b.dataset.message;$("#flirtNote").classList.add("show")});
-const notes={missing:"I wish I could close the distance with one big hug. Until I can, imagine me holding you close and reminding you that you are never forgotten. You're on my mind in the quiet little moments, too. 💗",sad:"You don't have to pretend to be okay every second. Take a breath, drink some water, and be gentle with yourself. If I were there, I'd sit beside you until the world felt softer. You matter so much. 🫂",smile:"Tiny mission: make the silliest face you can, then remember there's someone who thinks you're ridiculously adorable. Yes, me. Smile tax is due. 😌",sleep:"Let your shoulders relax. Let today be finished for now. You don't have to solve everything tonight. Imagine a quiet sky full of stars and my hand holding yours. Goodnight, my favourite person. 🌙",hug:"Imagine the warmest hug: no rush to let go, no need to explain anything, just a moment where you can breathe. That's the hug I'd give you. And then refuse to let go for five more minutes. 🫂",love:"In case you forgot today: you're important, worthy of kindness, and don't have to be perfect to deserve affection. I love your quirks, your humour, and the person you're becoming. I'm glad you're you. 💌"};
-$$("[data-note]").forEach(b=>b.onclick=()=>{$("#openNote").textContent=notes[b.dataset.note];$("#openNote").classList.add("show")});
-let score=0,interval=null,running=false;function stop(){running=false;clearInterval(interval);interval=null}function reset(){stop();score=0;$("#score").textContent=0;$("#gameStatus").textContent="Ready ✨";$("#hint").style.display="grid";$("#hint").innerHTML="Your love-catching mission<br><b>Tap Start Game</b> below 💞";$("#reward").classList.remove("show");$("#arena").querySelectorAll(".fall").forEach(x=>x.remove())}
-function start(){reset();running=true;$("#hint").style.display="none";$("#gameStatus").textContent="Catch them! 💘";interval=setInterval(()=>{if(!running)return;const a=$("#arena"),h=document.createElement("button");h.className="fall";h.textContent=["💗","💖","💕","💘"][Math.random()*4|0];h.setAttribute("aria-label","Catch heart");h.style.left=Math.max(0,Math.random()*(a.clientWidth-50))+"px";h.style.top="-40px";h.style.animationDuration=(2.2+Math.random()*1.2)+"s";h.onclick=()=>{if(!running)return;score++;$("#score").textContent=score;h.remove();if(score>=10){stop();$("#gameStatus").textContent="You caught all the love!";$("#reward").classList.add("show");toast("10 hearts caught! 💗")}else $("#gameStatus").textContent=["So cute!","Keep going!","Heart thief!"][score%3]};a.append(h);setTimeout(()=>h.remove(),3600)},650)}
-$("#startGame").onclick=start;$("#resetGame").onclick=reset;
-const questions=[{q:"What is this tiny website really made of?",a:["Only pixels and code","A ridiculous amount of affection","Only cat GIFs"],c:1,f:"The code is just the wrapping; you are the reason for it. 💗"},{q:"When you message me, what happens to my cool personality?",a:["It stays normal","It immediately disappears","It gets professional"],c:1,f:"Correct. Coolness.exe has stopped responding. 😭"},{q:"What's the best kind of gift in this universe?",a:["A hug and time together","A spreadsheet","An invoice"],c:0,f:"A hug from you would beat every fancy thing. Easily. 🫂"},{q:"What should you do if you need a smile?",a:["Open a little envelope here","Pay taxes","Argue with a pillow"],c:0,f:"Yes! There are messages here whenever you need one. 💌"},{q:"Who is the star of this universe?",a:["The moon","The animated cat","You, Shibu"],c:2,f:"Obviously you. The moon didn't inspire this website. 🌙"}];let qi=0,answered=false,qscore=0;
-function renderQ(){const q=questions[qi];$("#progress").textContent="Question "+(qi+1)+" of "+questions.length;$("#question").textContent=q.q;$("#options").innerHTML="";q.a.forEach((a,i)=>{const b=document.createElement("button");b.className="option";b.textContent=a;b.onclick=()=>answer(i);$("#options").append(b)});$("#feedback").textContent="Choose what feels right 💌";$("#nextQ").disabled=true;$("#nextQ").textContent=qi===questions.length-1?"See my result 💗":"Next question →";answered=false}
-function answer(i){if(answered)return;answered=true;const q=questions[qi];$$(".option").forEach(b=>b.disabled=true);if(i===q.c)qscore++;$("#feedback").textContent=q.f;$("#nextQ").disabled=false}
-$("#nextQ").onclick=()=>{if(!answered)return;if(qi<questions.length-1){qi++;renderQ()}else{$("#question").textContent="Your result: "+qscore+" / "+questions.length+" 💗";$("#options").innerHTML="";$("#feedback").textContent="No score could measure how special you are. Thank you for playing, Shibu. Now go claim your imaginary hug.";$("#nextQ").disabled=true;$("#nextQ").textContent="Quiz complete ✨";answered=false}};
-function restartQ(){qi=0;qscore=0;answered=false;renderQ()}$("#restartQ").onclick=restartQ;
-let ytStarted=false,ytFrame=null;
-function startYouTubeMusic(fromTap=false){
- const dock=$("#musicDock");dock.style.display="block";
- if(!ytStarted){
-  ytFrame=document.createElement("iframe");
-  ytFrame.title="I Wanna Be Yours by Arctic Monkeys on YouTube";
-  ytFrame.width="560";ytFrame.height="200";
-  ytFrame.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";
-  ytFrame.allowFullscreen=true;
-  ytFrame.referrerPolicy="strict-origin-when-cross-origin";
-  ytFrame.loading="eager";
-  ytFrame.src="https://www.youtube.com/embed/nyuo9-OjNNg?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1&origin=https%3A%2F%2Fvedtrader67-commits.github.io";
-  $("#ytplayer").append(ytFrame);ytStarted=true;
- }else if(fromTap){
-  // Re-request play in the actual YouTube player as a direct result of the user's tap.
-  ytFrame.src="https://www.youtube.com/embed/nyuo9-OjNNg?autoplay=1&playsinline=1&controls=1&rel=0&enablejsapi=1&origin=https%3A%2F%2Fvedtrader67-commits.github.io";
+(function(){
+ const stars=document.getElementById("stars");
+ for(let i=0;i<48;i++){const s=document.createElement("i");s.className="star";s.style.left=(Math.random()*100)+"%";s.style.top=(Math.random()*100)+"%";s.style.animationDelay=(Math.random()*3)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";stars.appendChild(s)}
+ const letter=document.getElementById("letter");
+ window.setTimeout(()=>letter.classList.add("show"),650);
+ const button=document.getElementById("musicButton");
+ const note=document.getElementById("musicNote");
+ let started=false;
+ function startMusic(){
+   if(started)return;
+   started=true;
+   const frame=document.createElement("iframe");
+   frame.title="I Wanna Be Yours by Arctic Monkeys";
+   frame.allow="autoplay; encrypted-media; picture-in-picture";
+   frame.referrerPolicy="strict-origin-when-cross-origin";
+   frame.src="https://www.youtube.com/embed/nyuo9-OjNNg?autoplay=1&playsinline=1&controls=1&rel=0";
+   document.getElementById("player").appendChild(frame);
+   note.textContent="If the music doesn't start, tap the player button again or open the song on YouTube.";
+   button.textContent="♫ Song loading…";
  }
- $("#music").textContent="♫ Open music player";
- if(fromTap)dock.scrollIntoView({behavior:"smooth",block:"nearest"});
- if(fromTap)toast("Music player opened. Tap ▶ if Chrome asks you first. 🎶");
-}
-$("#music").onclick=()=>startYouTubeMusic(true);
-$("#hideMusic").onclick=()=>{$("#musicDock").style.display="none";$("#music").textContent="♫ Play “I Wanna Be Yours”";if(ytFrame){ytFrame.src="about:blank";ytFrame.remove();ytFrame=null;ytStarted=false;$("#ytplayer").innerHTML="";}};
-window.addEventListener("load",()=>{setTimeout(()=>{try{startYouTubeMusic(false)}catch(e){/* Playback may be blocked until a tap. */}},900)});
-function playAnimeTimeline(svg){
- const all=svg.querySelectorAll(".ink, .paint");
- for(const el of all){
-  const tag=el.tagName.toLowerCase();
-  if(!["path","circle","ellipse","line","polyline","polygon","rect","g"].includes(tag))continue;
-  const inline=el.style.getPropertyValue("--delay")||(el.closest("[style*='--delay']")?.style.getPropertyValue("--delay"))||"0s";
-  const original=Math.max(0,Math.min(4.45,parseFloat(inline)||0));
-  const phaseDelay=(original/4.45)*1150;
-  if(el.classList.contains("ink")&&getComputedStyle(el).stroke!=="none"){
-   el.animate([{strokeDashoffset:900},{strokeDashoffset:0}],{duration:Math.max(100,4500-phaseDelay),delay:phaseDelay,easing:"cubic-bezier(.45,0,.25,1)",fill:"forwards"});
-  }
-  if(el.classList.contains("paint")){
-   const colourDelay=(original/4.45)*700;
-   el.animate([{fillOpacity:0},{fillOpacity:1}],{duration:Math.max(100,2600-colourDelay),delay:4750+colourDelay,easing:"ease-in-out",fill:"forwards"});
-   if(el.hasAttribute("opacity")&&(el.getAttribute("opacity")===".26"||el.getAttribute("opacity")===".22")){
-    el.animate([{opacity:0},{opacity:Number(el.getAttribute("opacity"))}],{duration:1800,delay:4750+colourDelay,easing:"ease-in-out",fill:"forwards"});
-   }
-  }
- }
-}
-let animeCaptionTimers=[];
-function replayAnime(){
- animeCaptionTimers.forEach(clearTimeout);animeCaptionTimers=[];
- const film=$("#animeFilm");
- if(film){const fresh=film.cloneNode(true);film.replaceWith(fresh);playAnimeTimeline(fresh);}
- const s=$("#stage");s.querySelectorAll(".petal").forEach(p=>p.remove());
- for(let i=0;i<18;i++){const p=document.createElement("span");p.className="petal";p.textContent="✿";p.style.left=Math.random()*100+"%";p.style.animationDelay=(-Math.random()*4)+"s";p.style.animationDuration=(4+Math.random()*4)+"s";s.append(p)}
- const c=$("#caption");c.textContent="桜の花びらが舞う夕暮れ… 🌸";
- animeCaptionTimers.push(setTimeout(()=>c.textContent="The shrine lanterns begin to glow. 灯りがともる 🏮",2500));
- animeCaptionTimers.push(setTimeout(()=>c.textContent="He takes one breath, then runs to you. 君のもとへ 🌸",5000));
- animeCaptionTimers.push(setTimeout(()=>c.textContent="この花束を、君に。 These flowers are for you. 💐",7500));
- animeCaptionTimers.push(setTimeout(()=>c.textContent="どんな世界でも、君を見つける。 In every world, I will find you. 💗",9600));
-}
-$("#replayAnime").onclick=()=>{replayAnime();toast("Replaying our 10-second anime scene 🌅")};
-// Add layered drifting petals for a more cinematic anime atmosphere.
-$("#replayAll").onclick=()=>{reset();restartQ();$("#loveLetter").textContent="";$("#loveLetter").dataset.done="";$("#loveLetter").dataset.typing="0";$("#loveLetter").dataset.typeRun=String(++typeRunCounter);$("#finalLetter").textContent="";$("#finalLetter").dataset.done="";$("#finalLetter").dataset.typing="0";$("#finalLetter").dataset.typeRun=String(++typeRunCounter);go("welcome");toast("Back to the beginning, Shibu 💗")};
-document.addEventListener("click",e=>{if(!e.target.closest("button"))return;const x=document.createElement("span");x.className="spark";x.textContent=["✦","♡","✧"][Math.random()*3|0];x.style.left=(e.clientX||innerWidth/2)+"px";x.style.top=(e.clientY||innerHeight/2)+"px";document.body.append(x);setTimeout(()=>x.remove(),850)});
-for(let i=0;i<65;i++){const s=document.createElement("i");s.className="star";s.style.left=Math.random()*100+"%";s.style.top=Math.random()*100+"%";s.style.animationDelay=(-Math.random()*4)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";$("#stars").append(s)}renderQ();if(location.hash){const initialId=location.hash.slice(1),initialTarget=document.getElementById(initialId);if(initialTarget&&initialTarget.matches("main section"))go(initialId,true)}
-</script></body></html>
+ button.addEventListener("click",function(){if(!started){startMusic();note.textContent="If your browser blocks autoplay, open the song on YouTube.";button.textContent="♫ Song loading…";}else{window.open("https://www.youtube.com/watch?v=nyuo9-OjNNg","_blank","noopener");}});
+ // Best effort only: mobile browsers often block audio until the visitor taps.
+ startMusic();
+})();
+</script>
+</body>
+</html>
