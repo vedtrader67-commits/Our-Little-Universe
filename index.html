@@ -198,7 +198,8 @@
 "use strict";
 const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));let toastTimer;
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>e.classList.remove("show"),2300)}
-function go(id){const target=document.getElementById(id);if(!target||!target.matches("main section")){toast("That page is not available yet 💗");return}$$("main section").forEach(s=>s.classList.toggle("active",s===target));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done&&$("#loveLetter").dataset.typing!=="1")type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done&&$("#finalLetter").dataset.typing!=="1")type($("#finalLetter"),finalText);if(id==="anime")replayAnime()}
+function go(id,fromHistory=false){const target=document.getElementById(id);if(!target||!target.matches("main section")){toast("That page is not available yet 💗");return}if(!fromHistory){const nextHash="#"+id;if(location.hash!==nextHash)history.pushState({section:id},"",nextHash)}$$("main section").forEach(s=>s.classList.toggle("active",s===target));window.scrollTo({top:0,behavior:"smooth"});if(id==="letter"&&!$("#loveLetter").dataset.done&&$("#loveLetter").dataset.typing!=="1")type($("#loveLetter"),letter);if(id==="final"&&!$("#finalLetter").dataset.done&&$("#finalLetter").dataset.typing!=="1")type($("#finalLetter"),finalText);if(id==="anime")replayAnime()}
+window.addEventListener("popstate",()=>{const id=location.hash.slice(1),target=document.getElementById(id);go(target&&target.matches("main section")?id:"welcome",true)});
 // Robust delegated navigation: works for every current and future page button.
 document.addEventListener("click",function(event){
  const button=event.target.closest("[data-go]");
@@ -210,7 +211,8 @@ document.addEventListener("click",function(event){
 });
 const letter="Shibu,\n\nI don't think you realise how much happiness you bring into my life. A simple message from you can turn an ordinary day into one I want to remember. I love the little things we share, the silly moments, and how someone who isn't beside me can still feel so close to my heart.\n\nI can't promise every day will be perfect. But I can promise that you matter to me, that your feelings matter, and that I'll keep trying to make you smile. If I could put all the affection I have for you into a box, it would probably burst open with pink sparkles and an unreasonable amount of chocolate.\n\nThis tiny universe is nowhere near as beautiful as you are to me. It's my little way of saying: I'm really, really glad it's you.\n\nAlways your favourite troublemaker,\nMe 💗";
 const finalText="If you ever wonder what makes this little universe special, it isn't the stars or colours or silly cats. It's the person I made it for.\n\nYou, Shibu. You're the surprise, the favourite part, and the reason behind every little detail here. I hope this made you smile, even for a moment.\n\nIf I could choose in a thousand different universes, I'd still hope to find you. 🌙💗";
-function type(el,text){if(el.dataset.typing==="1")return;el.dataset.typing="1";el.textContent="";let i=0;const cursor=document.createElement("span");cursor.className="spark";cursor.textContent="▏";el.append(cursor);function tick(){if(!el.isConnected)return;if(i>=text.length){cursor.remove();el.dataset.done="1";el.dataset.typing="0";return}cursor.before(document.createTextNode(text[i++]));if(Math.random()<.12){const s=document.createElement("span");s.className="spark";s.textContent="✦";s.style.left=Math.random()*90+"vw";s.style.top=Math.random()*80+"vh";document.body.append(s);setTimeout(()=>s.remove(),850)}setTimeout(tick,text[i-1]==="\n"?110:26)}tick()}
+let typeRunCounter=0;
+function type(el,text){if(el.dataset.typing==="1")return;const run=String(++typeRunCounter);el.dataset.typeRun=run;el.dataset.typing="1";el.textContent="";let i=0;const cursor=document.createElement("span");cursor.className="spark";cursor.textContent="▏";el.append(cursor);function tick(){if(!el.isConnected||el.dataset.typeRun!==run)return;if(i>=text.length){cursor.remove();el.dataset.done="1";el.dataset.typing="0";return}cursor.before(document.createTextNode(text[i++]));if(Math.random()<.12){const s=document.createElement("span");s.className="spark";s.textContent="✦";s.style.left=Math.random()*90+"vw";s.style.top=Math.random()*80+"vh";document.body.append(s);setTimeout(()=>s.remove(),850)}setTimeout(tick,text[i-1]==="\\n"?110:26)}tick()}
 $("#revealLetter").onclick=()=>{const el=$("#loveLetter");if(el.dataset.typing==="1")return;if(el.dataset.done){el.dataset.done="";el.dataset.typing="0";el.textContent=""}type(el,letter)};
 $("#finalReveal").onclick=()=>{if($("#finalLetter").dataset.done){$("#finalLetter").dataset.done="";$("#finalLetter").dataset.typing="0";$("#finalLetter").textContent=""}type($("#finalLetter"),finalText);toast("A little love, just for you 💗")};
 $$("[data-message]").forEach(b=>b.onclick=()=>{$("#flirtNote").textContent=b.dataset.message;$("#flirtNote").classList.add("show")});
@@ -268,20 +270,22 @@ function playAnimeTimeline(svg){
   }
  }
 }
+let animeCaptionTimers=[];
 function replayAnime(){
+ animeCaptionTimers.forEach(clearTimeout);animeCaptionTimers=[];
  const film=$("#animeFilm");
  if(film){const fresh=film.cloneNode(true);film.replaceWith(fresh);playAnimeTimeline(fresh);}
  const s=$("#stage");s.querySelectorAll(".petal").forEach(p=>p.remove());
  for(let i=0;i<18;i++){const p=document.createElement("span");p.className="petal";p.textContent="✿";p.style.left=Math.random()*100+"%";p.style.animationDelay=(-Math.random()*4)+"s";p.style.animationDuration=(4+Math.random()*4)+"s";s.append(p)}
  const c=$("#caption");c.textContent="First, a few pencil lines… ✍️";
- setTimeout(()=>c.textContent="The sunset colours their little world. 🌅",2500);
- setTimeout(()=>c.textContent="He runs to her, bouquet in hand. 🌷",5000);
- setTimeout(()=>c.textContent="A shy smile. Her whole universe in one person. 💗",7500);
- setTimeout(()=>c.textContent="And for one little moment, the world goes quiet. ♡",9600);
+ animeCaptionTimers.push(setTimeout(()=>c.textContent="The sunset colours their little world. 🌅",2500));
+ animeCaptionTimers.push(setTimeout(()=>c.textContent="He runs to her, bouquet in hand. 🌷",5000));
+ animeCaptionTimers.push(setTimeout(()=>c.textContent="A shy smile. Her whole universe in one person. 💗",7500));
+ animeCaptionTimers.push(setTimeout(()=>c.textContent="And for one little moment, the world goes quiet. ♡",9600));
 }
 $("#replayAnime").onclick=()=>{replayAnime();toast("Replaying our 10-second anime scene 🌅")};
 // Add layered drifting petals for a more cinematic anime atmosphere.
-$("#replayAll").onclick=()=>{reset();restartQ();$("#loveLetter").textContent="";$("#loveLetter").dataset.done="";$("#loveLetter").dataset.typing="0";$("#finalLetter").textContent="";$("#finalLetter").dataset.done="";$("#finalLetter").dataset.typing="0";go("welcome");toast("Back to the beginning, Shibu 💗")};
+$("#replayAll").onclick=()=>{reset();restartQ();$("#loveLetter").textContent="";$("#loveLetter").dataset.done="";$("#loveLetter").dataset.typing="0";$("#loveLetter").dataset.typeRun=String(++typeRunCounter);$("#finalLetter").textContent="";$("#finalLetter").dataset.done="";$("#finalLetter").dataset.typing="0";$("#finalLetter").dataset.typeRun=String(++typeRunCounter);go("welcome");toast("Back to the beginning, Shibu 💗")};
 document.addEventListener("click",e=>{if(!e.target.closest("button"))return;const x=document.createElement("span");x.className="spark";x.textContent=["✦","♡","✧"][Math.random()*3|0];x.style.left=(e.clientX||innerWidth/2)+"px";x.style.top=(e.clientY||innerHeight/2)+"px";document.body.append(x);setTimeout(()=>x.remove(),850)});
-for(let i=0;i<65;i++){const s=document.createElement("i");s.className="star";s.style.left=Math.random()*100+"%";s.style.top=Math.random()*100+"%";s.style.animationDelay=(-Math.random()*4)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";$("#stars").append(s)}renderQ();
+for(let i=0;i<65;i++){const s=document.createElement("i");s.className="star";s.style.left=Math.random()*100+"%";s.style.top=Math.random()*100+"%";s.style.animationDelay=(-Math.random()*4)+"s";s.style.animationDuration=(2+Math.random()*3)+"s";$("#stars").append(s)}renderQ();if(location.hash){const initialId=location.hash.slice(1),initialTarget=document.getElementById(initialId);if(initialTarget&&initialTarget.matches("main section"))go(initialId,true)}
 </script></body></html>
